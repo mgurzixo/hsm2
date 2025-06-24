@@ -1,7 +1,5 @@
 <template>
-  <q-page class="flex content-stretch ygreen">
-    <hsm-canvas class="xfull"></hsm-canvas>
-  </q-page>
+  <hsm-canvas class="xfull"></hsm-canvas>
 </template>
 
 <style>
