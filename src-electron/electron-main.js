@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
@@ -18,6 +18,7 @@ async function createWindow() {
   /**
    * Initial window options
    */
+  Menu.setApplicationMenu(null);
   mainWindow = new BrowserWindow({
     icon: path.resolve(currentDir, "icons/icon.png"), // tray icon
     width: 1000,

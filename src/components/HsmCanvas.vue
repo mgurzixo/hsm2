@@ -1,6 +1,6 @@
 <template>
-  <div ref="containerRef" class="xred ovf xfull">
-    <canvas ref="canvasRef" class="xyblue">
+  <div ref="containerRef" class="ovf xfull">
+    <canvas ref="canvasRef" class="">
     </canvas>
   </div>
 </template>
@@ -33,11 +33,11 @@ function drawCanvas() {
   const canvas = canvasRef.value;
   const ctx = canvas.getContext('2d');
   // console.log(`[HsmCanvas] ctx:${ctx}`);
-  ctx.fillStyle = '#ff0';
-  ctx.strokeStyle = '#808';
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#000';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.rect(30, 30, 100, 30);
+  ctx.rect(30.5, 30.5, 100, 30);
   ctx.fill();
   ctx.stroke();
 }
