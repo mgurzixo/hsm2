@@ -1,7 +1,9 @@
 <template>
   <q-layout view="hHh Lpr fFf">
-    <q-header class="q-pl-xl">
-      <q-tabs align="left" dense>
+    <button-burger></button-burger>
+    <q-header class="Xheader-padding bg-grey-2 shadow-2 flex">
+      <button-burger class="q-my-xs q-mx-xs bg-white text-black"></button-burger>
+      <q-tabs class="text-grey bg-white" align="left" dense active-color="black" active-bg-color="grey-4">
         <q-tab label="Main" />
         <q-tab label="Hsm1" />
         <q-tab label="Hsm2" />
@@ -16,12 +18,14 @@
 <style>
 .ovh {
   overflow: hidden;
+  padding-top: 13px !important;
 }
 </style>
 
 <script setup>
 import { ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
+import ButtonBurger from 'components/ButtonBurger.vue';
 
 const linksList = [
   {

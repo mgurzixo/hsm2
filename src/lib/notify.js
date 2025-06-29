@@ -5,8 +5,7 @@ import { Notify } from "quasar";
 function notify(msg) {
   Notify.create({
     message: msg,
-    color: "zcolor-notify",
-    textColor: "zcolor-notify",
+    color: "dark",
     timeout: 2000,
     icon: "mdi-information-outline",
   });
@@ -15,8 +14,7 @@ function notify(msg) {
 function notifyOk(msg) {
   Notify.create({
     message: msg,
-    color: "zcolor-ok",
-    textColor: "zcolor-ok",
+    color: "positive",
     timeout: 3000,
     icon: "mdi-check-bold",
   });
@@ -25,8 +23,7 @@ function notifyOk(msg) {
 function notifyWarning(msg) {
   Notify.create({
     message: msg,
-    color: "zcolor-warning",
-    textColor: "zcolor-warning",
+    color: "warning",
     timeout: 4000,
     icon: "mdi-alert-octagram-outline",
   });
@@ -35,7 +32,7 @@ function notifyWarning(msg) {
 function notifyError(msg) {
   Notify.create({
     message: msg,
-    color: "zcolor-error",
+    color: "negative",
     timeout: 5000,
     icon: "mdi-alert-outline",
   });

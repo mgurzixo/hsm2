@@ -1,6 +1,6 @@
 <template>
   <q-btn outline round icon="mdi-menu">
-    <q-menu anchor="bottom middle" self="top start">
+    <q-menu anchor="bottom left" self="top start">
       <q-list dense style="min-width: 120px">
         <q-item clickable v-close-popup @click="loadHsm">
           <q-item-section avatar>
@@ -52,6 +52,12 @@
                   <q-icon name="mdi-minus-thick" class="rotate-90" />
                 </q-item-section>
                 <q-item-section>Junction</q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup>
+                <q-item-section avatar>
+                  <q-icon name="mdi-rhombus-outline" />
+                </q-item-section>
+                <q-item-section>Decision</q-item-section>
               </q-item>
               <q-item clickable v-close-popup>
                 <q-item-section avatar>
