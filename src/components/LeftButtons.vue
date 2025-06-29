@@ -7,7 +7,8 @@
       <q-btn outline round icon="mdi-arrow-right-top" />
       <q-btn outline round icon="mdi-rhombus-outline" />
       <q-btn outline round icon="mdi-minus-thick" class="rotate-90" />
-      <q-btn outline round icon="mdi-minus-thick" />
+      <q-btn outline round icon="mdi-format-page-split" />
+      <q-btn outline round icon="mdi-book-open-page-variant-outline" />
       <q-btn outline round icon="mdi-magnify-plus" />
       <q-btn outline round icon="mdi-magnify-minus" />
     </div>
