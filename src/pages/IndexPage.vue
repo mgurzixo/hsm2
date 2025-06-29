@@ -29,7 +29,7 @@ function adjustSizes() {
   container.style.height = height - 2 + "px";
   const width = window.innerWidth - container.getBoundingClientRect().left;
   container.style.width = width - 2 + "px";
-  console.log(`[HsmCanvas.adjustSizes] height:${height}`);
+  // console.log(`[HsmCanvas.adjustSizes] height:${height}`);
 }
 
 V.onMounted(() => {

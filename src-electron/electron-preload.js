@@ -27,3 +27,33 @@
  *   }
  * }
  */
+const { contextBridge } = require("electron");
+const fs = require("fs");
+const os = require("os");
+
+// Expose API methods to the renderer process
+contextBridge.exposeInMainWorld("hsm2Api", {
+  fsWrite: (filePath, data) => {
+    // console.log(`[electron-preload.fsWrite] filePath:${filePath}`);
+    // whitelist channels
+    // let validChannels = ["toMain"];
+    // if (validChannels.includes(channel)) {
+    //   ipcRenderer.send(channel, op, data);
+    // }
+    fs.writeFileSync(filePath, data);
+    return "ok";
+  },
+  os: () => {
+    const myOs = {
+      homedir: os.homedir(),
+      platform: os.platform(),
+      release: os.release(),
+      tmpdir: os.tmpdir(),
+    };
+    return myOs;
+  },
+  fsRead: (filePath, encoding) => {
+    // console.log(`[electron-preload.fsRead] filePath:${filePath}`);
+    return fs.readFileSync(filePath, encoding);
+  },
+});

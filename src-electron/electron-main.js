@@ -18,6 +18,10 @@ const currentDir = fileURLToPath(new URL(".", import.meta.url));
 
 let mainWindow;
 
+function myFs(text) {
+  console.log(`[electron-main.myFs] text:${text}`);
+}
+
 async function createWindow() {
   /**
    * Initial window options
@@ -44,7 +48,9 @@ async function createWindow() {
     },
   });
 
-  enable(mainWindow.webContents);
+  mainWindow.myFs = myFs;
+
+  // enable(mainWindow.webContents);
 
   if (process.env.DEV) {
     await mainWindow.loadURL(process.env.APP_URL);

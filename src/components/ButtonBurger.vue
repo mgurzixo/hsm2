@@ -9,7 +9,7 @@
           <q-item-section>Open...</q-item-section>
           <input type="file" id="browserImportInput" style="display: none" @change="handleFile" />
         </q-item>
-        <q-item clickable v-close-popup>
+        <q-item clickable v-close-popup @click="saveHsm">
           <q-item-section avatar>
             <q-icon name="mdi-content-save-outline" />
           </q-item-section>
@@ -129,6 +129,7 @@
 <script setup>
 import path from 'path';
 import { notify, notifyError, notifyOk, notifyWarning } from "src/lib/notify";
+// import { loadHsmFile } from "src/lib/loadSave";
 import pako from "pako";
 import JSON5 from 'json5';
 
@@ -136,9 +137,23 @@ function doExit() {
   window.close();
 }
 
-function loadHsm() {
-  let biiElem = document.getElementById("browserImportInput");
-  biiElem.click();
+async function loadHsm() {
+
+  // console.log(`[ButtonBurger.loadHsm] content:${content}`);
+
+  // let biiElem = document.getElementById("browserImportInput");
+  // biiElem.click();
+}
+
+
+async function saveHsm() {
+  console.log(`[ButtonBurger.saveHsm] hsm2Api:${window.hsm2Api}`);
+
+  const res0 = window.hsm2Api.fsWrite("/home/mgouget/dev/toto", "qwerty");
+  const res1 = window.hsm2Api.fsRead("/home/mgouget/dev/toto", "utf8");
+  console.log(`[ButtonBurger.saveHsm] res1:${res1}`);
+  const os = window.hsm2Api.os("");
+  console.log(`[ButtonBurger.saveHsm] os:${JSON.stringify(os)}`);
 }
 
 async function handleFile(e) {
@@ -149,28 +164,29 @@ async function handleFile(e) {
     notify("No file selected");
     return;
   }
-  const reader = new FileReader();
-  reader.onloadend = async (e) => {
-    let json;
-    let obj;
-    try {
-      let blob = e.target.result;
-      console.log(`[DynDlgImport.handleFile.onload] val:${blob}`);
-      // let buf = pako.ungzip(blob);
-      let utf8decoder = new TextDecoder();
-      // json = utf8decoder.decode(buf);
-      json = utf8decoder.decode(blob);
-      obj = JSON5.parse(json);
-    } catch (error) {
-      let str = `[DynDlgImport.handleFile.reader] error:${error}`;
-      console.error(str);
-      notifyError(str);
-    }
-    console.log(`[DynDlgImport.handleFile.onload] object keys:[${Object.keys(obj)}]`);
-    let res = { fileName: files[0].name, obj: obj };
-    // await setupFromGoogleObj(res);
-  };
-  reader.readAsArrayBuffer(files[0]);
+  // loadHsmFile(files[0]);
+
+  // const reader = new FileReader();
+  // reader.onloadend = async (e) => {
+  //   let json;
+  //   let obj;
+  //   try {
+  //     let blob = e.target.result;
+  //     console.log(`[DynDlgImport.handleFile.onload] val:${blob}`);
+  //     // let buf = pako.ungzip(blob);
+  //     let utf8decoder = new TextDecoder();
+  //     // json = utf8decoder.decode(buf);
+  //     json = utf8decoder.decode(blob);
+  //     obj = JSON5.parse(json);
+  //   } catch (error) {
+  //     let str = `[DynDlgImport.handleFile.reader] error:${error}`;
+  //     console.error(str);
+  //     notifyError(str);
+  //   }
+  //   console.log(`[DynDlgImport.handleFile.onload] object keys:[${Object.keys(obj)}]`);
+  //   let res = { fileName: files[0].name, obj: obj };
+  // };
+  // reader.readAsArrayBuffer(files[0]);
 }
 
 </script>

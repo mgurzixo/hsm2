@@ -48,7 +48,7 @@ function adjustSizes() {
   container.style.height = height - 2 + "px";
   const width = window.innerWidth - container.getBoundingClientRect().left;
   container.style.width = width - 2 + "px";
-  console.log(`[HsmCanvas.adjustSizes] height:${height}`);
+  // console.log(`[HsmCanvas.adjustSizes] height:${height}`);
 
   const canvas = canvasRef.value;
   canvas.width = canvas.parentElement.offsetWidth;
@@ -63,7 +63,7 @@ V.onMounted(() => {
     adjustSizes();
     window.onresize = adjustSizes;
     // console.log(`[HsmCanvas] infElem:${infElem}`);
-    console.log(`[HsmCanvas] width:${canvas.parentElement.offsetHeight}`);
+    // console.log(`[HsmCanvas] width:${canvas.parentElement.offsetHeight}`);
     // canvas.width = canvas.parentElement.offsetWidth;
     // canvas.height = canvas.parentElement.offsetHeight;
 
