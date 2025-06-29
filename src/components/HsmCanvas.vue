@@ -18,7 +18,6 @@
 
 <script setup>
 import * as V from "vue";
-import InfiniteCanvas from 'ef-infinite-canvas';
 
 const containerRef = V.ref(null);
 const canvasRef = V.ref(null);
@@ -67,7 +66,6 @@ V.onMounted(() => {
     console.log(`[HsmCanvas] width:${canvas.parentElement.offsetHeight}`);
     // canvas.width = canvas.parentElement.offsetWidth;
     // canvas.height = canvas.parentElement.offsetHeight;
-    // const infCanvas = new InfiniteCanvas(canvas);
 
 
     // get the CanvasRenderingContext2D

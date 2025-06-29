@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Menu } from "electron";
+import { initialize, enable } from "@electron/remote/main/index.js";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
@@ -6,6 +7,9 @@ import { fileURLToPath } from "node:url";
 // For now, removes Gtk-ERROR **: 15:43:19.630: GTK 2/3 symbols detected.
 // cf. https://github.com/electron/electron/issues/46538
 app.commandLine.appendSwitch("gtk-version", "3");
+
+// cf. https://quasar.dev/quasar-cli-vite/developing-electron-apps/electron-accessing-files/
+initialize();
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -28,6 +32,7 @@ async function createWindow() {
     useContentSize: true,
     webPreferences: {
       contextIsolation: true,
+      sandbox: false,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
       preload: path.resolve(
         currentDir,
@@ -38,6 +43,8 @@ async function createWindow() {
       ),
     },
   });
+
+  enable(mainWindow.webContents);
 
   if (process.env.DEV) {
     await mainWindow.loadURL(process.env.APP_URL);
@@ -64,6 +71,7 @@ app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
   if (platform !== "darwin") {
+    // app.exit(0);
     app.quit();
   }
 });

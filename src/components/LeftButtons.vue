@@ -1,14 +1,13 @@
 <template>
   <div class="overflow-auto xygreen yyy">
     <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap xxx">
-      <q-btn outline round icon="mdi-menu" />
+      <button-burger></button-burger>
       <q-btn outline round icon="mdi-rectangle-outline" />
       <q-btn outline round icon="mdi-arrow-top-right" />
       <q-btn outline round icon="mdi-arrow-right-top" />
       <q-btn outline round icon="mdi-rhombus-outline" />
       <q-btn outline round icon="mdi-minus-thick" class="rotate-90" />
-      <q-btn outline round icon="mdi-format-page-split" />
-      <q-btn outline round icon="mdi-book-open-page-variant-outline" />
+      <div></div>
       <q-btn outline round icon="mdi-magnify-plus" />
       <q-btn outline round icon="mdi-magnify-minus" />
     </div>
@@ -33,5 +32,6 @@
 </style>
 
 <script setup>
+import ButtonBurger from 'components/ButtonBurger.vue';
 
 </script>
