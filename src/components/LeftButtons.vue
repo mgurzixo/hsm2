@@ -1,6 +1,7 @@
 <template>
   <div class="overflow-auto xygreen yyy">
     <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap xxx">
+      <q-btn outline round icon="mdi-open-in-app" @click="doLoadHsm" />
       <q-btn outline round icon="mdi-rectangle-outline" />
       <q-btn outline round icon="mdi-arrow-top-right" />
       <q-btn outline round icon="mdi-arrow-right-top" />
@@ -33,5 +34,11 @@
 
 <script setup>
 import ButtonBurger from 'components/ButtonBurger.vue';
+import { loadHsm, saveHsm } from "src/lib/hsmIo";
+import { drawCanvas } from "src/lib/canvas";
 
+function doLoadHsm() {
+  loadHsm();
+  drawCanvas();
+}
 </script>

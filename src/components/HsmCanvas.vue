@@ -1,16 +1,11 @@
 <template>
-  <div ref="containerRef" class="ovf xfull">
+  <div class="ovf">
     <canvas ref="canvasRef" class="">
     </canvas>
   </div>
 </template>
 
 <style>
-.full {
-  width: 100%;
-  height: 100%;
-}
-
 .ovf {
   overflow: hidden;
 }
@@ -18,69 +13,46 @@
 
 <script setup>
 import * as V from "vue";
+import { drawCanvas } from 'src/lib/canvas';
+import { theHsm, theCanvas, theCanvasBb, setCanvas, adjustSizes, setMousePos } from 'src/lib/hsmStore';
 
 const containerRef = V.ref(null);
 const canvasRef = V.ref(null);
+let resizeObserver;
 
-
-const props = defineProps({
-
-});
-
-
-function drawCanvas() {
-  const canvas = canvasRef.value;
-  const ctx = canvas.getContext('2d');
-  // console.log(`[HsmCanvas] ctx:${ctx}`);
-  ctx.fillStyle = '#fff';
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.rect(30.5, 30.5, 100, 30);
-  ctx.fill();
-  ctx.stroke();
-}
-
-
-function adjustSizes() {
-  const container = containerRef.value;
-  const height = window.innerHeight - container.getBoundingClientRect().top;
-  container.style.height = height - 2 + "px";
-  const width = window.innerWidth - container.getBoundingClientRect().left;
-  container.style.width = width - 2 + "px";
-  // console.log(`[HsmCanvas.adjustSizes] height:${height}`);
-
-  const canvas = canvasRef.value;
-  canvas.width = canvas.parentElement.offsetWidth;
-  canvas.height = canvas.parentElement.offsetHeight;
+function handleWheel(e) {
+  console.log(`[HsmCanvas.handleWheel] deltaX:${e.deltaX} deltaY:${e.deltaY} deltaMode:${e.deltaMode}`);
+  let scale = theHsm.state.scale - e.deltaY * 0.0005;
+  // Restrict scale
+  scale = Math.min(Math.max(0.1, scale), 10);
+  theHsm.state.scale = scale;
   drawCanvas();
 }
+
+// TODO Must throttle all...
+
+function handleMouseMove(e) {
+  // console.log(`[HsmCanvas.handleMouseMove] clientX:${e.clientX} clientY:${e.clientY}`);
+  const x = e.clientX - theCanvasBb.left;
+  const y = e.clientX - theCanvasBb.top;
+  setMousePos(x, y);
+}
+
+V.onUnmounted(() => {
+  if (resizeObserver) resizeObserver.unobserve(document.body);
+  theCanvas.removeEventListener("wheel", handleWheel);
+  theCanvas.removeEventListener("mousemove", handleMouseMove);
+});
 
 V.onMounted(() => {
   V.nextTick(() => {
     const canvas = canvasRef.value;
-    const parentElement = canvas.parentElement;
+    setCanvas(canvas);
     adjustSizes();
-    window.onresize = adjustSizes;
-    // console.log(`[HsmCanvas] infElem:${infElem}`);
-    // console.log(`[HsmCanvas] width:${canvas.parentElement.offsetHeight}`);
-    // canvas.width = canvas.parentElement.offsetWidth;
-    // canvas.height = canvas.parentElement.offsetHeight;
-
-
-    // get the CanvasRenderingContext2D
-    // const ctx = infCanvas.getContext('2d');
-    // const ctx = canvas.getContext('2d');
-    // console.log(`[HsmCanvas] ctx:${ctx}`);
-
-    // ctx.fillStyle = '#ff0';
-    // ctx.strokeStyle = '#808';
-    // ctx.lineWidth = 1;
-    // ctx.beginPath();
-    // ctx.rect(30, 30, 100, 30);
-    // ctx.fill();
-    // ctx.stroke();
+    resizeObserver = new ResizeObserver(adjustSizes);
+    resizeObserver.observe(document.body);
+    canvas.addEventListener("wheel", handleWheel);
+    canvas.addEventListener("mousemove", handleMouseMove);
   });
-
 });
 </script>
