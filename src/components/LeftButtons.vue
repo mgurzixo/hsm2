@@ -9,8 +9,8 @@
       <q-btn outline round icon="mdi-rhombus-outline" />
       <q-btn outline round icon="mdi-note-outline" />
       <div></div>
-      <q-btn outline round icon="mdi-magnify-plus" />
-      <q-btn outline round icon="mdi-magnify-minus" />
+      <q-btn outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
+      <q-btn outline round icon="mdi-magnify-minus" @click="doZoom(-1)" />
     </div>
   </div>
 </template>
@@ -35,10 +35,19 @@
 <script setup>
 import ButtonBurger from 'components/ButtonBurger.vue';
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { drawCanvas } from "src/lib/canvas";
+import { drawCanvas, setZoom, RTX, RTY } from "src/lib/canvas";
+import { theHsm, theVp, theCanvas, theSettings, theMousePos } from 'src/lib/hsmStore';
 
 function doLoadHsm() {
   loadHsm();
   drawCanvas();
+}
+
+function doZoom(delta) {
+  const scale = theVp.scale + 2 * delta * theSettings.deltaScale;
+  const widthMm = RTX(theCanvas.width);
+  const heightMm = RTX(theCanvas.height);
+
+  setZoom(theVp.x0Mm + widthMm / 2, theVp.y0Mm + heightMm / 2, scale);
 }
 </script>

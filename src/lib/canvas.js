@@ -1,6 +1,15 @@
 "use strict";
 
-import { theHsm, theCanvas, theCtx, theScalePhy, theFolio, theVp } from "src/lib/hsmStore";
+import {
+  theHsm,
+  theCanvas,
+  theCtx,
+  theScalePhy,
+  theFolio,
+  theVp,
+  setFolioScale,
+  setFolioOffsetMm,
+} from "src/lib/hsmStore";
 
 let stateRadiusP;
 
@@ -70,16 +79,11 @@ function drawCanvasBackground() {
   theCtx.fill();
 }
 
-function drawFolioBackground() {
+function drawFolio(folio) {
   theCtx.fillStyle = "#fff";
   theCtx.beginPath();
-  // console.log(`[canvas.drawFolioBackground] folio:${Trect(theFolio.rect)}`);
-  theCtx.rect(
-    TX(theFolio.rect.x0),
-    TY(theFolio.rect.y0),
-    TL(theFolio.rect.width),
-    TL(theFolio.rect.height),
-  );
+  // console.log(`[canvas.drawFolio] folio:${Trect(theFolio.rect)}`);
+  theCtx.rect(TX(folio.rect.x0), TY(folio.rect.y0), TL(folio.rect.width), TL(folio.rect.height));
   theCtx.fill();
 }
 
@@ -89,11 +93,27 @@ export function drawCanvas() {
   drawCanvasBackground();
   if (!theFolio.rect) return;
   // console.log(`[canvas.drawCanvas] folioName:${theFolio.name}`);
-  drawFolioBackground();
+  drawFolio(theFolio);
   stateRadiusP = TL(theHsm.settings.stateRadiusMm);
   for (let stateId of Object.keys(theFolio.states)) {
     const state = theFolio.states[stateId];
     // console.log(`[canvas.drawCanvas] State:${state.name}`);
     drawState(state);
   }
+}
+
+export function setZoom(x, y, scale) {
+  const oldScale = theVp.scale;
+  console.log(`[HsmCanvas.handleWheel] oldScale:${theVp.scale} newScale:${scale}`);
+  // Restrict scale
+  scale = Math.min(Math.max(0.1, scale), 10);
+  // scale = 2;
+  const rScale = scale / oldScale;
+  const x0Mm = (theVp.x0 + (rScale - 1) * x) / rScale;
+  const y0Mm = (theVp.y0 + (rScale - 1) * y) / rScale;
+  // const x0Mm = theMousePos.xMm - (theMousePos.xMm - theVp.x0) * (scale / theVp.scale);
+  // const y0Mm = theMousePos.yMm - (theMousePos.yMm - theVp.y0) * (scale / theVp.scale);
+  setFolioScale(scale);
+  setFolioOffsetMm(x0Mm, y0Mm);
+  drawCanvas();
 }
