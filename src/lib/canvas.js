@@ -61,7 +61,7 @@ function drawState(state) {
   const y0 = TY(theFolio.rect.y0 + state.rect.y0);
   const width = TL(state.rect.width);
   const height = TL(state.rect.height);
-  console.log(`[canvas.drawState] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
+  // console.log(`[canvas.drawState] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
   theCtx.fillStyle = "#fff";
   theCtx.strokeStyle = "#000";
   // theCtx.rect(x0, y0, width, height);
@@ -104,15 +104,15 @@ export function drawCanvas() {
 
 export function setZoom(x, y, scale) {
   const oldScale = theVp.scale;
-  console.log(`[HsmCanvas.handleWheel] oldScale:${theVp.scale} newScale:${scale}`);
+  // console.log(
+  //   `[HsmCanvas.handleWheel] oldScale:${theVp.scale.toFixed(2)} newScale:${scale.toFixed(2)}`,
+  // );
   // Restrict scale
   scale = Math.min(Math.max(0.1, scale), 10);
   // scale = 2;
   const rScale = scale / oldScale;
   const x0Mm = (theVp.x0 + (rScale - 1) * x) / rScale;
   const y0Mm = (theVp.y0 + (rScale - 1) * y) / rScale;
-  // const x0Mm = theMousePos.xMm - (theMousePos.xMm - theVp.x0) * (scale / theVp.scale);
-  // const y0Mm = theMousePos.yMm - (theMousePos.yMm - theVp.y0) * (scale / theVp.scale);
   setFolioScale(scale);
   setFolioOffsetMm(x0Mm, y0Mm);
   drawCanvas();

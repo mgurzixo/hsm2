@@ -60,9 +60,9 @@ export function adjustSizes() {
   const cpe = theCanvas.parentElement;
   theCanvasBb = cpe.getBoundingClientRect();
   const height = window.innerHeight - theCanvasBb.top;
-  cpe.style.height = height - 2 + "px";
+  cpe.style.height = height - 0 + "px";
   const width = window.innerWidth - theCanvasBb.left;
-  cpe.style.width = width - 2 + "px";
+  cpe.style.width = width - 0 + "px";
   // console.log(`[HsmStore.adjustSizes] height:${height}`);
   theCanvas.width = cpe.offsetWidth;
   theCanvas.height = cpe.offsetHeight;
