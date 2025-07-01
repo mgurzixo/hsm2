@@ -1,17 +1,17 @@
 {
   settings: {
     screenDpi: 93,
+    stateRadiusMm: 5,
+    deltaMouseWheel: 120,
+    deltaScale: 0.1,
   },
   state: {
     serId: 4,
     filePath: "/home/mgouget/dev/hsm2/Aaa.json5",
-    scale: 1,
-    x0: 0,
-    y0: 0,
     folio: "F1",
   },
   folios: {
-    ORDER: ["F1"],
+    order: ["F1"],
     F1: {
       id: "F1",
       name: "Main Folio",
@@ -21,25 +21,30 @@
         width: 210,
         height: 297,
       },
+      vp: {
+        scale: 1,
+        x0: -10,
+        y0: -10,
+      },
       states: {
         S2: {
           id: "S2",
           name: "First state",
           rect: {
-            x0: 0,
-            y0: 0,
-            x1: 50,
-            y1: 20,
+            x0: 10,
+            y0: 10,
+            width: 70,
+            height: 20,
           },
         },
         S3: {
           id: "S3",
           name: "Second state",
           rect: {
-            x0: 0,
-            y0: 30,
-            x1: 50,
-            y1: 50,
+            x0: 20,
+            y0: 40,
+            width: 40,
+            height: 20,
           },
         },
       },

@@ -1,52 +1,99 @@
 "use strict";
 
-import { theHsm, theCanvas, theCtx } from "src/lib/hsmStore";
+import { theHsm, theCanvas, theCtx, theScalePhy, theFolio, theVp } from "src/lib/hsmStore";
 
-const inchInMm = 25.4;
+let stateRadiusP;
 
-let folio;
-let scale;
-let X0;
-let Y0;
-
-function TX(x) {
-  return Math.round((x - X0) * scale) + 0.5;
+export function TX(xMm) {
+  return Math.round((xMm - theVp.x0) * theScalePhy) + 0.5;
 }
 
-function TY(y) {
-  return Math.round((y - Y0) * scale) + 0.5;
+export function TY(yMm) {
+  return Math.round((yMm - theVp.y0) * theScalePhy) + 0.5;
 }
 
-function TL(l) {
-  return Math.round(l * scale);
+export function TL(lMm) {
+  return Math.round(lMm * theScalePhy);
+}
+
+export function RTX(xP) {
+  return xP / theScalePhy + theVp.x0;
+}
+
+export function RTY(yP) {
+  return yP / theScalePhy + theVp.y0;
+}
+
+export function RTL(lP) {
+  return lP / theScalePhy;
 }
 
 function Trect(rect) {
   return `(${TX(rect.x0)}, ${TY(rect.y0)}) [${TL(rect.width)},${TL(rect.height)}]}`;
 }
 
-function drawFolioBackground() {
+function PathRoundedRectP(px, py, pwidth, pheight, pradius) {
+  theCtx.beginPath();
+  theCtx.moveTo(px + pradius, py);
+  theCtx.lineTo(px + pwidth - pradius, py);
+  theCtx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+  theCtx.lineTo(px + pwidth, py + pheight - pradius);
+  theCtx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
+  theCtx.lineTo(px + pradius, py + pheight);
+  theCtx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
+  theCtx.lineTo(px, py + pradius);
+  theCtx.quadraticCurveTo(px, py, px + pradius, py);
+  theCtx.closePath();
+}
+
+function drawState(state) {
+  // console.log(`[canvas.drawState] State:${state.name}`);
+  const x0 = TX(theFolio.rect.x0 + state.rect.x0);
+  const y0 = TY(theFolio.rect.y0 + state.rect.y0);
+  const width = TL(state.rect.width);
+  const height = TL(state.rect.height);
+  console.log(`[canvas.drawState] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
+  theCtx.fillStyle = "#fff";
+  theCtx.strokeStyle = "#000";
+  // theCtx.rect(x0, y0, width, height);
+  PathRoundedRectP(x0, y0, width, height, stateRadiusP);
+
+  theCtx.fill();
+  theCtx.stroke();
+}
+
+function drawCanvasBackground() {
+  // Clear canvas
   theCtx.fillStyle = "#ccc";
   theCtx.beginPath();
   theCtx.rect(0, 0, theCanvas.width, theCanvas.height);
   theCtx.fill();
-  // Folio
+}
 
+function drawFolioBackground() {
   theCtx.fillStyle = "#fff";
   theCtx.beginPath();
-  // console.log(`[theCanvas.drawFolioBackground] folio:${Trect(folio.rect)}`);
-  theCtx.rect(TX(folio.rect.x0), TY(folio.rect.y0), TL(folio.rect.width), TL(folio.rect.height));
+  // console.log(`[canvas.drawFolioBackground] folio:${Trect(theFolio.rect)}`);
+  theCtx.rect(
+    TX(theFolio.rect.x0),
+    TY(theFolio.rect.y0),
+    TL(theFolio.rect.width),
+    TL(theFolio.rect.height),
+  );
   theCtx.fill();
 }
 
 export function drawCanvas() {
   if (!theHsm.state) return;
-  // console.log(`[theCanvas.drawtheCanvas] theHsm:${JSON.stringify(theHsm)}`);
-  const folioId = theHsm.state.folio;
-  // console.log(`[theCanvas.drawtheCanvas] folioId:${folioId}`);
-  folio = theHsm.folios[theHsm.state.folio];
-  scale = theHsm.state.scale * (theHsm.settings.screenDpi / inchInMm);
-  X0 = theHsm.state.x0;
-  Y0 = theHsm.state.y0;
+  // console.log(`[canvas.drawCanvas] theHsm:${JSON.stringify(theHsm)}`);
+  drawCanvasBackground();
+  if (!theFolio.rect) return;
+  // console.log(`[canvas.drawCanvas] folioName:${theFolio.name}`);
   drawFolioBackground();
+  stateRadiusP = TL(theHsm.settings.stateRadiusMm);
+  for (let stateId of Object.keys(theFolio.states)) {
+    const state = theFolio.states[stateId];
+    // console.log(`[canvas.drawCanvas] State:${state.name}`);
+    drawState(state);
+  }
 }
