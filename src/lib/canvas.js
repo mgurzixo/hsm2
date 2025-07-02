@@ -55,11 +55,29 @@ function PathRoundedRectP(px, py, pwidth, pheight, pradius) {
   theCtx.closePath();
 }
 
+function forceInside(state, obj) {
+  console.log(`[canvas.forceInside] id:${state.id}`);
+  if (state.id == obj.id) return;
+  if (state.rect.x0 < obj.rect.x0) state.rect.x0 = obj.rect.x0;
+  if (state.rect.y0 < obj.rect.y0) state.rect.y0 = obj.rect.y0;
+  if (state.rect.x0 + state.rect.width > obj.rect.x0 + obj.rect.width)
+    state.rect.x0 = obj.rect.x0 + obj.rect.width - state.rect.width;
+}
+
+function forceOutside(state, obj) {
+  // TODO
+  return;
+}
+
 function drawState(state) {
   // console.log(`[canvas.drawState] State:${state.name}`);
   if (state.drag) {
     state.rect.x0 = state.drag.oldRect.x0 + state.drag.dx;
     state.rect.y0 = state.drag.oldRect.y0 + state.drag.dy;
+    forceInside(state, theFolio);
+    for (let stateId of Object.keys(theFolio.states)) {
+      forceOutside(state, theFolio.states[stateId]);
+    }
   }
   const x0 = TX(theFolio.rect.x0 + state.rect.x0);
   const y0 = TY(theFolio.rect.y0 + state.rect.y0);

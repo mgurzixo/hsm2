@@ -29,7 +29,7 @@ export function handleMouseMove(e) {
   // );
   theMouse.xP = x;
   theMouse.yP = y;
-  if (!theMouse.isDragging && e.buttons & 1 && theMouse.clickDown) {
+  if (!theMouse.isDragging && e.buttons & 1) {
     const dx = x - theMouse.downXP;
     const dy = y - theMouse.downYP;
     const d = dx * dx + dy * dy;
@@ -99,15 +99,15 @@ export function handleMouseUp(e) {
 export function handleMouseOut(e) {
   const [x, y] = getXYFromMouseEvent(e);
   // console.log(`[canvasListeners.handleMouseOut] x:${x} y:${y} isDragging:${theMouse.isDragging}`);
-  if (theMouse.isDragging) {
-    const event = new CustomEvent("hsmDragCancel", {
-      detail: { downXP: theMouse.downXP, downYP: theMouse.downYP },
-    });
-    // console.log(`[canvasListeners.handleMouseUp] Sending hsmDragCancel`);
-    theCanvas.dispatchEvent(event);
-    theMouse.isDragging = false;
-    theMouse.clickDown = false;
-  }
+  // if (theMouse.isDragging) {
+  //   const event = new CustomEvent("hsmDragCancel", {
+  //     detail: { downXP: theMouse.downXP, downYP: theMouse.downYP },
+  //   });
+  //   // console.log(`[canvasListeners.handleMouseUp] Sending hsmDragCancel`);
+  //   theCanvas.dispatchEvent(event);
+  //   theMouse.isDragging = false;
+  //   theMouse.clickDown = false;
+  // }
 }
 
 export function setCanvasListeners() {
