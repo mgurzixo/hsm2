@@ -57,6 +57,10 @@ function PathRoundedRectP(px, py, pwidth, pheight, pradius) {
 
 function drawState(state) {
   // console.log(`[canvas.drawState] State:${state.name}`);
+  if (state.drag) {
+    state.rect.x0 = state.drag.oldRect.x0 + state.drag.dx;
+    state.rect.y0 = state.drag.oldRect.y0 + state.drag.dy;
+  }
   const x0 = TX(theFolio.rect.x0 + state.rect.x0);
   const y0 = TY(theFolio.rect.y0 + state.rect.y0);
   const width = TL(state.rect.width);
@@ -71,6 +75,14 @@ function drawState(state) {
   theCtx.stroke();
 }
 
+function isInState(x, y, state) {
+  const dx = x - state.rect.x0;
+  if (dx < 0 || dx > state.rect.width) return false;
+  const dy = y - state.rect.y0;
+  if (dy < 0 || dy > state.rect.height) return false;
+  return true;
+}
+
 function drawCanvasBackground() {
   // Clear canvas
   theCtx.fillStyle = "#ccc";
@@ -83,8 +95,30 @@ function drawFolio(folio) {
   theCtx.fillStyle = "#fff";
   theCtx.beginPath();
   // console.log(`[canvas.drawFolio] folio:${Trect(theFolio.rect)}`);
+  // console.log(`[canvas.drawFolio] folio.drag:${folio.drag} dx:${folio.drag?.dx}`);
+  if (folio.drag) {
+    folio.rect.x0 = folio.drag.oldRect.x0 + folio.drag.dx;
+    folio.rect.y0 = folio.drag.oldRect.y0 + folio.drag.dy;
+  }
   theCtx.rect(TX(folio.rect.x0), TY(folio.rect.y0), TL(folio.rect.width), TL(folio.rect.height));
   theCtx.fill();
+}
+
+function isInFolio(x, y, folio) {
+  const dx = x - folio.rect.x0;
+  if (dx < 0 || dx > folio.rect.width) return false;
+  const dy = y - folio.rect.y0;
+  if (dy < 0 || dy > folio.rect.height) return false;
+  return true;
+}
+
+export function findObject(x, y) {
+  let res;
+  if (isInFolio(x, y, theFolio)) res = theFolio;
+  for (let stateId of Object.keys(theFolio.states)) {
+    if (isInState(x, y, theFolio.states[stateId])) res = theFolio.states[stateId];
+  }
+  return res;
 }
 
 export function drawCanvas() {

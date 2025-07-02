@@ -1,14 +1,19 @@
 "use strict";
 
-import { drawCanvas, RTX, RTY } from "src/lib/canvas";
+import { drawCanvas, RTX, RTY, setZoom } from "src/lib/canvas";
 
 const inchInMm = 25.4;
 
 export let theHsm = {};
 export let theCanvas = {};
-export let theCanvasBb = {};
 export let theCtx = {};
-export let theMousePos = {};
+export let theMouse = {
+  xP: 0,
+  yP: 0,
+  downXP: 0,
+  downYP: 0,
+  isDragging: false,
+};
 export let theFolio = {};
 export let theScalePhy = {};
 export let theSettings = {};
@@ -58,23 +63,15 @@ export function setHsm(hsm) {
 
 export function adjustSizes() {
   const cpe = theCanvas.parentElement;
-  theCanvasBb = cpe.getBoundingClientRect();
-  const height = window.innerHeight - theCanvasBb.top;
+  const bb = cpe.getBoundingClientRect();
+  const height = window.innerHeight - bb.top;
   cpe.style.height = height - 0 + "px";
-  const width = window.innerWidth - theCanvasBb.left;
+  const width = window.innerWidth - bb.left;
   cpe.style.width = width - 0 + "px";
   // console.log(`[HsmStore.adjustSizes] height:${height}`);
+  theCanvas.x0 = bb.top;
+  theCanvas.y0 = bb.left;
   theCanvas.width = cpe.offsetWidth;
   theCanvas.height = cpe.offsetHeight;
   drawCanvas();
-}
-
-export function setMousePos(xP, yP) {
-  theMousePos.xMm = RTX(xP);
-  theMousePos.yMm = RTY(yP);
-  theMousePos.xP = xP;
-  theMousePos.yP = yP;
-  // console.log(
-  //   `[HsmStore.setMousePos] (${xP.toFixed()}, ${yP.toFixed()}) posMm:(${theMousePos.xMm.toFixed()}, ${theMousePos.yMm.toFixed()})`,
-  // );
 }

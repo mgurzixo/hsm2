@@ -36,7 +36,7 @@
 import ButtonBurger from 'components/ButtonBurger.vue';
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { drawCanvas, setZoom, RTX, RTY } from "src/lib/canvas";
-import { theHsm, theVp, theCanvas, theSettings, theMousePos } from 'src/lib/hsmStore';
+import { theHsm, theVp, theCanvas, theSettings, theMouse } from 'src/lib/hsmStore';
 
 function doLoadHsm() {
   loadHsm();
@@ -47,7 +47,6 @@ function doZoom(delta) {
   const scale = theVp.scale + 2 * delta * theSettings.deltaScale;
   const widthMm = RTX(theCanvas.width);
   const heightMm = RTX(theCanvas.height);
-
   setZoom(theVp.x0Mm + widthMm / 2, theVp.y0Mm + heightMm / 2, scale);
 }
 </script>
