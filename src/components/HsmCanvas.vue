@@ -21,18 +21,6 @@ const containerRef = V.ref(null);
 const canvasRef = V.ref(null);
 let resizeObserver;
 
-// function handleWheel(e) {
-//   // console.log(`[HsmCanvas.handleWheel] deltaX:${e.deltaX} deltaY:${e.deltaY} deltaMode:${e.deltaMode}`);
-//   const deltas = - e.deltaY / theSettings.deltaMouseWheel;
-//   const scale = theVp.scale + deltas * theSettings.deltaScale;
-//   setZoom(RTX(theMouse.xP), RTY(theMouse.yP), scale);
-// }
-
-// TODO Must throttle all...
-
-let isDragging = false;
-let drag0 = [0, 0];
-
 V.onUnmounted(() => {
   if (resizeObserver) resizeObserver.unobserve(document.body);
   resetCanvasListeners();

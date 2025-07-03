@@ -62,6 +62,8 @@ function forceInside(state, obj) {
   if (state.rect.y0 < obj.rect.y0) state.rect.y0 = obj.rect.y0;
   if (state.rect.x0 + state.rect.width > obj.rect.x0 + obj.rect.width)
     state.rect.x0 = obj.rect.x0 + obj.rect.width - state.rect.width;
+  if (state.rect.y0 + state.rect.height > obj.rect.y0 + obj.rect.height)
+    state.rect.y0 = obj.rect.y0 + obj.rect.height - state.rect.height;
 }
 
 function forceOutside(state, obj) {

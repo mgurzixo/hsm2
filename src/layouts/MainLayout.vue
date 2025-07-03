@@ -6,7 +6,7 @@
       <q-tabs class="text-grey bg-white" align="left" dense active-color="black" active-bg-color="grey-4">
         <q-tab label="Main" />
         <q-tab label="Hsm1" />
-        <q-tab label="Hsm2" />
+        <q-tab label="My Hsm2" />
       </q-tabs>
     </q-header>
     <q-page-container class="ovh">
