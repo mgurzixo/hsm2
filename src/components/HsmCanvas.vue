@@ -15,23 +15,25 @@ import { drawCanvas, TX, TY, TL, RTX, RTY, RTL, setZoom } from 'src/lib/canvas';
 import { theHsm, theCanvas, theVp, theScalePhy, theSettings, setCanvas, adjustSizes, setFolioScale, setFolioOffsetMm, theMouse } from 'src/lib/hsmStore';
 import { setCanvasListeners, resetCanvasListeners } from 'src/lib/canvasListeners';
 
+import { hsm, canvas } from "src/classes/CHsm";
+
 const containerRef = V.ref(null);
 const canvasRef = V.ref(null);
 let resizeObserver;
 
 V.onUnmounted(() => {
-  if (resizeObserver) resizeObserver.unobserve(document.body);
-  resetCanvasListeners();
+  if (hsm) hsm.unobserve();
+  // resetCanvasListeners();
 });
 
 V.onMounted(() => {
   V.nextTick(() => {
     const canvas = canvasRef.value;
-    setCanvas(canvas);
-    adjustSizes();
-    resizeObserver = new ResizeObserver(adjustSizes);
-    resizeObserver.observe(document.body);
-    setCanvasListeners();
+    hsm.setCanvas(canvas);
+    // adjustSizes();
+    // resizeObserver = new ResizeObserver(adjustSizes);
+    // resizeObserver.observe(document.body);
+    // setCanvasListeners();
   });
 });
 </script>

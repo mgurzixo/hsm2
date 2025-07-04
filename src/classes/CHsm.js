@@ -1,7 +1,9 @@
 "use strict";
 
-const objects = new Cobjects();
-export const hsm = new Chsm();
+let objects = null;
+export let canvas = null;
+export let ctx = null;
+export let hsm = null;
 let sernum = 0;
 
 class Cobjects {
@@ -182,17 +184,63 @@ class Cfolio extends CbaseRegion {
   }
 }
 
-class Chsm extends CsimpleObject {
+class Chsm {
   constructor(options) {
-    super(options, "M");
+    objects = new Cobjects();
     this.activeFolio = null;
+    this.cCanvas = null;
   }
 
   load(obj) {}
 
   save() {}
 
+  setCanvas(myCanvas) {
+    if (canvas && this.resizeObserver) this.unobserve();
+    canvas = myCanvas;
+    ctx = canvas.getContext("2d");
+    const bindedAdjustSizes = this.draw.bind(this);
+    this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
+    this.observe();
+    this.adjustSizes();
+  }
+
+  observe() {
+    this.resizeObserver.observe(canvas);
+  }
+
+  unobserve() {
+    this.resizeObserver.unobserve(canvas);
+  }
+
+  draw() {
+    console.log(`[Chsm.draw]`);
+    // Clear canvas
+    ctx.fillStyle = "#ccc";
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fill();
+    if (!this.folio) return;
+  }
+
+  adjustSizes() {
+    const cpe = canvas.parentElement;
+    const bb = cpe.getBoundingClientRect();
+    const height = window.innerHeight - bb.top;
+    cpe.style.height = height - 0 + "px";
+    const width = window.innerWidth - bb.left;
+    cpe.style.width = width - 0 + "px";
+    console.log(`[Chsm.adjustSizes] height:${height}`);
+    canvas.x0 = bb.top;
+    canvas.y0 = bb.left;
+    canvas.width = cpe.offsetWidth;
+    canvas.height = cpe.offsetHeight;
+    this.draw();
+  }
+
   addFolio() {}
 
   setActiveFolio(folioId) {}
 }
+
+hsm = new Chsm();

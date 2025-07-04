@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-green-1 col-auto left-buttons">
+  <div class="bg-green-1 col-auto left-buttons overflow-auto">
     <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap text-black">
       <button-burger class=""></button-burger>
       <q-btn class="bg-amber-2" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
