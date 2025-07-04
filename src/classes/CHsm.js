@@ -202,7 +202,6 @@ class Cfolio extends CbaseRegion {
   }
 
   scalePhy() {
-    console.log(`[Cfolio.Cfolio] scale:${this.viewport.scale}`);
     return this.viewport.scale * (hsm.settings.screenDpi / inchInMm);
   }
 

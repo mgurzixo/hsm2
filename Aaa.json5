@@ -1,6 +1,6 @@
 {
   settings: {
-    screenDpi: 93,
+    screenDpi: 94,
     stateRadiusMm: 5,
     deltaMouseWheel: 120,
     deltaScale: 0.1,
@@ -25,7 +25,7 @@
       vp: {
         scale: 1,
         x0: -10,
-        y0: -10,
+        y0: -30,
       },
       states: {
         S2: {
