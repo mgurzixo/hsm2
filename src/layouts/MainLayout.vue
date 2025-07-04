@@ -1,31 +1,68 @@
 <template>
-  <q-layout view="hHh Lpr fFf">
-    <button-burger></button-burger>
-    <q-header class="Xheader-padding bg-grey-2 shadow-2 flex">
-      <button-burger class="q-my-xs q-mx-xs bg-white text-black"></button-burger>
-      <q-tabs class="text-grey bg-white" align="left" dense active-color="black" active-bg-color="grey-4">
-        <q-tab label="Main" />
-        <q-tab label="Hsm1" />
-        <q-tab label="My Hsm2" />
+  <div class="full-window flex no-wrap">
+    <!-- <button-burger></button-burger> -->
+    <left-buttons class="bg-green-1 col-auto left-buttons"></left-buttons>
+    <div class="col-grow bg-blue-1 ovh full">
+      <q-tabs class="text-grey bg-yellow-1 my-tabs" inline-label outside-arrows align="left" dense active-color="grey-8"
+        active-bg-color="yellow-2">
+        <q-tab no-caps content-class="folio-name" label="Main" />
+        <q-tab no-caps content-class="folio-name" class="" label="Hsm1 dzfgzdfgdf dffdgdzfzddfg" />
+        <q-tab no-caps content-class="folio-name" class="" label="My Hsm2 dfghdfgdfg dfzdfgzdfg dfgdfgzdfg" />
+        <q-tab no-caps content-class="folio-name" label="Main" />
+        <q-tab no-caps content-class="folio-name" class="" label="Hsm1 dzfgzdfgdf dffdgdzfzddfg" />
+        <q-tab no-caps content-class="folio-name" class="" label="My Hsm2 dfghdfgdfg dfzdfgzdfg dfgdfgzdfg" />
       </q-tabs>
-    </q-header>
-    <q-page-container class="ovh">
-      <router-view />
-    </q-page-container>
-  </q-layout>
+      <hsm-canvas></hsm-canvas>
+    </div>
+  </div>
 </template>
 
 <style>
 .ovh {
   overflow: hidden;
-  padding-top: 13px !important;
+}
+
+.full {
+  width: 100%;
+  height: 100%;
+}
+
+.my-tabs .q-tabs__content {
+  border-left: solid 1px;
+}
+
+.my-tabs .q-tab {
+  /* border-left: solid 1px; */
+  border-right: solid 1px;
+}
+
+.folio-name .q-tab__label {
+  max-width: 10em;
+  /* width: 10em; */
+  /* white-space: nowrap; */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.full-window {
+  min-height: 100vh;
+  max-height: 100vh;
+  min-width: 100vw;
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+.left-buttons {
+  border-left: solid 1px;
+  border-right: solid 1px;
+  /* border-bottom: solid 1px; */
 }
 </style>
 
 <script setup>
 import { ref } from 'vue';
-import EssentialLink from 'components/EssentialLink.vue';
-import ButtonBurger from 'components/ButtonBurger.vue';
+import LeftButtons from "components/LeftButtons.vue";
+import HsmCanvas from "components/HsmCanvas.vue";
 
 const linksList = [
   {

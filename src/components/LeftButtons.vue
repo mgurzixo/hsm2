@@ -1,6 +1,7 @@
 <template>
   <div class="overflow-auto xygreen yyy">
     <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap xxx">
+      <button-burger class="q-my-xs q-mx-xs text-black"></button-burger>
       <q-btn outline round icon="mdi-open-in-app" @click="doLoadHsm" />
       <q-btn outline round icon="mdi-rectangle-outline" />
       <q-btn outline round icon="mdi-arrow-top-right" />

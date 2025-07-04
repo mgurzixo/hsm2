@@ -1,6 +1,6 @@
 <template>
   <div ref="containerRef" class="row no-wrap">
-    <left-buttons class="col-auto border-buttons"></left-buttons>
+    <!-- <left-buttons class="col-auto border-buttons"></left-buttons> -->
     <hsm-canvas class="col-grow border-canvas"></hsm-canvas>
   </div>
 </template>
@@ -8,10 +8,6 @@
 <style>
 .border-canvas {
   /* border: solid 1px; */
-}
-
-.border-buttons {
-  border: solid 1px;
 }
 </style>
 

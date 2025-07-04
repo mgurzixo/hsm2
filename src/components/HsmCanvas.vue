@@ -1,13 +1,13 @@
 <template>
-  <div class="ovf">
-    <canvas ref="canvasRef" class="">
-    </canvas>
-  </div>
+  <!-- <div class="ovf full-size"> -->
+  <canvas ref="canvasRef" class="full-size"> </canvas>
+  <!-- </div> -->
 </template>
 
 <style>
-.ovf {
-  overflow: hidden;
+.full-size {
+  width: 100%;
+  height: 100%;
 }
 </style>
 
