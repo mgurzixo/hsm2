@@ -12,6 +12,7 @@
   },
   folios: {
     order: ["F1"],
+    active: ["F1"],
     F1: {
       id: "F1",
       name: "Main Folio",

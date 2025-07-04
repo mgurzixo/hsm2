@@ -17,9 +17,7 @@ import { setCanvasListeners, resetCanvasListeners } from 'src/lib/canvasListener
 
 import { hsm, canvas } from "src/classes/CHsm";
 
-const containerRef = V.ref(null);
 const canvasRef = V.ref(null);
-let resizeObserver;
 
 V.onUnmounted(() => {
   if (hsm) hsm.unobserve();
@@ -30,10 +28,6 @@ V.onMounted(() => {
   V.nextTick(() => {
     const canvas = canvasRef.value;
     hsm.setCanvas(canvas);
-    // adjustSizes();
-    // resizeObserver = new ResizeObserver(adjustSizes);
-    // resizeObserver.observe(document.body);
-    // setCanvasListeners();
   });
 });
 </script>

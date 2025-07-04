@@ -4,6 +4,7 @@ import pako from "pako";
 import JSON5 from "json5";
 import { notify, notifyError, notifyOk, notifyWarning } from "src/lib/notify";
 import { theHsm, setHsm } from "src/lib/hsmStore";
+import { hsm } from "src/classes/CHsm";
 
 function readHsm(filePath) {
   let json;
@@ -48,9 +49,9 @@ function writeHsm(filePath, hsm) {
 
 export function loadHsm() {
   let filePath = "/home/mgouget/dev/hsm2/Aaa.json5";
-  const hsm = readHsm(filePath);
+  const hsmObj = readHsm(filePath);
   if (hsm) {
-    setHsm(hsm);
+    hsm.load(hsmObj);
     notifyOk(`"${filePath}" loaded.`);
   }
 }

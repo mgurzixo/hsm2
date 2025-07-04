@@ -1,5 +1,7 @@
 "use strict";
 
+const inchInMm = 25.4;
+
 let objects = null;
 export let canvas = null;
 export let ctx = null;
@@ -87,7 +89,9 @@ class CsimpleObject {
 
   highlight(mouseX, mouseY) {}
 
-  draw(mouseX, mouseY) {}
+  draw(mouseX, mouseY) {
+    console.log(`[Chsm.CsimpleObject.draw]`);
+  }
 
   dragStart(downX, downY) {}
   dragEnd(downX, downY) {}
@@ -125,6 +129,11 @@ class CexitSstate extends CbaseState {
 class Csstate extends CbaseState {
   constructor(options) {
     super(options, "S");
+    this.rect = options.rect;
+  }
+
+  draw(mouseX, mouseY) {
+    console.log(`[Chsm.Cstate.draw]`);
   }
 }
 class Cchoice extends CsimpleObject {
@@ -181,6 +190,70 @@ class CRegion extends CbaseRegion {
 class Cfolio extends CbaseRegion {
   constructor(options) {
     super(options, "F");
+    this.rect = options.rect;
+    this.viewport = options.vp;
+    for (let stateId of Object.keys(options.states)) {
+      const stateOption = options.states[stateId];
+      const state = new Csstate(stateOption);
+      this.children.push(state);
+    }
+    console.log(`[Cfolio.load] scale:${options.vp.scale}`);
+    this.viewport = options.vp;
+  }
+
+  scalePhy() {
+    console.log(`[Cfolio.Cfolio] scale:${this.viewport.scale}`);
+    return this.viewport.scale * (hsm.settings.screenDpi / inchInMm);
+  }
+
+  TX(xMm) {
+    return Math.round((xMm - this.viewport.x0) * this.scalePhy()) + 0.5;
+  }
+
+  TY(yMm) {
+    return Math.round((yMm - this.viewport.y0) * this.scalePhy()) + 0.5;
+  }
+
+  TL(lMm) {
+    return Math.round(lMm * this.scalePhy());
+  }
+
+  RTX(xP) {
+    return xP / this.scalePhy() + this.viewport.x0;
+  }
+
+  RTY(yP) {
+    return yP / this.scalePhy() + this.viewport.y0;
+  }
+
+  RTL(lP) {
+    return lP / this.scalePhy();
+  }
+
+  drawFolioBackground() {
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    // if (folio.drag) {
+    //   folio.rect.x0 = folio.drag.oldRect.x0 + folio.drag.dx;
+    //   folio.rect.y0 = folio.drag.oldRect.y0 + folio.drag.dy;
+    // }
+    console.log(`[Chsm.Cfolio.drawFolioBackground] scale:${this.scalePhy()}`);
+
+    ctx.rect(
+      this.TX(this.rect.x0),
+      this.TY(this.rect.y0),
+      this.TL(this.rect.width),
+      this.TL(this.rect.height),
+    );
+    ctx.fill();
+  }
+
+  draw(mouseX, mouseY) {
+    console.log(`[Chsm.Cfolio.draw]`);
+    this.drawFolioBackground();
+    for (let child of this.children) {
+      child.draw(mouseX, mouseY);
+    }
   }
 }
 
@@ -189,9 +262,21 @@ class Chsm {
     objects = new Cobjects();
     this.activeFolio = null;
     this.cCanvas = null;
+    this.folios = {};
+    this.folioActive = null;
+    this.FoliosOrder = [];
+    this.settings = {};
   }
 
-  load(obj) {}
+  load(obj) {
+    this.settings = obj.settings;
+    this.FoliosOrder = obj.folios.order;
+    for (let folioId of this.FoliosOrder) {
+      const folioOptions = obj.folios[folioId];
+      this.folios[folioId] = new Cfolio(folioOptions);
+    }
+    this.folioActive = this.folios[obj.folios.active];
+  }
 
   save() {}
 
@@ -199,14 +284,13 @@ class Chsm {
     if (canvas && this.resizeObserver) this.unobserve();
     canvas = myCanvas;
     ctx = canvas.getContext("2d");
-    const bindedAdjustSizes = this.draw.bind(this);
+    const bindedAdjustSizes = this.adjustSizes.bind(this);
     this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
     this.observe();
-    this.adjustSizes();
   }
 
   observe() {
-    this.resizeObserver.observe(canvas);
+    this.resizeObserver.observe(document.body);
   }
 
   unobserve() {
@@ -220,17 +304,19 @@ class Chsm {
     ctx.beginPath();
     ctx.rect(0, 0, canvas.width, canvas.height);
     ctx.fill();
-    if (!this.folio) return;
+    if (!this.folioActive) return;
+    this.folioActive.draw(0, 0);
   }
 
   adjustSizes() {
+    // console.warn(`[Chsm.adjustSizes]`);
     const cpe = canvas.parentElement;
     const bb = cpe.getBoundingClientRect();
     const height = window.innerHeight - bb.top;
     cpe.style.height = height - 0 + "px";
     const width = window.innerWidth - bb.left;
     cpe.style.width = width - 0 + "px";
-    console.log(`[Chsm.adjustSizes] height:${height}`);
+    // console.log(`[Chsm.adjustSizes] height:${height}`);
     canvas.x0 = bb.top;
     canvas.y0 = bb.left;
     canvas.width = cpe.offsetWidth;

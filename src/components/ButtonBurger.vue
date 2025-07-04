@@ -135,7 +135,6 @@ import * as V from "vue";
 import path from 'path';
 import { notify, notifyError, notifyOk, notifyWarning } from "src/lib/notify";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { setHsm } from "src/lib/hsmStore";
 import pako from "pako";
 import JSON5 from 'json5';
 import { drawCanvas } from "src/lib/canvas";
