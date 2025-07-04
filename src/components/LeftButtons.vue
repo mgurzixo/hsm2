@@ -1,35 +1,33 @@
 <template>
-  <div class="overflow-auto xygreen yyy">
-    <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap xxx">
-      <button-burger class="q-my-xs q-mx-xs text-black"></button-burger>
-      <q-btn outline round icon="mdi-open-in-app" @click="doLoadHsm" />
-      <q-btn outline round icon="mdi-rectangle-outline" />
-      <q-btn outline round icon="mdi-arrow-top-right" />
-      <q-btn outline round icon="mdi-arrow-right-top" />
-      <q-btn outline round icon="mdi-minus-thick" class="rotate-90" />
-      <q-btn outline round icon="mdi-rhombus-outline" />
-      <q-btn outline round icon="mdi-note-outline" />
+  <div class="bg-green-1 col-auto left-buttons">
+    <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap text-black">
+      <button-burger class=""></button-burger>
+      <q-btn class="bg-amber-2" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
+      <q-btn class="bg-amber-2" outline round icon="mdi-rectangle-outline" />
+      <q-btn class="bg-amber-2" outline round icon="mdi-arrow-top-right" />
+      <q-btn class="bg-amber-2" outline round icon="mdi-arrow-right-top" />
+      <q-btn class="bg-amber-2" outline round icon="mdi-rhombus-outline" />
+      <q-btn class="bg-amber-2" outline round icon="mdi-note-outline" />
       <div></div>
-      <q-btn outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
-      <q-btn outline round icon="mdi-magnify-minus" @click="doZoom(-1)" />
+      <q-btn class="bg-amber-1" outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
+      <q-btn class="bg-amber-1" outline round icon="mdi-magnify-minus" @click="doZoom(-1)" />
     </div>
   </div>
 </template>
 
-<style>
-.xxx {
-  width: 50px;
-  min-width: 50px;
-  height: 99%;
-}
-
-.xxx {
-  width: 50px;
-  min-width: 50px;
-}
-
+<style lang="scss">
 .left-container {
   margin: 1px;
+}
+
+.q-btn {
+  background-color: $amber-1;
+}
+
+.left-buttons {
+  border-left: solid 1px;
+  border-right: solid 1px;
+  /* border-bottom: solid 1px; */
 }
 </style>
 

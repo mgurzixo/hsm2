@@ -1,7 +1,5 @@
 <template>
-  <!-- <div class="ovf full-size"> -->
   <canvas ref="canvasRef" class="full-size"> </canvas>
-  <!-- </div> -->
 </template>
 
 <style>

@@ -1,6 +1,6 @@
 <template>
-  <q-btn outline round icon="mdi-menu">
-    <q-menu anchor="bottom left" self="top start">
+  <q-btn outline round icon="mdi-menu" text-color="black" class="bg-amber-1">
+    <q-menu anchor="bottom left" self="top start" class="bg-amber-1 menu-border">
       <q-list dense style="min-width: 120px">
         <q-item clickable v-close-popup @click="doLoadHsm">
           <q-item-section avatar>
@@ -27,7 +27,7 @@
           </q-item-section>
 
 
-          <q-menu anchor="top end" self="top start">
+          <q-menu anchor="top end" self="top start" class="bg-amber-1 menu-border">
             <q-list dense style="min-width: 140px">
               <q-item clickable v-close-popup>
                 <q-item-section avatar>
@@ -123,6 +123,10 @@
   min-width: 0px !important;
   padding-right: 6px;
   padding-left: 2px;
+}
+
+.menu-border {
+  border: solid 1px lightgrey;
 }
 </style>
 
