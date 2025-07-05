@@ -19,7 +19,7 @@ class ChElems {
   }
 
   insert(obj) {
-    console.log(`[ChElems.insert] Inserting:${obj.id}`);
+    // console.log(`[ChElems.insert] Inserting:${obj.id}`);
     this.elems[obj.id] = obj;
   }
 
@@ -96,7 +96,7 @@ class CbaseElem {
   }
 
   load(options) {
-    console.log(`[Chsm.CbaseElem.load] id:${options?.id}`);
+    console.warn(`[Chsm.CbaseElem.load] id:${options?.id}`);
   }
 
   draw() {
@@ -189,14 +189,26 @@ class Cstate extends CbaseState {
     this.geo = options.geo;
   }
 
+  load(stateOptions) {
+    // console.log(`[Cstate.draw] ${stateOptions?.regions}`);
+    if (!stateOptions?.regions) return;
+    for (let id of Object.keys(stateOptions.regions)) {
+      const regionOption = stateOptions.region[id];
+      const myRegion = new CRegion(this, regionOption);
+      hElems.insert(myRegion);
+      this.children.push(myRegion);
+      myRegion.load(regionOption);
+    }
+  }
+
   draw() {
-    console.log(`[Chsm.Cstate.draw]`);
+    // console.log(`[Cstate.draw]`);
     // console.log(`[canvas.drawState] State:${state.name}`);
     const x0 = this.TX(this.geo.x0);
     const y0 = this.TY(this.geo.y0);
     const width = this.TL(this.geo.width);
     const height = this.TL(this.geo.height);
-    // console.log(`[Chsm.Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
+    // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
     ctx.fillStyle = "#fff";
     ctx.strokeStyle = "#000";
     // theCtx.rect(x0, y0, width, height);
@@ -262,8 +274,7 @@ class Cfolio extends CbaseRegion {
   constructor(parent, options) {
     super(parent, options, "F");
     this.geo = options.geo;
-
-    console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
+    // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
   }
 
   load(options) {
@@ -272,7 +283,7 @@ class Cfolio extends CbaseRegion {
       const myState = new Cstate(this, stateOption);
       hElems.insert(myState);
       this.children.push(myState);
-      myState.load(options);
+      myState.load(stateOption);
     }
   }
 
@@ -284,11 +295,11 @@ class Cfolio extends CbaseRegion {
     //   folio.geo.y0 = folio.drag.oldRect.y0 + folio.drag.dy;
     // }
     const s = this.scalePhy();
-    console.log(`[Chsm.Cfolio.drawFolioBackground] scalePhy:${s}`);
+    // console.log(`[Chsm.Cfolio.drawFolioBackground] scalePhy:${s}`);
 
-    console.log(
-      `[Chsm.Cfolio.drawFolioBackground] folio:${Math.round(this.geo.x0 * s) + 0.5}, ${Math.round(this.geo.y0 * s) + 0.5}, ${Math.round(this.geo.width * s) + 0.5}, ${Math.round(this.geo.height * s) + 0.5}`,
-    );
+    // console.log(
+    //   `[Chsm.Cfolio.drawFolioBackground] folio:${Math.round(this.geo.x0 * s) + 0.5}, ${Math.round(this.geo.y0 * s) + 0.5}, ${Math.round(this.geo.width * s) + 0.5}, ${Math.round(this.geo.height * s) + 0.5}`,
+    // );
 
     ctx.rect(
       Math.round(this.geo.x0 * s) + 0.5,
@@ -300,7 +311,7 @@ class Cfolio extends CbaseRegion {
   }
 
   draw() {
-    console.log(`[Cfolio.draw]`);
+    // console.log(`[Cfolio.draw]`);
     this.drawFolioBackground();
     for (let child of this.children) {
       child.draw();
@@ -328,15 +339,15 @@ class Chsm extends CbaseElem {
     const f = hElems.getById(folioId);
     this.folioActive = f;
     folio = this.folioActive;
-    console.log(`[Chsm.setActiveFolioById] folioId:${folioId} folioActive:${folio}`);
+    // console.log(`[Chsm.setActiveFolioById] folioId:${folioId} folioActive:${folio}`);
     this.setdirty();
   }
 
-  addFolio(options) {
-    const myFolio = new Cfolio(this, options);
+  addFolio(folioOptions) {
+    const myFolio = new Cfolio(this, folioOptions);
     hElems.insert(myFolio);
     this.children.push(myFolio);
-    myFolio.load(options);
+    myFolio.load(folioOptions);
   }
 
   load(obj) {
@@ -371,7 +382,7 @@ class Chsm extends CbaseElem {
 
   draw() {
     if (!ctx) return;
-    console.log(`[Chsm.draw] folio=${folio}`);
+    // console.log(`[Chsm.draw] folio=${folio}`);
     // Clear canvas
     ctx.fillStyle = "#ccc";
     ctx.beginPath();
