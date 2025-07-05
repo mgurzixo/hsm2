@@ -2,46 +2,50 @@
 
 const inchInMm = 25.4;
 
-let objects = null;
+let hElems = null;
 export let canvas = null;
 export let ctx = null;
 export let hsm = null;
-let sernum = 0;
+export let folio = null;
 
-class Cobjects {
+class ChElems {
   constructor(obj) {
-    this.objects = {};
+    this.elems = {};
+    this.hoveredId = "";
     this.selectedId = "";
     this.draggedId = "";
     this.mouseDownX = 0;
     this.mouseDownY = 0;
-    this.mouseDx = 0;
-    this.mouseDy = 0;
-    this.mouseX = 0;
-    this.mouseY = 0;
   }
 
   insert(obj) {
-    this.objects[obj.id] = obj;
+    console.log(`[ChElems.insert] Inserting:${obj.id}`);
+    this.elems[obj.id] = obj;
   }
 
   removeById(id) {
-    delete this.objects[id];
+    delete this.elems[id];
+  }
+
+  getById(id) {
+    return this.elems[id];
   }
 
   clear() {
-    this.objects = {};
+    this.elems = {};
   }
 
   setSelected(id) {
     this.selectedId = id;
   }
 
-  isSelected(id) {
-    return this.selectedId == id;
+  getSelectedId() {
+    return this.selectedId;
   }
 
   dragStart(id, mouseDownX, mouseDownY) {
+    this.selectedId = null;
+    this.hoveredId = null;
     this.draggedId = id;
     this.mouseDownX = mouseDownX;
     this.mouseDownY = mouseDownY;
@@ -66,151 +70,58 @@ class Cobjects {
   }
 }
 
-class CsimpleObject {
-  constructor(obj, type) {
-    const id = type + ++sernum;
+class CbaseElem {
+  static sernum = 0;
+
+  constructor(parent, obj, type) {
+    let id = obj.id;
+    if (!id) id = type + ++CbaseElem.sernum;
     this.id = id;
     this.name = obj.name;
-    this.parent = null;
+    this.parent = parent;
     this.children = [];
+    this.geo = { x0: 0, y0: 0 }; // Offset from parent
   }
 
   link(parent) {
     this.parent = parent;
     parent.insertChild(this);
-    objects.add(this);
+    hElems.add(this);
   }
 
   unlink() {
     this.parent = null;
     this.parent.excludeChild(this);
-    objects.removeById(this.id);
+    hElems.removeById(this.id);
   }
 
-  highlight(mouseX, mouseY) {}
-
-  draw(mouseX, mouseY) {
-    console.log(`[Chsm.CsimpleObject.draw]`);
+  load(options) {
+    console.log(`[Chsm.CbaseElem.load] id:${options?.id}`);
   }
 
-  dragStart(downX, downY) {}
-  dragEnd(downX, downY) {}
-  dragCancel(downX, downY) {}
-}
-
-class Cnote extends CsimpleObject {
-  constructor(options) {
-    super(options, "N");
+  draw() {
+    console.log(`[Chsm.CbaseElem.draw] id:${this.id}`);
   }
 
-  getText() {}
+  hover(mouseX, mouseY) {}
+  click(mouseX, mouseY) {}
+  doubleClick(mouseX, mouseY) {}
+  drag(deltaX, deltaY) {}
 
-  setText() {}
-}
-
-class CbaseState extends CsimpleObject {
-  constructor(options, type) {
-    super(options, type);
-  }
-}
-
-class CentrySstate extends CbaseState {
-  constructor(options) {
-    super(options, "E");
-  }
-}
-
-class CexitSstate extends CbaseState {
-  constructor(options) {
-    super(options, "X");
-  }
-}
-
-class Csstate extends CbaseState {
-  constructor(options) {
-    super(options, "S");
-    this.rect = options.rect;
-  }
-
-  draw(mouseX, mouseY) {
-    console.log(`[Chsm.Cstate.draw]`);
-  }
-}
-class Cchoice extends CsimpleObject {
-  constructor(options) {
-    super(options, "O");
-    this.transTrue = options.transTrue;
-    this.transFalse = options.transFalse;
-    this.test = options.test;
-  }
-}
-
-class Cjunction extends CsimpleObject {
-  constructor(options) {
-    super(options, "J");
-  }
-}
-
-class CbaseTrans extends CsimpleObject {
-  constructor(options, type) {
-    super(options, type);
-  }
-}
-
-class CtransLine extends CbaseTrans {
-  constructor(options) {
-    super(options, "T");
-  }
-}
-
-class CtransBezier extends CbaseTrans {
-  constructor(options) {
-    super(options, "B");
-  }
-}
-
-class CbaseRegion extends CsimpleObject {
-  constructor(options, type) {
-    super(options, type);
-  }
-}
-
-class CExternalRegion extends CbaseRegion {
-  constructor(options) {
-    super(options, "E");
-  }
-}
-
-class CRegion extends CbaseRegion {
-  constructor(options) {
-    super(options, "R");
-  }
-}
-
-class Cfolio extends CbaseRegion {
-  constructor(options) {
-    super(options, "F");
-    this.rect = options.rect;
-    this.viewport = options.vp;
-    for (let stateId of Object.keys(options.states)) {
-      const stateOption = options.states[stateId];
-      const state = new Csstate(stateOption);
-      this.children.push(state);
-    }
-    console.log(`[Cfolio.load] scale:${options.vp.scale}`);
-    this.viewport = options.vp;
-  }
+  dragStart(mouseX, mouseY) {}
+  dragEnd(mouseX, mouseY) {}
+  dragCancel(mouseX, mouseY) {}
 
   scalePhy() {
-    return this.viewport.scale * (hsm.settings.screenDpi / inchInMm);
+    return folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
   }
 
   TX(xMm) {
-    return Math.round((xMm - this.viewport.x0) * this.scalePhy()) + 0.5;
+    return Math.round((this.parent.geo.x0 + xMm) * this.scalePhy()) + 0.5;
   }
 
   TY(yMm) {
-    return Math.round((yMm - this.viewport.y0) * this.scalePhy()) + 0.5;
+    return Math.round((this.parent.geo.y0 + yMm) * this.scalePhy()) + 0.5;
   }
 
   TL(lMm) {
@@ -218,63 +129,225 @@ class Cfolio extends CbaseRegion {
   }
 
   RTX(xP) {
-    return xP / this.scalePhy() + this.viewport.x0;
+    return xP / this.scalePhy() - this.parent.geo.x0;
   }
 
   RTY(yP) {
-    return yP / this.scalePhy() + this.viewport.y0;
+    return yP / this.scalePhy() - this.parent.geo.y0;
   }
 
   RTL(lP) {
     return lP / this.scalePhy();
   }
 
+  PathRoundedRectP(px, py, pwidth, pheight, pradius) {
+    ctx.beginPath();
+    ctx.moveTo(px + pradius, py);
+    ctx.lineTo(px + pwidth - pradius, py);
+    ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+    ctx.lineTo(px + pwidth, py + pheight - pradius);
+    ctx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
+    ctx.lineTo(px + pradius, py + pheight);
+    ctx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
+    ctx.lineTo(px, py + pradius);
+    ctx.quadraticCurveTo(px, py, px + pradius, py);
+    ctx.closePath();
+  }
+}
+
+class Cnote extends CbaseElem {
+  constructor(parent, options) {
+    super(parent, options, "N");
+  }
+
+  getText() {}
+
+  setText() {}
+}
+
+class CbaseState extends CbaseElem {
+  constructor(parent, options, type) {
+    super(parent, options, type);
+  }
+}
+
+class CentrySstate extends CbaseState {
+  constructor(parent, options) {
+    super(parent, options, "E");
+  }
+}
+
+class CexitSstate extends CbaseState {
+  constructor(parent, options) {
+    super(parent, options, "X");
+  }
+}
+
+class Cstate extends CbaseState {
+  constructor(parent, options) {
+    super(parent, options, "S");
+    this.geo = options.geo;
+  }
+
+  draw() {
+    console.log(`[Chsm.Cstate.draw]`);
+    // console.log(`[canvas.drawState] State:${state.name}`);
+    const x0 = this.TX(this.geo.x0);
+    const y0 = this.TY(this.geo.y0);
+    const width = this.TL(this.geo.width);
+    const height = this.TL(this.geo.height);
+    // console.log(`[Chsm.Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#000";
+    // theCtx.rect(x0, y0, width, height);
+    const stateRadiusP = this.TL(hsm.settings.stateRadiusMm);
+    this.PathRoundedRectP(x0, y0, width, height, stateRadiusP);
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+
+class Cchoice extends CbaseElem {
+  constructor(parent, options) {
+    super(parent, options, "O");
+    this.transTrue = options.transTrue;
+    this.transFalse = options.transFalse;
+    this.test = options.test;
+  }
+}
+
+class Cjunction extends CbaseElem {
+  constructor(parent, options) {
+    super(parent, options, "J");
+  }
+}
+
+class CbaseTrans extends CbaseElem {
+  constructor(parent, options, type) {
+    super(parent, options, type);
+  }
+}
+
+class CtransLine extends CbaseTrans {
+  constructor(parent, options) {
+    super(parent, options, "T");
+  }
+}
+
+class CtransBezier extends CbaseTrans {
+  constructor(parent, options) {
+    super(parent, options, "B");
+  }
+}
+
+class CbaseRegion extends CbaseElem {
+  constructor(parent, options, type) {
+    super(parent, options, type);
+  }
+}
+
+class CExternalRegion extends CbaseRegion {
+  constructor(parent, options) {
+    super(parent, options, "E");
+  }
+}
+
+class CRegion extends CbaseRegion {
+  constructor(parent, options) {
+    super(parent, options, "R");
+  }
+}
+
+class Cfolio extends CbaseRegion {
+  constructor(parent, options) {
+    super(parent, options, "F");
+    this.geo = options.geo;
+
+    console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
+  }
+
+  load(options) {
+    for (let id of Object.keys(options.states)) {
+      const stateOption = options.states[id];
+      const myState = new Cstate(this, stateOption);
+      hElems.insert(myState);
+      this.children.push(myState);
+      myState.load(options);
+    }
+  }
+
   drawFolioBackground() {
     ctx.fillStyle = "#fff";
     ctx.beginPath();
     // if (folio.drag) {
-    //   folio.rect.x0 = folio.drag.oldRect.x0 + folio.drag.dx;
-    //   folio.rect.y0 = folio.drag.oldRect.y0 + folio.drag.dy;
+    //   folio.geo.x0 = folio.drag.oldRect.x0 + folio.drag.dx;
+    //   folio.geo.y0 = folio.drag.oldRect.y0 + folio.drag.dy;
     // }
-    console.log(`[Chsm.Cfolio.drawFolioBackground] scale:${this.scalePhy()}`);
+    const s = this.scalePhy();
+    console.log(`[Chsm.Cfolio.drawFolioBackground] scalePhy:${s}`);
+
+    console.log(
+      `[Chsm.Cfolio.drawFolioBackground] folio:${Math.round(this.geo.x0 * s) + 0.5}, ${Math.round(this.geo.y0 * s) + 0.5}, ${Math.round(this.geo.width * s) + 0.5}, ${Math.round(this.geo.height * s) + 0.5}`,
+    );
 
     ctx.rect(
-      this.TX(this.rect.x0),
-      this.TY(this.rect.y0),
-      this.TL(this.rect.width),
-      this.TL(this.rect.height),
+      Math.round(this.geo.x0 * s) + 0.5,
+      Math.round(this.geo.y0 * s) + 0.5,
+      Math.round(this.geo.width * s) + 0.5,
+      Math.round(this.geo.height * s) + 0.5,
     );
     ctx.fill();
   }
 
-  draw(mouseX, mouseY) {
-    console.log(`[Chsm.Cfolio.draw]`);
+  draw() {
+    console.log(`[Cfolio.draw]`);
     this.drawFolioBackground();
     for (let child of this.children) {
-      child.draw(mouseX, mouseY);
+      child.draw();
     }
   }
 }
 
-class Chsm {
-  constructor(options) {
-    objects = new Cobjects();
+class Chsm extends CbaseElem {
+  constructor(parent, options) {
+    super(parent, options, "M");
+    hElems = new ChElems();
     this.activeFolio = null;
     this.cCanvas = null;
-    this.folios = {};
     this.folioActive = null;
-    this.FoliosOrder = [];
+    this.folioIdsOrder = [];
     this.settings = {};
+    this.isDirty = false;
+  }
+
+  setdirty() {
+    this.isDirty = true;
+  }
+
+  setActiveFolioById(folioId) {
+    const f = hElems.getById(folioId);
+    this.folioActive = f;
+    folio = this.folioActive;
+    console.log(`[Chsm.setActiveFolioById] folioId:${folioId} folioActive:${folio}`);
+    this.setdirty();
+  }
+
+  addFolio(options) {
+    const myFolio = new Cfolio(this, options);
+    hElems.insert(myFolio);
+    this.children.push(myFolio);
+    myFolio.load(options);
   }
 
   load(obj) {
     this.settings = obj.settings;
-    this.FoliosOrder = obj.folios.order;
-    for (let folioId of this.FoliosOrder) {
+    this.folioIdsOrder = obj.folios.idsOrder;
+    for (let folioId of this.folioIdsOrder) {
       const folioOptions = obj.folios[folioId];
-      this.folios[folioId] = new Cfolio(folioOptions);
+      this.addFolio(folioOptions);
     }
-    this.folioActive = this.folios[obj.folios.active];
+    this.setActiveFolioById(obj.folios.activeId);
+    this.draw();
   }
 
   save() {}
@@ -297,14 +370,15 @@ class Chsm {
   }
 
   draw() {
-    console.log(`[Chsm.draw]`);
+    if (!ctx) return;
+    console.log(`[Chsm.draw] folio=${folio}`);
     // Clear canvas
     ctx.fillStyle = "#ccc";
     ctx.beginPath();
     ctx.rect(0, 0, canvas.width, canvas.height);
     ctx.fill();
-    if (!this.folioActive) return;
-    this.folioActive.draw(0, 0);
+    if (!folio) return;
+    folio.draw();
   }
 
   adjustSizes() {
@@ -322,10 +396,6 @@ class Chsm {
     canvas.height = cpe.offsetHeight;
     this.draw();
   }
-
-  addFolio() {}
-
-  setActiveFolio(folioId) {}
 }
 
-hsm = new Chsm();
+hsm = new Chsm(null, { name: "Hsm" });

@@ -11,27 +11,23 @@
     folio: "F1",
   },
   folios: {
-    order: ["F1"],
-    active: ["F1"],
+    idsOrder: ["F1"],
+    activeId: "F1",
     F1: {
       id: "F1",
       name: "Main Folio",
-      rect: {
-        x0: 0,
-        y0: 0,
+      geo: {
+        x0: 10,
+        y0: 20,
         width: 210,
         height: 297,
-      },
-      vp: {
-        scale: 1,
-        x0: -10,
-        y0: -30,
+        scale: 0.5,
       },
       states: {
         S2: {
           id: "S2",
           name: "First state",
-          rect: {
+          geo: {
             x0: 10,
             y0: 10,
             width: 70,
@@ -41,7 +37,7 @@
         S3: {
           id: "S3",
           name: "Second state",
-          rect: {
+          geo: {
             x0: 20,
             y0: 40,
             width: 40,
