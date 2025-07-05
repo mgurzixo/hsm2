@@ -337,6 +337,34 @@ class Cfolio extends CbaseRegion {
       child.draw();
     }
   }
+
+  hoverP(xP, yP) {}
+
+  clickP(xP, yP) {}
+
+  dragStartP(xP, yP) {}
+
+  dragP(dxP, dyP) {}
+
+  dragEndP(xP, yP) {}
+
+  dragCancelP(xP, yP) {}
+
+  wheelP(xP, yP, dyP) {
+    const x = xP / this.scalePhy() - this.geo.x0;
+    const y = yP / this.scalePhy() - this.geo.y0;
+    const deltas = -dyP / hsm.settings.deltaMouseWheel;
+    let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
+    scale = Math.min(Math.max(0.1, scale), 10);
+    const rScale = scale / this.geo.scale;
+    this.geo.scale = scale;
+    const x0 = (this.geo.x0 - (rScale - 1) * x) / rScale;
+    const y0 = (this.geo.y0 - (rScale - 1) * y) / rScale;
+    this.geo.x0 = x0;
+    this.geo.y0 = y0;
+
+    hsm.draw();
+  }
 }
 
 export class Chsm extends CbaseElem {
@@ -403,6 +431,7 @@ export class Chsm extends CbaseElem {
   setCanvas(myCanvas) {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     canvas = myCanvas;
+
     ctx = canvas.getContext("2d");
     const bindedAdjustSizes = this.adjustSizes.bind(this);
     this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
@@ -423,17 +452,12 @@ export class Chsm extends CbaseElem {
 
   adjustSizes() {
     const cpe = canvas.parentElement;
-    // console.log(`[Chsm.adjustSizes] canvas:${canvas} cpe:${cpe}`);
     const bb = cpe.getBoundingClientRect();
-    const height = window.innerHeight - bb.top;
-    cpe.style.height = height - 0 + "px";
-    const width = window.innerWidth - bb.left;
-    cpe.style.width = width - 0 + "px";
-    // console.log(`[Chsm.adjustSizes] height:${height}`);
-    canvas.x0 = bb.top;
-    canvas.y0 = bb.left;
-    canvas.width = cpe.offsetWidth;
-    canvas.height = cpe.offsetHeight;
+    // console.log(`[Chsm.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
+    canvas.x0 = bb.left;
+    canvas.y0 = bb.top;
+    canvas.width = bb.width;
+    canvas.height = bb.height;
     this.draw();
   }
 }

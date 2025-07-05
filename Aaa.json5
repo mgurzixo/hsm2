@@ -21,7 +21,7 @@
         y0: 20,
         width: 210,
         height: 297,
-        scale: 0.5,
+        scale: 1,
       },
       states: {
         S2: {

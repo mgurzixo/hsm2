@@ -1,5 +1,7 @@
 <template>
-  <canvas ref="canvasRef" class="full-size"> </canvas>
+  <div class="full-size">
+    <canvas ref="canvasRef" class="full-size"> </canvas>
+  </div>
 </template>
 
 <style>
@@ -11,15 +13,15 @@
 
 <script setup>
 import * as V from "vue";
-import { setCanvasListeners, resetCanvasListeners } from 'src/lib/canvasListeners';
+import { setCanvasListeners, removeCanvasListeners } from 'src/lib/canvasListeners';
 import { Chsm, hsm, canvas } from "src/classes/CHsm";
 import { loadHsm } from "src/lib/hsmIo";
 
 const canvasRef = V.ref(null);
 
 V.onUnmounted(() => {
+  removeCanvasListeners();
   if (hsm) hsm.destroy();
-  // resetCanvasListeners();
 });
 
 V.onMounted(() => {
@@ -28,6 +30,7 @@ V.onMounted(() => {
     loadHsm(); // For devpt
     const canvas = canvasRef.value;
     hsm.setCanvas(canvas);
+    setCanvasListeners();
   });
 });
 </script>
