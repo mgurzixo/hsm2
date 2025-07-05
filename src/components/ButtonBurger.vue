@@ -150,9 +150,7 @@ function doLoadHsm() {
 
 
 V.onMounted(() => {
-  V.nextTick(() => {
-    loadHsm();
-  });
+
 })
 
 </script>

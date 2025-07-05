@@ -83,6 +83,10 @@ class CbaseElem {
     this.geo = { x0: 0, y0: 0 }; // Offset from parent
   }
 
+  destroy() {
+    console.warn(`[Chsm.CbaseElem.destroy] this:${this.id}`);
+  }
+
   link(parent) {
     this.parent = parent;
     parent.insertChild(this);
@@ -96,11 +100,11 @@ class CbaseElem {
   }
 
   load(options) {
-    console.warn(`[Chsm.CbaseElem.load] id:${options?.id}`);
+    console.warn(`[Chsm.CbaseElem.load] this:${this.id}`);
   }
 
   draw() {
-    console.log(`[Chsm.CbaseElem.draw] id:${this.id}`);
+    console.log(`[Chsm.CbaseElem.draw] this:${this.id}`);
   }
 
   hover(mouseX, mouseY) {}
@@ -190,7 +194,7 @@ class Cstate extends CbaseState {
   }
 
   load(stateOptions) {
-    // console.log(`[Cstate.draw] ${stateOptions?.regions}`);
+    // console.log(`[Cstate.load] ${stateOptions?.regions}`);
     if (!stateOptions?.regions) return;
     for (let id of Object.keys(stateOptions.regions)) {
       const regionOption = stateOptions.region[id];
@@ -199,6 +203,14 @@ class Cstate extends CbaseState {
       this.children.push(myRegion);
       myRegion.load(regionOption);
     }
+  }
+
+  destroy() {
+    for (let child of this.children) {
+      child.destroy();
+    }
+    this.geo = null;
+    hElems.removeById(this.id);
   }
 
   draw() {
@@ -287,6 +299,14 @@ class Cfolio extends CbaseRegion {
     }
   }
 
+  destroy() {
+    for (let child of this.children) {
+      child.destroy();
+    }
+    this.geo = null;
+    hElems.removeById(this.id);
+  }
+
   drawFolioBackground() {
     ctx.fillStyle = "#fff";
     ctx.beginPath();
@@ -319,7 +339,7 @@ class Cfolio extends CbaseRegion {
   }
 }
 
-class Chsm extends CbaseElem {
+export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "M");
     hElems = new ChElems();
@@ -329,6 +349,7 @@ class Chsm extends CbaseElem {
     this.folioIdsOrder = [];
     this.settings = {};
     this.isDirty = false;
+    hsm = this;
   }
 
   setdirty() {
@@ -361,23 +382,31 @@ class Chsm extends CbaseElem {
     this.draw();
   }
 
+  destroy() {
+    for (let child of this.children) {
+      child.destroy();
+    }
+    this.folioActive = null;
+    folio = null;
+    hElems.removeById(this.id);
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+    ctx = null;
+    canvas = null;
+    hsm = null;
+  }
+
   save() {}
 
   setCanvas(myCanvas) {
-    if (canvas && this.resizeObserver) this.unobserve();
+    if (this.resizeObserver) this.resizeObserver.disconnect();
     canvas = myCanvas;
     ctx = canvas.getContext("2d");
     const bindedAdjustSizes = this.adjustSizes.bind(this);
     this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
-    this.observe();
-  }
-
-  observe() {
-    this.resizeObserver.observe(document.body);
-  }
-
-  unobserve() {
-    this.resizeObserver.unobserve(canvas);
+    this.resizeObserver.observe(canvas.parentElement);
   }
 
   draw() {
@@ -393,8 +422,8 @@ class Chsm extends CbaseElem {
   }
 
   adjustSizes() {
-    // console.warn(`[Chsm.adjustSizes]`);
     const cpe = canvas.parentElement;
+    // console.log(`[Chsm.adjustSizes] canvas:${canvas} cpe:${cpe}`);
     const bb = cpe.getBoundingClientRect();
     const height = window.innerHeight - bb.top;
     cpe.style.height = height - 0 + "px";
@@ -408,5 +437,3 @@ class Chsm extends CbaseElem {
     this.draw();
   }
 }
-
-hsm = new Chsm(null, { name: "Hsm" });

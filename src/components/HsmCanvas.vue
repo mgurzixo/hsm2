@@ -11,21 +11,21 @@
 
 <script setup>
 import * as V from "vue";
-import { drawCanvas, TX, TY, TL, RTX, RTY, RTL, setZoom } from 'src/lib/canvas';
-import { theHsm, theCanvas, theVp, theScalePhy, theSettings, setCanvas, adjustSizes, setFolioScale, setFolioOffsetMm, theMouse } from 'src/lib/hsmStore';
 import { setCanvasListeners, resetCanvasListeners } from 'src/lib/canvasListeners';
-
-import { hsm, canvas } from "src/classes/CHsm";
+import { Chsm, hsm, canvas } from "src/classes/CHsm";
+import { loadHsm } from "src/lib/hsmIo";
 
 const canvasRef = V.ref(null);
 
 V.onUnmounted(() => {
-  if (hsm) hsm.unobserve();
+  if (hsm) hsm.destroy();
   // resetCanvasListeners();
 });
 
 V.onMounted(() => {
   V.nextTick(() => {
+    new Chsm(null, { name: "Hsm" });
+    loadHsm(); // For devpt
     const canvas = canvasRef.value;
     hsm.setCanvas(canvas);
   });
