@@ -43,10 +43,20 @@ class ChElems {
     return this.selectedId;
   }
 
+  getDraggedId() {
+    return this.draggedId;
+  }
+
+  getDragStart() {
+    return [this.mouseDownX, this.mouseDownY];
+  }
+
   dragStart(id, mouseDownX, mouseDownY) {
     this.selectedId = null;
     this.hoveredId = null;
-    this.draggedId = id;
+    if (!id) {
+      this.draggedId = null;
+    } else this.draggedId = id;
     this.mouseDownX = mouseDownX;
     this.mouseDownY = mouseDownY;
   }
@@ -110,11 +120,10 @@ class CbaseElem {
   hover(mouseX, mouseY) {}
   click(mouseX, mouseY) {}
   doubleClick(mouseX, mouseY) {}
-  drag(deltaX, deltaY) {}
-
   dragStart(mouseX, mouseY) {}
-  dragEnd(mouseX, mouseY) {}
-  dragCancel(mouseX, mouseY) {}
+  drag(deltaX, deltaY) {}
+  dragEnd(deltaX, deltaY) {}
+  dragCancel(deltaX, deltaY) {}
 
   scalePhy() {
     return folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
@@ -338,21 +347,59 @@ class Cfolio extends CbaseRegion {
     }
   }
 
-  hoverP(xP, yP) {}
+  pToMm(xP, yP) {
+    return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
+  }
 
-  clickP(xP, yP) {}
+  hoverP(xP, yP) {
+    const [x, y] = this.pToMm(xP, yP);
+  }
 
-  dragStartP(xP, yP) {}
+  clickP(xP, yP) {
+    const [x, y] = this.pToMm(xP, yP);
+  }
 
-  dragP(dxP, dyP) {}
+  dragStartP(xP, yP) {
+    const [x, y] = this.pToMm(xP, yP);
+    console.log(`[Cfolio.dragStartP] x:${x} y:${y}`);
+    hElems.dragStart(this.id, this.geo.x0, this.geo.y0);
+  }
 
-  dragEndP(xP, yP) {}
+  dragP(dxP, dyP) {
+    if (hElems.getDraggedId() == this.id) {
+      const dx = dxP / this.scalePhy();
+      const dy = dyP / this.scalePhy();
+      // console.log(`[Cfolio.dragP] dx:${dx} dy:${dy}`);
+      const [x0, y0] = hElems.getDragStart();
+      this.geo.x0 = x0 + dx;
+      this.geo.y0 = y0 + dy;
+    } else {
+      for (let child of this.children) {
+        child.dragP(dxP, dyP);
+      }
+    }
+    hsm.draw();
+  }
 
-  dragCancelP(xP, yP) {}
+  dragEndP(dxP, dyP) {
+    if (hElems.getDraggedId() == this.id) {
+      this.dragP(dxP, dyP);
+      console.log(`[Cfolio.dragEndP]`);
+      hElems.dragStart();
+    } else {
+      for (let child of this.children) {
+        child.dragEndP(dxP, dyP);
+      }
+    }
+    hsm.draw();
+  }
+
+  dragCancelP(dxP, dyP) {
+    this.dragEndP(dxP, dyP);
+  }
 
   wheelP(xP, yP, dyP) {
-    const x = xP / this.scalePhy() - this.geo.x0;
-    const y = yP / this.scalePhy() - this.geo.y0;
+    const [x, y] = this.pToMm(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
     let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
     scale = Math.min(Math.max(0.1, scale), 10);
@@ -362,7 +409,6 @@ class Cfolio extends CbaseRegion {
     const y0 = (this.geo.y0 - (rScale - 1) * y) / rScale;
     this.geo.x0 = x0;
     this.geo.y0 = y0;
-
     hsm.draw();
   }
 }
