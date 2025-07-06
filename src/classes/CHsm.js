@@ -26,10 +26,15 @@ function rect2InRect1(r1, r2) {
 }
 
 function pointInRect(x, y, r) {
-  if (x < r.x0) return false;
-  if (x > r.x0 + r.width) return false;
-  if (y < r.y0) return false;
-  if (y > r.y0 + r.height) return false;
+  if (x < r.x0 || x > r.x0 + r.width || y < r.y0 || y > r.y0 + r.height) {
+    // console.log(
+    //   `[Chsm.pointInRect] (${x}, ${y}) in (${r.x0}, ${r.y0}) w:${r.width} h:${r.height} FALSE`,
+    // );
+    return false;
+  }
+  // console.log(
+  //   `[Chsm.pointInRect] (${x}, ${y}) in (${r.x0}, ${r.y0}) w:${r.width} h:${r.height} TRUE`,
+  // );
   return true;
 }
 
@@ -119,7 +124,16 @@ class CbaseElem {
   }
 
   destroy() {
-    console.warn(`[Chsm.CbaseElem.destroy] this:${this.id}`);
+    // console.log(`[CbaseElem.destroy] this:${this.id}`);
+    for (let child of this.children) {
+      child.destroy();
+    }
+    hElems.removeById(this.id);
+    delete this.id;
+    delete this.name;
+    delete this.parent;
+    delete this.children;
+    delete this.geo;
   }
 
   link(parent) {
@@ -142,16 +156,22 @@ class CbaseElem {
     console.log(`[Chsm.CbaseElem.draw] this:${this.id}`);
   }
 
-  hover(mouseX, mouseY) {}
-  click(mouseX, mouseY) {}
-  doubleClick(mouseX, mouseY) {}
-  dragStart(mouseX, mouseY) {}
-  drag(deltaX, deltaY) {}
-  dragEnd(deltaX, deltaY) {}
-  dragCancel(deltaX, deltaY) {}
+  hoverP(xP, yP) {}
+  clickP(xP, yP) {}
+  doubleClickP(xP, yP) {}
+  dragStartP(xP, yP) {
+    return null;
+  }
+  dragP(dxP, dyP) {}
+  dragEndP(dxP, dyP) {}
+  dragCancelP(dxP, dyP) {}
 
   scalePhy() {
     return folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
+  }
+
+  pToMm(xP, yP) {
+    return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
   }
 
   TX(xMm) {
@@ -255,12 +275,23 @@ class Cstate extends CbaseState {
     }
   }
 
-  destroy() {
+  dragStartP(xP, yP) {
+    const [x, y] = this.pToMm(xP, yP);
+    // Is it in our surface
+    if (!pointInRect(x, y, this.geo)) return null;
+    console.log(`[Cstate.dragStartP] in us!`);
+    let found;
     for (let child of this.children) {
-      child.destroy();
+      // Is it inside a child
+      found = child.dragStartP(xP, yP);
+      if (found) break;
     }
-    this.geo = null;
-    hElems.removeById(this.id);
+    if (found) return found;
+    // We are being dragged
+    this.parent.raiseChildR(this.id);
+    console.log(`[Cstate.dragStartP] x:${x} y:${y}`);
+    hElems.dragStart(this.id, this.geo.x0, this.geo.y0);
+    return this;
   }
 
   draw() {
@@ -349,14 +380,6 @@ class Cfolio extends CbaseRegion {
     }
   }
 
-  destroy() {
-    for (let child of this.children) {
-      child.destroy();
-    }
-    this.geo = null;
-    hElems.removeById(this.id);
-  }
-
   drawFolioBackground() {
     ctx.fillStyle = "#fff";
     ctx.beginPath();
@@ -388,10 +411,6 @@ class Cfolio extends CbaseRegion {
     }
   }
 
-  pToMm(xP, yP) {
-    return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
-  }
-
   hoverP(xP, yP) {
     const [x, y] = this.pToMm(xP, yP);
   }
@@ -402,8 +421,23 @@ class Cfolio extends CbaseRegion {
 
   dragStartP(xP, yP) {
     const [x, y] = this.pToMm(xP, yP);
-    console.log(`[Cfolio.dragStartP] x:${x} y:${y}`);
+    // console.log(`[Cfolio.dragStartP] x:${x} y:${y}`);
+    // Is it in our surface
+    if (!pointInRect(x, y, this.geo)) return null;
+    console.log(`[Cfolio.dragStartP] in us!`);
+    let found;
+    for (let child of this.children) {
+      // console.log(`[Cstate.dragStartP] child:${child} childId:${child.id}`);
+      // Is it inside a child
+      found = child.dragStartP(xP, yP);
+      if (found) break;
+    }
+    if (found) return found;
+    // We are being dragged
+    this.parent.raiseChildR(this.id);
+    console.log(`[Cstate.dragStartP] x:${x} y:${y}`);
     hElems.dragStart(this.id, this.geo.x0, this.geo.y0);
+    return this;
   }
 
   dragP(dxP, dyP) {
@@ -498,15 +532,12 @@ export class Chsm extends CbaseElem {
   }
 
   destroy() {
-    for (let child of this.children) {
-      child.destroy();
-    }
-    this.folioActive = null;
+    super.destroy();
+    delete this.folioActive;
     folio = null;
-    hElems.removeById(this.id);
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
-      this.resizeObserver = null;
+      delete this.resizeObserver;
     }
     ctx = null;
     canvas = null;
