@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 app.commandLine.appendSwitch("gtk-version", "3");
 
 // cf. https://quasar.dev/quasar-cli-vite/developing-electron-apps/electron-accessing-files/
-initialize();
+// initialize();
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();

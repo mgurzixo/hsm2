@@ -74,8 +74,10 @@ export function handleMouseOut(e) {
   const [x, y] = getXYFromMouseEvent(e);
   // console.log(`[canvasListeners.handleMouseOut] x:${x} y:${y} isDragging:${isDragging}`);
   if (isDragging) {
-    mouseOut.x = x;
-    mouseOut.y = y;
+    // mouseOut.x = x;
+    // mouseOut.y = y;
+    mouseOut.x = mousePos.x;
+    mouseOut.y = mousePos.y;
   }
 }
 
