@@ -8,6 +8,31 @@ export let ctx = null;
 export let hsm = null;
 export let folio = null;
 
+function rectsIntersect(r1, r2) {
+  if (r1.x0 + r1.width < r2.x0) return false;
+  if (r2.x0 + r2.width < r1.x0) return false;
+  if (r1.y0 + r1.height < r2.y0) return false;
+  if (r2.y0 + r2.height < r1.y0) return false;
+  return true;
+}
+
+function rect2InRect1(r1, r2) {
+  if (!rectsIntersect(r1, r2)) return false;
+  if (r2.x0 < r1.x0) return false;
+  if (r2.x0 + r2.width > r1.x0 + r1.width) return false;
+  if (r2.y0 < r1.y0) return false;
+  if (r2.y0 + r2.height > r1.y0 + r1.height) return false;
+  return true;
+}
+
+function pointInRect(x, y, r) {
+  if (x < r.x0) return false;
+  if (x > r.x0 + r.width) return false;
+  if (y < r.y0) return false;
+  if (y > r.y0 + r.height) return false;
+  return true;
+}
+
 class ChElems {
   constructor(obj) {
     this.elems = {};
@@ -165,6 +190,17 @@ class CbaseElem {
     ctx.lineTo(px, py + pradius);
     ctx.quadraticCurveTo(px, py, px + pradius, py);
     ctx.closePath();
+  }
+
+  raiseChild(childId) {
+    const c = [];
+    let found;
+    for (let child in this.children) {
+      if (child.id != childId) c.push(child);
+      else found = child;
+    }
+    if (found) c.push(found);
+    this.children = c;
   }
 }
 
