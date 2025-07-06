@@ -202,6 +202,11 @@ class CbaseElem {
     if (found) c.push(found);
     this.children = c;
   }
+
+  raiseChildR(childId) {
+    this.raiseChild(childId);
+    this.parent?.raiseChildR(this.id);
+  }
 }
 
 class Cnote extends CbaseElem {
