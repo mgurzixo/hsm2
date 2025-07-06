@@ -27,7 +27,7 @@
           name: "First state",
           geo: {
             x0: 10,
-            y0: 20,
+            y0: 10,
             width: 80,
             height: 40,
           },
@@ -37,19 +37,19 @@
               name: "My region",
               geo: {
                 x0: 0,
-                y0: 7.5,
+                y0: 10,
                 width: 80,
-                height: 32.5,
+                height: 30,
               },
               states: {
                 S5: {
                   id: "S5",
                   name: "Third state",
                   geo: {
-                    x0: 0,
+                    x0: 10,
                     y0: 10,
                     width: 30,
-                    height: 20,
+                    height: 10,
                   },
                 },
               },
@@ -61,7 +61,7 @@
           name: "Second state",
           geo: {
             x0: 20,
-            y0: 50,
+            y0: 40,
             width: 40,
             height: 20,
           },

@@ -1,10 +1,6 @@
 "use strict";
 
-import { theCanvas, theVp, theSettings, theMouse } from "src/lib/hsmStore";
-import { RTX, RTY, setZoom } from "src/lib/canvas";
-import { setDragListeners, resetDragListeners } from "src/lib/drag";
-
-import { hsm, canvas, folio } from "src/classes/CHsm";
+import { canvas, folio } from "src/classes/CHsm";
 
 let mousePos = { x: 0, y: 0 };
 let mouseDown = { x: 0, y: 0 };
@@ -60,14 +56,14 @@ export function handleMouseDown(e) {
 
 export function handleMouseUp(e) {
   const [x, y] = getXYFromMouseEvent(e);
-  // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} isDragging:${theMouse.isDragging}`);
+  // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} isDragging:${isDragging}`);
   if (isDragging) {
     folio.dragEndP(x - mouseDown.x, y - mouseDown.y);
     isDragging = false;
   } else if (isClicked) {
     folio.clickP(x, y);
   }
-  theMouse.isClicked = false;
+  isClicked = false;
 }
 
 export function handleMouseOut(e) {
@@ -103,11 +99,11 @@ export function setCanvasListeners() {
 }
 
 export function removeCanvasListeners() {
-  canvas.removeEventListener("wheel", handleWheel);
-  canvas.removeEventListener("mousemove", handleMouseMove);
-  canvas.removeEventListener("mousedown", handleMouseDown);
-  canvas.removeEventListener("mouseup", handleMouseUp);
-  canvas.removeEventListener("mouseout", handleMouseOut);
-  canvas.removeEventListener("mouseenter", handleMouseEnter);
+  canvas?.removeEventListener("wheel", handleWheel);
+  canvas?.removeEventListener("mousemove", handleMouseMove);
+  canvas?.removeEventListener("mousedown", handleMouseDown);
+  canvas?.removeEventListener("mouseup", handleMouseUp);
+  canvas?.removeEventListener("mouseout", handleMouseOut);
+  canvas?.removeEventListener("mouseenter", handleMouseEnter);
   // resetDragListeners();
 }

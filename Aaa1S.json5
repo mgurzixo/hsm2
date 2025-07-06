@@ -1,0 +1,38 @@
+{
+  settings: {
+    screenDpi: 94,
+    stateRadiusMm: 5,
+    deltaMouseWheel: 120,
+    deltaScale: 0.1,
+  },
+  state: {
+    serId: 4,
+    filePath: "/home/mgouget/dev/hsm2/Aaa.json5",
+    activeFolio: "F1",
+  },
+  folios: [
+    {
+      id: "F1",
+      name: "Main Folio",
+      geo: {
+        x0: 20,
+        y0: 20,
+        width: 210,
+        height: 297,
+        scale: 1,
+      },
+      states: [
+        {
+          id: "S2",
+          name: "First state",
+          geo: {
+            x0: 0,
+            y0: 10,
+            width: 80,
+            height: 40,
+          },
+        },
+      ],
+    },
+  ],
+}
