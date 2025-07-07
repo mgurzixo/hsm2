@@ -272,8 +272,35 @@ class CbaseElem {
     this.parent?.raiseChildR(this.id);
   }
 
-  getChildrenStatesBB(bb) {
-    //TODO for limiting shrinking of a state
+  getChildrenBB(bb, x0 = 0, y0 = 0) {
+    console.log(`[CbaseElem.getChildrenBB] id:${this.id} bb:${bb}`);
+    if (!bb || (!this.id.startsWith("E") && !this.id.startsWith("R"))) {
+      if (!bb) {
+        bb = { x0: null, y0: null, x1: null, y1: null };
+        for (let elem of this.children) {
+          bb = elem.getChildrenBB(bb, x0 + this.geo.x0, y0 + this.geo.y0);
+        }
+      } else {
+        console.log(`[CbaseElem.getChildrenBB] id:${this.id} Doing bb`);
+        let u = this.geo.x0 + x0;
+        if (bb.x0 == null) bb.x0 = u;
+        else if (u < bb.x0) bb.x0 = u;
+        u = this.geo.y0 + y0;
+        if (bb.y0 == null) bb.y0 = u;
+        else if (u < bb.y0) bb.y0 = u;
+        u = this.geo.x0 + this.geo.width + x0;
+        if (bb.x1 == null) bb.x1 = u;
+        else if (u > bb.x1) bb.x1 = u;
+        u = this.geo.y0 + this.geo.height + y0;
+        if (bb.y1 == null) bb.y1 = u;
+        else if (u > bb.y1) bb.y1 = u;
+      }
+    } else {
+      for (let elem of this.children) {
+        bb = elem.getChildrenBB(bb, x0 + this.geo.x0, y0 + this.geo.y0);
+      }
+    }
+    return bb;
   }
 }
 
@@ -397,6 +424,8 @@ class Cstate extends CbaseState {
       }
       return;
     }
+    console.log(`[Cstate.drag] id:${this.id}`);
+    console.log(`[Cstate.drag] id:${this.id} bb:${JSON.stringify(this.getChildrenBB())}}`);
     const dragCtx = hElems.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
@@ -443,11 +472,10 @@ class Cstate extends CbaseState {
         width += dx;
       }
     }
-    // TODO Clamping
 
-    console.log(
-      `[Cstate.drag] type:${dragCtx.type} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
-    );
+    // console.log(
+    //   `[Cstate.drag] type:${dragCtx.type} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
+    // );
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
