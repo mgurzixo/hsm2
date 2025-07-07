@@ -63,8 +63,7 @@ class ChElems {
     this.hoveredId = "";
     this.selectedId = "";
     this.draggedId = "";
-    this.mouseDownX = 0;
-    this.mouseDownY = 0;
+    this.dragCtx = {};
   }
 
   insert(obj) {
@@ -96,18 +95,17 @@ class ChElems {
     return this.draggedId;
   }
 
-  getDragStart() {
-    return [this.startX, this.startY];
+  getDragCtx() {
+    return this.dragCtx;
   }
 
-  dragStart(id, startX, startY) {
+  setDragCtx(id, dragCtx) {
     this.selectedId = null;
     this.hoveredId = null;
     if (!id) {
       this.draggedId = null;
     } else this.draggedId = id;
-    this.startX = startX;
-    this.startY = startY;
+    this.dragCtx = dragCtx;
   }
 
   drag(mouseDx, mouseDy) {
@@ -273,6 +271,10 @@ class CbaseElem {
     this.raiseChild(childId);
     this.parent?.raiseChildR(this.id);
   }
+
+  getChildrenStatesBB(bb) {
+    //TODO for limiting shrinking of a state
+  }
 }
 
 class Cnote extends CbaseElem {
@@ -313,6 +315,8 @@ class Cstate extends CbaseState {
     hElems.insert(myRegion);
     this.children.push(myRegion);
     myRegion.load(regionOptions);
+    myRegion.geo.y0 = hsm.settings.stateTitleHeight;
+    myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateTitleHeight;
   }
 
   load(stateOptions) {
@@ -349,7 +353,10 @@ class Cstate extends CbaseState {
     // Inside us
     let elem;
     const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
+    // console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
+    console.log(
+      `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
+    );
     if (!pointInWH(x, y, this.geo)) return null;
     for (let child of this.children.toReversed()) {
       // Is it inside a child
@@ -358,8 +365,28 @@ class Cstate extends CbaseState {
     }
     if (elem) return elem;
     // For us
+    // Is it an angle
+    let type = "";
+    const sSize = hsm.settings.stateRadiusMm;
+    const width = this.geo.width;
+    const height = this.geo.height;
+    if (x <= sSize) {
+      if (y <= sSize) type = "TL";
+      if (y >= height - sSize) type = "BL";
+    } else if (x >= width - sSize) {
+      if (y <= sSize) type = "TR";
+      if (y >= height - sSize) type = "BR";
+    }
+    if (!type) type = "M";
+    hElems.setDragCtx(this.id, {
+      x0: this.geo.x0,
+      y0: this.geo.y0,
+      width: this.geo.width,
+      height: this.geo.height,
+      type: type,
+    });
+    console.log(`[Cstate.dragStart] ${this.id} type:${type}`);
     this.parent.raiseChildR(this.id);
-    hElems.dragStart(this.id, this.geo.x0, this.geo.y0);
     return this;
   }
 
@@ -370,13 +397,64 @@ class Cstate extends CbaseState {
       }
       return;
     }
-    // console.log(`[Cstate.drag] dx:${dx} dy:${dy}`);
-    const [x0, y0] = hElems.getDragStart();
-    dx = myClamp(dx, x0, this.geo.width, 0, this.parent.geo.width);
-    dy = myClamp(dy, y0, this.geo.height, 0, this.parent.geo.height);
-    this.geo.x0 = x0 + dx;
-    this.geo.y0 = y0 + dy;
-    hsm.draw();
+    const dragCtx = hElems.getDragCtx();
+    let x0 = dragCtx.x0;
+    let y0 = dragCtx.y0;
+    let width = dragCtx.width;
+    let height = dragCtx.height;
+    if (dragCtx.type == "M") {
+      dx = myClamp(
+        dx,
+        x0,
+        this.geo.width + hsm.settings.minDistanceMm,
+        hsm.settings.minDistanceMm,
+        this.parent.geo.width - hsm.settings.minDistanceMm,
+      );
+      dy = myClamp(
+        dy,
+        y0,
+        this.geo.height + hsm.settings.minDistanceMm,
+        hsm.settings.minDistanceMm,
+        this.parent.geo.height - hsm.settings.minDistanceMm,
+      );
+      x0 += dx;
+      y0 += dy;
+    } else {
+      if (dragCtx.type.includes("T")) {
+        if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
+        if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
+        y0 += dy;
+        height -= dy;
+      } else if (dragCtx.type.includes("B")) {
+        if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
+        if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
+          dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
+        height += dy;
+      }
+      if (dragCtx.type.includes("L")) {
+        if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
+        if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
+        x0 += dx;
+        width -= dx;
+      } else if (dragCtx.type.includes("R")) {
+        if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
+        if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
+          dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
+        width += dx;
+      }
+    }
+    // TODO Clamping
+
+    console.log(
+      `[Cstate.drag] type:${dragCtx.type} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
+    );
+    this.geo.x0 = x0;
+    this.geo.y0 = y0;
+    this.geo.height = height;
+    this.geo.width = width;
+    for (let child of this.children.toReversed()) {
+      child.drag(dx, dy);
+    }
   }
 
   dragEnd(dx, dy) {
@@ -389,7 +467,6 @@ class Cstate extends CbaseState {
     this.drag(dx, dy);
     // console.log(`[Cfolio.dragEnd]`);
     hElems.dragEnd();
-    hsm.draw();
   }
 
   draw() {
@@ -403,6 +480,7 @@ class Cstate extends CbaseState {
     y0 = this.TL(y0);
     const width = this.TL(this.geo.width);
     const height = this.TL(this.geo.height);
+    const titleHeight = this.TL(hsm.settings.stateTitleHeight);
     // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
     ctx.fillStyle = "#ff0";
     ctx.strokeStyle = "#000";
@@ -412,8 +490,8 @@ class Cstate extends CbaseState {
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(x0, y0 + 1.5 * stateRadiusP);
-    ctx.lineTo(x0 + width, y0 + 1.5 * stateRadiusP);
+    ctx.moveTo(x0, y0 + titleHeight);
+    ctx.lineTo(x0 + width, y0 + titleHeight);
     ctx.stroke();
 
     for (let child of this.children) {
@@ -484,17 +562,19 @@ class Cregion extends CbaseRegion {
     // Inside us
     let elem;
     const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    console.log(`[Cregion.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
+    console.log(
+      `[Cregion.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
+    );
     if (!pointInWH(x, y, this.geo)) return null;
     for (let child of this.children.toReversed()) {
       // Is it inside a child
-      elem = child.dragStart(x - this.geo.x0, y - this.geo.yo);
+      elem = child.dragStart(x, y);
       if (elem) break;
     }
     if (elem) return elem;
     // For now, the region is not draggable
     // this.parent.raiseChildR(this.id);
-    // hElems.dragStart(this.id, this.geo.x0, this.geo.y0);
+    // hElems.setDragCtx(this.id, {x0:this.geo.x0, y0:this.geo.y0, type:"MOVE"});
     // return this;
     return null;
   }
@@ -507,18 +587,22 @@ class Cregion extends CbaseRegion {
       return;
     }
     // console.log(`[Cstate.drag] dx:${dx} dy:${dy}`);
-    const [x0, y0] = hElems.getDragStart();
+    const dragCtx = hElems.getDragCtx();
+    const [x0, y0] = [dragCtx.x0, dragCtx.y0];
     dx = myClamp(dx, x0, this.geo.width, 0, this.parent.geo.width);
     dy = myClamp(dy, y0, this.geo.height, 0, this.parent.geo.height);
     this.geo.x0 = x0 + dx;
     this.geo.y0 = y0 + dy;
-    hsm.draw();
   }
 
   draw() {
     // console.log(`[Cregion.draw] Drawing ${this.id}`);
     // For now, no region background
     // console.log(`[Cregion.draw]`);
+    // Sync with a modified state size
+    this.geo.y0 = hsm.settings.stateTitleHeight;
+    this.geo.height = this.parent.geo.height - hsm.settings.stateTitleHeight;
+    this.geo.width = this.parent.geo.width;
     for (let child of this.children) {
       child.draw();
     }
@@ -613,7 +697,7 @@ class Cfolio extends CbaseRegion {
     if (elem) return elem;
     // For us
     this.parent.raiseChildR(this.id);
-    hElems.dragStart(this.id, this.geo.x0, this.geo.y0);
+    hElems.setDragCtx(this.id, { x0: this.geo.x0, y0: this.geo.y0, type: "M" });
     return this;
   }
 
@@ -624,10 +708,12 @@ class Cfolio extends CbaseRegion {
       for (let child of this.children.toReversed()) {
         child.drag(dx, dy);
       }
+      hsm.draw();
       return;
     }
     // console.log(`[Cfolio.dragP] dx:${dx} dy:${dy}`);
-    const [x0, y0] = hElems.getDragStart();
+    const dragCtx = hElems.getDragCtx();
+    const [x0, y0] = [dragCtx.x0, dragCtx.y0];
     this.geo.x0 = x0 + dx;
     this.geo.y0 = y0 + dy;
     hsm.draw();
