@@ -638,8 +638,7 @@ class Cregion extends CbaseRegion {
 
   load(regionOptions) {
     // console.log(`[Cregion.load] states:${regionOptions?.states}`);
-    for (let id of Object.keys(regionOptions.states)) {
-      const stateOption = regionOptions.states[id];
+    for (let stateOption of regionOptions.states) {
       const myState = new Cstate(this, stateOption);
       hElems.insert(myState);
       this.children.push(myState);
