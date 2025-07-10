@@ -2,11 +2,31 @@
   <div class="full-window flex no-wrap">
     <left-buttons class=""></left-buttons>
     <div class="col-grow bg-blue-1 ovh full">
-      <q-tabs v-model="activefolio" class="text-grey bg-green-1 my-tabs" inline-label outside-arrows align="left" dense
-        active-color="grey-8" active-bg-color="yellow-2">
+      <q-tabs
+        v-model="activefolio"
+        class="text-grey bg-green-1 my-tabs top-border"
+        inline-label
+        outside-arrows
+        align="left"
+        dense
+        active-color="grey-8"
+        active-bg-color="yellow-2"
+      >
         <q-tab name="F1" no-caps content-class="folio-name" label="Main" active />
-        <q-tab name="F2" no-caps content-class="folio-name" class="" label="Hsm1 dzfgzdfgdf dffdgdzfzddfg" />
-        <q-tab name="F3" no-caps content-class="folio-name" class="" label="My Hsm2 dfghdfgdfg dfzdfgzdfg dfgdfgzdfg" />
+        <q-tab
+          name="F2"
+          no-caps
+          content-class="folio-name"
+          class=""
+          label="Hsm1 dzfgzdfgdf dffdgdzfzddfg"
+        />
+        <q-tab
+          name="F3"
+          no-caps
+          content-class="folio-name"
+          class=""
+          label="My Hsm2 dfghdfgdfg dfzdfgzdfg dfgdfgzdfg"
+        />
       </q-tabs>
       <hsm-canvas></hsm-canvas>
     </div>
@@ -25,6 +45,10 @@
 
 .my-tabs .q-tabs__content {
   border-left: solid 1px;
+}
+
+.top-border {
+  border-top: solid 1px black;
 }
 
 .my-tabs .q-tab {
@@ -55,5 +79,4 @@ import LeftButtons from "components/LeftButtons.vue";
 import HsmCanvas from "components/HsmCanvas.vue";
 
 const activefolio = V.ref("F1");
-
 </script>
