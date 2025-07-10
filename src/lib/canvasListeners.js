@@ -1,6 +1,6 @@
 "use strict";
 
-import { canvas, folio } from "src/classes/CHsm";
+import { canvas, folio } from "src/classes/Chsm";
 
 let mousePos = { x: 0, y: 0 };
 let mouseDown = { x: 0, y: 0 };

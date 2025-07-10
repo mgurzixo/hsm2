@@ -13,8 +13,8 @@
 
 <script setup>
 import * as V from "vue";
-import { setCanvasListeners, removeCanvasListeners } from 'src/lib/canvasListeners';
-import { Chsm, hsm, canvas } from "src/classes/CHsm";
+import { setCanvasListeners, removeCanvasListeners } from "src/lib/canvasListeners";
+import { Chsm, hsm } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
 
 const canvasRef = V.ref(null);

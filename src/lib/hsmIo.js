@@ -4,7 +4,7 @@ import pako from "pako";
 import JSON5 from "json5";
 import { notify, notifyError, notifyOk, notifyWarning } from "src/lib/notify";
 import { theHsm, setHsm } from "src/lib/hsmStore";
-import { hsm } from "src/classes/CHsm";
+import { hsm } from "src/classes/Chsm";
 
 function readHsm(filePath) {
   let json;
