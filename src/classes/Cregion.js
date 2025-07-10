@@ -72,8 +72,8 @@ export class Cregion extends CbaseRegion {
     // For now, no region background
     // console.log(`[Cregion.draw]`);
     // Sync with a modified state size
-    this.geo.y0 = hsm.settings.stateTitleHeight;
-    this.geo.height = this.parent.geo.height - hsm.settings.stateTitleHeight;
+    this.geo.y0 = hsm.settings.stateRadiusMm;
+    this.geo.height = this.parent.geo.height - hsm.settings.stateRadiusMm;
     this.geo.width = this.parent.geo.width;
     for (let child of this.children) {
       child.draw();

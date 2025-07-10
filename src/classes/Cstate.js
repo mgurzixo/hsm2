@@ -1,6 +1,7 @@
 "use strict";
 
 import * as U from "src/lib/utils";
+import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
 import { hsm, ctx } from "src/classes/Chsm";
@@ -33,8 +34,8 @@ export class Cstate extends CbaseState {
     hsm.hElems.insert(myRegion);
     this.children.push(myRegion);
     myRegion.load(regionOptions);
-    myRegion.geo.y0 = hsm.settings.stateTitleHeight;
-    myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateTitleHeight;
+    myRegion.geo.y0 = hsm.settings.stateRadiusMm;
+    myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateRadiusMm;
   }
 
   load(stateOptions) {
@@ -115,8 +116,8 @@ export class Cstate extends CbaseState {
       }
       return;
     }
-    console.log(`[Cstate.drag] id:${this.id}`);
-    console.log(`[Cstate.drag] id:${this.id} bb:${JSON.stringify(this.getChildrenBB())}}`);
+    // console.log(`[Cstate.drag] id:${this.id}`);
+    // console.log(`[Cstate.drag] id:${this.id} bb:${JSON.stringify(this.getChildrenBB())}}`);
     const dragCtx = hsm.hElems.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
@@ -188,6 +189,16 @@ export class Cstate extends CbaseState {
     hsm.hElems.dragEnd();
   }
 
+  pathTitle(px, py, pwidth, pradius) {
+    ctx.beginPath();
+    ctx.moveTo(px + pradius, py);
+    ctx.lineTo(px + pwidth - pradius, py);
+    ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+    ctx.lineTo(px, py + pradius);
+    ctx.quadraticCurveTo(px, py, px + pradius, py);
+    ctx.closePath();
+  }
+
   draw() {
     // console.log(`[Cstate.draw] Drawing ${this.id}`);
     // console.log(`[canvas.drawState] State:${state.name}`);
@@ -195,19 +206,27 @@ export class Cstate extends CbaseState {
     // const y0 = this.TY(this.geo.y0);
     let [x0, y0] = this.getXY0InFolio();
     // console.log(`[Cstate.draw] x0:${x0}`);
-    x0 = this.TL(x0);
-    y0 = this.TL(y0);
-    const width = this.TL(this.geo.width);
-    const height = this.TL(this.geo.height);
-    const titleHeight = this.TL(hsm.settings.stateTitleHeight);
+    x0 = RR(this.TL(x0));
+    y0 = RR(this.TL(y0));
+    const width = R(this.TL(this.geo.width));
+    const height = R(this.TL(this.geo.height));
+    const titleHeight = R(this.TL(hsm.settings.stateRadiusMm));
+    const stateRadiusP = R(this.TL(hsm.settings.stateRadiusMm));
     // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
-    ctx.fillStyle = "#ff0";
-    ctx.strokeStyle = "#000";
-    // theCtx.rect(x0, y0, width, height);
-    const stateRadiusP = this.TL(hsm.settings.stateRadiusMm);
-    this.PathRoundedRectP(x0, y0, width, height, stateRadiusP);
+    // Draw background
+    ctx.fillStyle = hsm.settings.styles.stateBackground;
+    this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     ctx.fill();
+    ctx.fillStyle = hsm.settings.styles.stateTitleBackground;
+    this.pathTitle(x0, y0, width, stateRadiusP);
+    ctx.fill();
+
+    // Draw silhouette
+    ctx.strokeStyle = hsm.settings.styles.silhouetteDefault;
+    this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     ctx.stroke();
+
+    ctx.strokeStyle = hsm.settings.styles.stateTitleLine;
     ctx.beginPath();
     ctx.moveTo(x0, y0 + titleHeight);
     ctx.lineTo(x0 + width, y0 + titleHeight);

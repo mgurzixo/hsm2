@@ -8,6 +8,15 @@
     deltaMouseWheel: 120,
     deltaScale: 0.1,
     minDistanceMm: 0.5,
+    styles: {
+      silhouetteDefault: "black",
+      silhouetteSelected: "blue",
+      silhouetteError: "red",
+      folioBackground: "white",
+      stateBackground: "FloralWhite",
+      stateTitleBackground: "AntiqueWhite",
+      stateTitleLine: "black",
+    },
   },
   state: {
     serId: 4,

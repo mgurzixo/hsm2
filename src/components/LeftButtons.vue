@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-green-1 col-auto left-buttons overflow-auto">
+  <div class="col-auto left-buttons overflow-auto">
     <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap text-black">
       <button-burger class=""></button-burger>
       <q-btn class="bg-amber-2" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
@@ -21,21 +21,22 @@
 }
 
 .q-btn {
-  background-color: $amber-1;
+  // background-color: $amber-1;
 }
 
 .left-buttons {
   border-left: solid 1px;
   border-right: solid 1px;
   /* border-bottom: solid 1px; */
+  background-color: FloralWhite !important;
 }
 </style>
 
 <script setup>
-import ButtonBurger from 'components/ButtonBurger.vue';
+import ButtonBurger from "components/ButtonBurger.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { drawCanvas, setZoom, RTX, RTY } from "src/lib/canvas";
-import { theHsm, theVp, theCanvas, theSettings, theMouse } from 'src/lib/hsmStore';
+import { theHsm, theVp, theCanvas, theSettings, theMouse } from "src/lib/hsmStore";
 
 function doLoadHsm() {
   loadHsm();

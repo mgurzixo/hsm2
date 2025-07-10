@@ -4,13 +4,13 @@
     <div class="col-grow bg-blue-1 ovh full">
       <q-tabs
         v-model="activefolio"
-        class="text-grey bg-green-1 my-tabs top-border"
+        class="text-grey bg-amber-1 my-tabs top-border"
         inline-label
         outside-arrows
         align="left"
         dense
         active-color="grey-8"
-        active-bg-color="yellow-2"
+        active-bg-color="amber-2"
       >
         <q-tab name="F1" no-caps content-class="folio-name" label="Main" active />
         <q-tab

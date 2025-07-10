@@ -23,7 +23,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   drawFolioBackground() {
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = hsm.settings.styles.folioBackground;
     ctx.beginPath();
     const s = this.scalePhy();
     ctx.rect(

@@ -2,6 +2,14 @@
 
 export const inchInMm = 25.4;
 
+export function RR(x) {
+  return Math.round(x) + 0.5;
+}
+
+export function R(x) {
+  return Math.round(x);
+}
+
 export function rectsIntersect(r1, r2) {
   if (r1.x0 + r1.width < r2.x0) return false;
   if (r2.x0 + r2.width < r1.x0) return false;

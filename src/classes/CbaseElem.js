@@ -50,6 +50,20 @@ export class CbaseElem {
     console.warn(`[CbaseElem.load] this:${this.id}`);
   }
 
+  pathRoundedRectP(px, py, pwidth, pheight, pradius) {
+    ctx.beginPath();
+    ctx.moveTo(px + pradius, py);
+    ctx.lineTo(px + pwidth - pradius, py);
+    ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+    ctx.lineTo(px + pwidth, py + pheight - pradius);
+    ctx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
+    ctx.lineTo(px + pradius, py + pheight);
+    ctx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
+    ctx.lineTo(px, py + pradius);
+    ctx.quadraticCurveTo(px, py, px + pradius, py);
+    ctx.closePath();
+  }
+
   draw() {
     console.warn(`[CbaseElem.draw] Drawing ${this.id}`);
   }
@@ -128,20 +142,6 @@ export class CbaseElem {
     return lP / this.scalePhy();
   }
 
-  PathRoundedRectP(px, py, pwidth, pheight, pradius) {
-    ctx.beginPath();
-    ctx.moveTo(px + pradius, py);
-    ctx.lineTo(px + pwidth - pradius, py);
-    ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
-    ctx.lineTo(px + pwidth, py + pheight - pradius);
-    ctx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
-    ctx.lineTo(px + pradius, py + pheight);
-    ctx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
-    ctx.lineTo(px, py + pradius);
-    ctx.quadraticCurveTo(px, py, px + pradius, py);
-    ctx.closePath();
-  }
-
   raiseChild(childId) {
     const c = [];
     let found;
@@ -159,7 +159,7 @@ export class CbaseElem {
   }
 
   getChildrenBB(bb, x0 = 0, y0 = 0) {
-    console.log(`[CbaseElem.getChildrenBB] id:${this.id} bb:${bb}`);
+    // console.log(`[CbaseElem.getChildrenBB] id:${this.id} bb:${bb}`);
     if (!bb || (!this.id.startsWith("E") && !this.id.startsWith("R"))) {
       if (!bb) {
         bb = { x0: null, y0: null, x1: null, y1: null };
@@ -167,7 +167,7 @@ export class CbaseElem {
           bb = elem.getChildrenBB(bb, x0 + this.geo.x0, y0 + this.geo.y0);
         }
       } else {
-        console.log(`[CbaseElem.getChildrenBB] id:${this.id} Doing bb`);
+        // console.log(`[CbaseElem.getChildrenBB] id:${this.id} Doing bb`);
         let u = this.geo.x0 + x0;
         if (bb.x0 == null) bb.x0 = u;
         else if (u < bb.x0) bb.x0 = u;
