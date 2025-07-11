@@ -81,7 +81,7 @@
                       states: [
                         {
                           id: "S7",
-                          name: "Third state",
+                          name: "5th state",
                           geo: {
                             x0: 10,
                             y0: 10,
@@ -95,7 +95,7 @@
                 },
                 {
                   id: "S8",
-                  name: "4th state",
+                  name: "4th state with a very long name",
                   geo: {
                     x0: 60,
                     y0: 10,

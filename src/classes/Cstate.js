@@ -166,7 +166,7 @@ export class Cstate extends CbaseState {
         // console.log(
         //   `[Cstate.drag] id:${this.id} y0:${y0} dy:${dy} BB.y0:${this.grandchildrenBB.y0}`,
         // );
-        if (dy > this.grandchildrenBB.y0 - hsm.settings.minDistanceMm)
+        if (this.grandchildrenBB.y0 && dy > this.grandchildrenBB.y0 - hsm.settings.minDistanceMm)
           dy = this.grandchildrenBB.y0 - hsm.settings.minDistanceMm;
         y0 += dy;
         height -= dy;
@@ -177,15 +177,17 @@ export class Cstate extends CbaseState {
         if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
         if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
           dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
-        // ICI
-        if (height + dy < this.grandchildrenBB.y1 + hsm.settings.minDistanceMm)
+        if (
+          this.grandchildrenBB.y1 &&
+          height + dy < this.grandchildrenBB.y1 + hsm.settings.minDistanceMm
+        )
           dy = this.grandchildrenBB.y1 + hsm.settings.minDistanceMm - height;
         height += dy;
       }
       if (dragCtx.type.includes("L")) {
         if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
         if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
-        if (dx > this.grandchildrenBB.x0 - hsm.settings.minDistanceMm)
+        if (this.grandchildrenBB.x0 && dx > this.grandchildrenBB.x0 - hsm.settings.minDistanceMm)
           dx = this.grandchildrenBB.x0 - hsm.settings.minDistanceMm;
         x0 += dx;
         width -= dx;
@@ -196,8 +198,10 @@ export class Cstate extends CbaseState {
         if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
         if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
           dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
-        // ICI
-        if (width + dx < this.grandchildrenBB.x1 + hsm.settings.minDistanceMm)
+        if (
+          this.grandchildrenBB.y0 &&
+          width + dx < this.grandchildrenBB.x1 + hsm.settings.minDistanceMm
+        )
           dx = this.grandchildrenBB.x1 + hsm.settings.minDistanceMm - width;
         width += dx;
       }
@@ -311,6 +315,17 @@ export class Cstate extends CbaseState {
     ctx.moveTo(x0, y0 + titleHeight);
     ctx.lineTo(x0 + width, y0 + titleHeight);
     ctx.stroke();
+
+    ctx.font = `${Math.round(0.7 * titleHeight)}px sans-serif`;
+    ctx.fillStyle = "black";
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      `${this.id}: ${this.name}`,
+      x0 + width / 2,
+      y0 + titleHeight / 2,
+      width - 1 * stateRadiusP,
+    );
 
     for (let child of this.children) {
       child.draw();
