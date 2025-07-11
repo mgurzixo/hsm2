@@ -75,7 +75,14 @@ export class CbaseElem {
     return null;
   }
   drag(dx, dy) {}
-  dragEnd(dx, dy) {}
+
+  dragEnd(dx, dy) {
+    // console.log(`[CbaseElem.dragEnd] id:${this.id}`);
+    for (let child of this.children.toReversed()) {
+      child.dragEnd(dx, dy);
+    }
+  }
+
   dragCancel(dx, dy) {}
 
   getXY0InFolio() {
@@ -156,36 +163,5 @@ export class CbaseElem {
   raiseChildR(childId) {
     this.raiseChild(childId);
     this.parent?.raiseChildR(this.id);
-  }
-
-  getChildrenBB(bb, x0 = 0, y0 = 0) {
-    // console.log(`[CbaseElem.getChildrenBB] id:${this.id} bb:${bb}`);
-    if (!bb || (!this.id.startsWith("E") && !this.id.startsWith("R"))) {
-      if (!bb) {
-        bb = { x0: null, y0: null, x1: null, y1: null };
-        for (let elem of this.children) {
-          bb = elem.getChildrenBB(bb, x0 + this.geo.x0, y0 + this.geo.y0);
-        }
-      } else {
-        // console.log(`[CbaseElem.getChildrenBB] id:${this.id} Doing bb`);
-        let u = this.geo.x0 + x0;
-        if (bb.x0 == null) bb.x0 = u;
-        else if (u < bb.x0) bb.x0 = u;
-        u = this.geo.y0 + y0;
-        if (bb.y0 == null) bb.y0 = u;
-        else if (u < bb.y0) bb.y0 = u;
-        u = this.geo.x0 + this.geo.width + x0;
-        if (bb.x1 == null) bb.x1 = u;
-        else if (u > bb.x1) bb.x1 = u;
-        u = this.geo.y0 + this.geo.height + y0;
-        if (bb.y1 == null) bb.y1 = u;
-        else if (u > bb.y1) bb.y1 = u;
-      }
-    } else {
-      for (let elem of this.children) {
-        bb = elem.getChildrenBB(bb, x0 + this.geo.x0, y0 + this.geo.y0);
-      }
-    }
-    return bb;
   }
 }

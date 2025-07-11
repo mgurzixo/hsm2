@@ -1,5 +1,5 @@
 <template>
-  <q-btn outline round icon="mdi-menu" text-color="black" class="bg-amber-1">
+  <q-btn outline round icon="mdi-menu" text-color="black" class="bg-amber-3">
     <q-menu anchor="bottom left" self="top start" class="bg-amber-1 menu-border">
       <q-list dense style="min-width: 120px">
         <q-item clickable v-close-popup @click="doLoadHsm">
@@ -25,7 +25,6 @@
           <q-item-section side>
             <q-icon name="keyboard_arrow_right" />
           </q-item-section>
-
 
           <q-menu anchor="top end" self="top start" class="bg-amber-1 menu-border">
             <q-list dense style="min-width: 140px">
@@ -108,14 +107,13 @@
           <q-item-section>Exit</q-item-section>
         </q-item>
         <q-separator />
-
       </q-list>
     </q-menu>
   </q-btn>
 </template>
 
 <style>
-.q-list--dense>.q-item {
+.q-list--dense > .q-item {
   padding: 4px 4px 4px 4px;
 }
 
@@ -132,11 +130,11 @@
 
 <script setup>
 import * as V from "vue";
-import path from 'path';
+import path from "path";
 import { notify, notifyError, notifyOk, notifyWarning } from "src/lib/notify";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import pako from "pako";
-import JSON5 from 'json5';
+import JSON5 from "json5";
 import { drawCanvas } from "src/lib/canvas";
 
 function doExit() {
@@ -148,9 +146,5 @@ function doLoadHsm() {
   drawCanvas();
 }
 
-
-V.onMounted(() => {
-
-})
-
+V.onMounted(() => {});
 </script>

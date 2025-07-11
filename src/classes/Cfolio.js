@@ -104,18 +104,21 @@ export class Cfolio extends CbaseRegion {
   }
 
   dragEndP(dxP, dyP) {
+    // console.log(`[Cfolio.dragEndP]`);
     const dx = dxP / this.scalePhy();
     const dy = dyP / this.scalePhy();
     if (hsm.hElems.getDraggedId() != this.id) {
       for (let child of this.children.toReversed()) {
         child.dragEnd(dx, dy);
       }
-      return;
+    } else {
+      this.dragP(dxP, dyP);
     }
-    this.dragP(dxP, dyP);
-    // console.log(`[Cfolio.dragEndP]`);
-    hsm.hElems.dragEnd();
-    hsm.draw();
+    if (!hsm.hElems.getErrorId()) {
+      hsm.hElems.dragEnd();
+      hsm.draw();
+    }
+    // Else resetDrag will do it!
   }
 
   dragCancelP(dxP, dyP) {

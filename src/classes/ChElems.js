@@ -7,6 +7,7 @@ export class ChElems {
     this.elems = {};
     this.hoveredId = "";
     this.selectedId = "";
+    this.errorId = "";
     this.draggedId = "";
     this.dragCtx = {};
   }
@@ -36,6 +37,14 @@ export class ChElems {
     return this.selectedId;
   }
 
+  setErrorId(id) {
+    this.errorId = id;
+  }
+
+  getErrorId() {
+    return this.errorId;
+  }
+
   getDraggedId() {
     return this.draggedId;
   }
@@ -45,7 +54,8 @@ export class ChElems {
   }
 
   setDragCtx(id, dragCtx) {
-    this.selectedId = null;
+    this.selectedId = id;
+    this.errorId = null;
     this.hoveredId = null;
     if (!id) {
       this.draggedId = null;

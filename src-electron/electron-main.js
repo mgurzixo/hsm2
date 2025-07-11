@@ -25,8 +25,8 @@ async function createWindow() {
   Menu.setApplicationMenu(null);
   mainWindow = new BrowserWindow({
     icon: path.resolve(currentDir, "icons/icon.png"), // tray icon
-    width: 1200,
-    height: 1000,
+    width: 1000,
+    height: 700,
     minWidth: 360,
     minHeight: 270,
     useContentSize: true,

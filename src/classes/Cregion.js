@@ -9,6 +9,50 @@ export class CbaseRegion extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
   }
+
+  // Returns childrenBB in parent origin
+  getChildrenBB(bb) {
+    if (this.id.startsWith("E")) return bb;
+    console.log(`[Cregion.getChildrenBB] geo.y0:${this.geo.y0}`);
+    for (let child of this.children) {
+      console.log(`[Cregion.getChildrenBB] ${child.id}.geo.y0:${child.geo.y0}`);
+      let u = child.geo.x0;
+      if (bb.x0 == null) bb.x0 = u;
+      else if (u < bb.x0) bb.x0 = u;
+      u = child.geo.y0;
+      if (bb.y0 == null) bb.y0 = u;
+      else if (u < bb.y0) bb.y0 = u;
+      u = this.geo.x0 + child.geo.x0 + child.geo.width;
+      if (bb.x1 == null) bb.x1 = u;
+      else if (u > bb.x1) bb.x1 = u;
+      u = this.geo.y0 + child.geo.y0 + child.geo.height;
+      if (bb.y1 == null) bb.y1 = u;
+      else if (u > bb.y1) bb.y1 = u;
+    }
+    return bb;
+  }
+
+  childIntersect(son) {
+    for (let child of this.children) {
+      if (child == son) continue;
+      if (U.rectsIntersect(child.geo, son.geo)) return true;
+    }
+    return false;
+  }
+
+  setChildrenDragOrigin() {
+    console.log(`[Cregion.setChildrenDragOrigin] myId:${this.id}`);
+    for (let child of this.children) {
+      child.dragOrigin = { x0: child.geo.x0, y0: child.geo.y0 };
+    }
+  }
+
+  patchChildrenOrigin(dx, dy) {
+    for (let child of this.children) {
+      if (dx != null) child.geo.x0 = child.dragOrigin.x0 - dx;
+      if (dy != null) child.geo.y0 = child.dragOrigin.y0 - dy;
+    }
+  }
 }
 
 export class CExternalRegion extends CbaseRegion {
@@ -58,7 +102,7 @@ export class Cregion extends CbaseRegion {
       }
       return;
     }
-    // console.log(`[Cstate.drag] dx:${dx} dy:${dy}`);
+    // console.log(`[Cregion.drag] dx:${dx} dy:${dy}`);
     const dragCtx = hsm.hElems.getDragCtx();
     const [x0, y0] = [dragCtx.x0, dragCtx.y0];
     dx = U.myClamp(dx, x0, this.geo.width, 0, this.parent.geo.width);

@@ -8,14 +8,18 @@
     deltaMouseWheel: 120,
     deltaScale: 0.1,
     minDistanceMm: 0.5,
+    dragResetSpeed: 3,
     styles: {
       silhouetteDefault: "black",
-      silhouetteSelected: "blue",
+      silhouetteSelected: "black`",
       silhouetteError: "red",
       folioBackground: "white",
       stateBackground: "FloralWhite",
       stateTitleBackground: "AntiqueWhite",
       stateTitleLine: "black",
+      silhouetteWidth: 1,
+      silhouetteErrorWidth: 2,
+      stateTitleWidth: 1,
     },
   },
   state: {
@@ -42,7 +46,7 @@
             x0: 10,
             y0: 20,
             width: 100,
-            height: 90,
+            height: 70,
           },
           regions: [
             {
@@ -60,7 +64,7 @@
                   name: "Third state",
                   geo: {
                     x0: 10,
-                    y0: 10,
+                    y0: 15,
                     width: 40,
                     height: 50,
                   },

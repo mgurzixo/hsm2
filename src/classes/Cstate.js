@@ -67,12 +67,27 @@ export class Cstate extends CbaseState {
     return this;
   }
 
+  setGrandchildrenDragOrigin() {
+    for (let child of this.children) {
+      child.setChildrenDragOrigin();
+    }
+  }
+
+  getGrandchildrenBB() {
+    let bb = { x0: null, y0: null, x1: null, y1: null };
+    for (let child of this.children) {
+      bb = child.getChildrenBB(bb);
+    }
+    // console.log(`[Cstate.getGrandchildrenBB] id:${this.id} bb:${JSON.stringify(bb)}`);
+    return bb;
+  }
+
   dragStart(xx, yy) {
     // (xx, yy) in mm from parent origin
     // Inside us
     let elem;
     const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    // console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
+    console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
     console.log(
       `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
     );
@@ -97,6 +112,10 @@ export class Cstate extends CbaseState {
       if (y >= height - sSize) type = "BR";
     }
     if (!type) type = "M";
+    else {
+      this.setGrandchildrenDragOrigin();
+      this.grandchildrenBB = this.getGrandchildrenBB();
+    }
     hsm.hElems.setDragCtx(this.id, {
       x0: this.geo.x0,
       y0: this.geo.y0,
@@ -116,14 +135,14 @@ export class Cstate extends CbaseState {
       }
       return;
     }
-    // console.log(`[Cstate.drag] id:${this.id}`);
-    // console.log(`[Cstate.drag] id:${this.id} bb:${JSON.stringify(this.getChildrenBB())}}`);
+    // console.log(`[Cstate.drag] id:${this.id} dx:${dx} dy:${dy}`);
     const dragCtx = hsm.hElems.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
     let width = dragCtx.width;
     let height = dragCtx.height;
     if (dragCtx.type == "M") {
+      // console.log(`[Cstate.drag] id:${this.id} dragCtx.type:${dragCtx.type}`);
       dx = U.myClamp(
         dx,
         x0,
@@ -144,23 +163,42 @@ export class Cstate extends CbaseState {
       if (dragCtx.type.includes("T")) {
         if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
         if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
+        // console.log(
+        //   `[Cstate.drag] id:${this.id} y0:${y0} dy:${dy} BB.y0:${this.grandchildrenBB.y0}`,
+        // );
+        if (dy > this.grandchildrenBB.y0 - hsm.settings.minDistanceMm)
+          dy = this.grandchildrenBB.y0 - hsm.settings.minDistanceMm;
         y0 += dy;
         height -= dy;
+        for (let child of this.children) {
+          child.patchChildrenOrigin(null, dy);
+        }
       } else if (dragCtx.type.includes("B")) {
         if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
         if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
           dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
+        // ICI
+        if (height + dy < this.grandchildrenBB.y1 + hsm.settings.minDistanceMm)
+          dy = this.grandchildrenBB.y1 + hsm.settings.minDistanceMm - height;
         height += dy;
       }
       if (dragCtx.type.includes("L")) {
         if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
         if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
+        if (dx > this.grandchildrenBB.x0 - hsm.settings.minDistanceMm)
+          dx = this.grandchildrenBB.x0 - hsm.settings.minDistanceMm;
         x0 += dx;
         width -= dx;
+        for (let child of this.children) {
+          child.patchChildrenOrigin(dx, null);
+        }
       } else if (dragCtx.type.includes("R")) {
         if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
         if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
           dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
+        // ICI
+        if (width + dx < this.grandchildrenBB.x1 + hsm.settings.minDistanceMm)
+          dx = this.grandchildrenBB.x1 + hsm.settings.minDistanceMm - width;
         width += dx;
       }
     }
@@ -172,21 +210,50 @@ export class Cstate extends CbaseState {
     this.geo.y0 = y0;
     this.geo.height = height;
     this.geo.width = width;
+    if (this.parent.childIntersect(this)) hsm.hElems.setErrorId(this.id);
+    else hsm.hElems.setErrorId(null);
     for (let child of this.children.toReversed()) {
       child.drag(dx, dy);
     }
   }
 
+  resetDrag(deltaX, deltaY) {
+    const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const totalIterations = Math.ceil(dist / hsm.settings.dragResetSpeed);
+    console.log(`[Cstate.resetDrag] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
+    let currentIteration = 0;
+    const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
+    const myThis = this;
+
+    function myCb() {
+      const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
+      console.log(`[Cstate.resetDrag] #${currentIteration} ease:${ease.toFixed(2)}`);
+      const dx = deltaX * (1 - ease);
+      const dy = deltaY * (1 - ease);
+      myThis.drag(dx, dy);
+      if (currentIteration >= totalIterations) {
+        hsm.hElems.setErrorId(null);
+        hsm.hElems.dragEnd();
+      } else {
+        currentIteration++;
+        window.requestIdleCallback(myCb);
+      }
+      hsm.draw();
+    }
+    window.requestIdleCallback(myCb);
+  }
+
   dragEnd(dx, dy) {
+    // console.log(`[Cstate.dragEnd]`);
     if (hsm.hElems.getDraggedId() != this.id) {
       for (let child of this.children.toReversed()) {
         child.dragEnd(dx, dy);
       }
       return;
     }
-    this.drag(dx, dy);
-    // console.log(`[Cfolio.dragEnd]`);
-    hsm.hElems.dragEnd();
+    if (hsm.hElems.getErrorId() == this.id) {
+      this.resetDrag(dx, dy);
+    } else this.drag(dx, dy);
   }
 
   pathTitle(px, py, pwidth, pradius) {
@@ -206,7 +273,11 @@ export class Cstate extends CbaseState {
     // const y0 = this.TY(this.geo.y0);
     let [x0, y0] = this.getXY0InFolio();
     // console.log(`[Cstate.draw] x0:${x0}`);
-    x0 = RR(this.TL(x0));
+    let silhouetteWidth = hsm.settings.styles.stateSilhouetteWidth;
+    if (hsm.hElems.getErrorId() == this.id) {
+      silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
+    }
+    x0 = RR(this.TL(x0), silhouetteWidth);
     y0 = RR(this.TL(y0));
     const width = R(this.TL(this.geo.width));
     const height = R(this.TL(this.geo.height));
@@ -222,10 +293,19 @@ export class Cstate extends CbaseState {
     ctx.fill();
 
     // Draw silhouette
-    ctx.strokeStyle = hsm.settings.styles.silhouetteDefault;
+    ctx.lineWidth = silhouetteWidth;
+    if (hsm.hElems.getErrorId() == this.id) {
+      ctx.strokeStyle = hsm.settings.styles.silhouetteError;
+    } else if (hsm.hElems.getSelectedId() == this.id) {
+      ctx.strokeStyle = hsm.settings.styles.silhouetteSelected;
+    } else {
+      ctx.strokeStyle = hsm.settings.styles.silhouetteDefault;
+    }
+
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     ctx.stroke();
 
+    ctx.lineWidth = hsm.settings.styles.stateTitleWidth;
     ctx.strokeStyle = hsm.settings.styles.stateTitleLine;
     ctx.beginPath();
     ctx.moveTo(x0, y0 + titleHeight);
