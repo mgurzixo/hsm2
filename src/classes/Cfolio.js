@@ -71,7 +71,7 @@ export class Cfolio extends CbaseRegion {
     // Inside us
     let elem;
     const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    console.log(`[Cfolio.dragStartP] xx:${xx.toFixed()} x:${x.toFixed()}`);
+    // console.log(`[Cfolio.dragStartP] xx:${xx.toFixed()} x:${x.toFixed()}`);
     if (!U.pointInWH(x, y, this.geo)) return null;
     for (let child of this.children.toReversed()) {
       // Is it inside a child

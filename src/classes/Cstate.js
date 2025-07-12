@@ -87,10 +87,10 @@ export class Cstate extends CbaseState {
     // Inside us
     let elem;
     const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
-    console.log(
-      `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
-    );
+    // console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
+    // console.log(
+    //   `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
+    // );
     if (!U.pointInWH(x, y, this.geo)) return null;
     for (let child of this.children.toReversed()) {
       // Is it inside a child
@@ -123,7 +123,7 @@ export class Cstate extends CbaseState {
       height: this.geo.height,
       type: type,
     });
-    console.log(`[Cstate.dragStart] ${this.id} type:${type}`);
+    // console.log(`[Cstate.dragStart] ${this.id} type:${type}`);
     this.parent.raiseChildR(this.id);
     return this;
   }
@@ -224,14 +224,14 @@ export class Cstate extends CbaseState {
   resetDrag(deltaX, deltaY) {
     const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const totalIterations = Math.ceil(dist / hsm.settings.dragResetSpeed);
-    console.log(`[Cstate.resetDrag] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
+    // console.log(`[Cstate.resetDrag] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
     let currentIteration = 0;
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
     const myThis = this;
 
     function myCb() {
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
-      console.log(`[Cstate.resetDrag] #${currentIteration} ease:${ease.toFixed(2)}`);
+      // console.log(`[Cstate.resetDrag] #${currentIteration} ease:${ease.toFixed(2)}`);
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       myThis.drag(dx, dy);
@@ -316,6 +316,7 @@ export class Cstate extends CbaseState {
     ctx.lineTo(x0 + width, y0 + titleHeight);
     ctx.stroke();
 
+    // Draw title
     ctx.font = `${Math.round(0.7 * titleHeight)}px sans-serif`;
     ctx.fillStyle = "black";
     ctx.textBaseline = "middle";

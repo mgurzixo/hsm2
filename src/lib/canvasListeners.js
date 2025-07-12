@@ -1,12 +1,13 @@
 "use strict";
 
-import { canvas, folio } from "src/classes/Chsm";
+import { canvas, folio, hsm } from "src/classes/Chsm";
 
 let mousePos = { x: 0, y: 0 };
 let mouseDown = { x: 0, y: 0 };
 let mouseOut = { x: 0, y: 0 };
 let isDragging = false;
-let isClicked = false;
+let button1Down = false;
+let button2Down = false;
 
 // TODO Must throttle all...
 
@@ -49,21 +50,42 @@ export function handleMouseMove(e) {
 
 export function handleMouseDown(e) {
   const [x, y] = getXYFromMouseEvent(e);
-  mouseDown = { x: x, y: y };
-  isClicked = true;
-  // console.log(`[canvasListeners.handleMouseDown] x:${x} y:${y}`);
+  if (e.buttons & 1) {
+    button1Down = true;
+    mouseDown = { x: x, y: y };
+    // console.log(`[canvasListeners.handleMouseDown] x:${x} y:${y} Button 1`);
+  }
+  if (e.buttons & 2) {
+    button2Down = true;
+    // console.log(`[canvasListeners.handleMouseDown] x:${x} y:${y} Button 2`);
+  }
+  // console.log(
+  //   `[canvasListeners.handleMouseUp] button1Down:${button1Down} button2Down:${button2Down}`,
+  // );
 }
 
 export function handleMouseUp(e) {
   const [x, y] = getXYFromMouseEvent(e);
-  // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} isDragging:${isDragging}`);
-  if (isDragging) {
-    folio.dragEndP(x - mouseDown.x, y - mouseDown.y);
-    isDragging = false;
-  } else if (isClicked) {
-    folio.clickP(x, y);
+  // console.log(
+  //   `[canvasListeners.handleMouseUp] x:${x} y:${y} buttons:${e.buttons} button1Down:${button1Down} button2Down:${button2Down}`,
+  // );
+  if (button1Down && ~e.buttons & 1) {
+    // Button 1 released
+    if (isDragging) {
+      folio.dragEndP(x - mouseDown.x, y - mouseDown.y);
+      isDragging = false;
+    } else {
+      // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got click`);
+      folio.clickP(x, y);
+    }
+    button1Down = false;
   }
-  isClicked = false;
+  if (button2Down && ~e.buttons & 2) {
+    // Button 2 released
+    // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got right click`);
+    button2Down = false;
+    hsm.handleRightClick(x, y, e.clientX, e.clientY);
+  }
 }
 
 export function handleMouseOut(e) {

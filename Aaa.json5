@@ -32,8 +32,8 @@
       id: "F1",
       name: "Main Folio",
       geo: {
-        x0: 10,
-        y0: 20,
+        x0: 0,
+        y0: 0,
         width: 210,
         height: 297,
         scale: 1,

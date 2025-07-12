@@ -34,6 +34,7 @@
 
 <script setup>
 import ButtonBurger from "components/ButtonBurger.vue";
+import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { drawCanvas, setZoom, RTX, RTY } from "src/lib/canvas";
 import { theHsm, theVp, theCanvas, theSettings, theMouse } from "src/lib/hsmStore";
