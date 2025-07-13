@@ -164,4 +164,18 @@ export class CbaseElem {
     this.raiseChild(childId);
     this.parent?.raiseChildR(this.id);
   }
+
+  defineCursor(x, y, currentCursor = "default") {
+    if (
+      x < this.geo.x0 ||
+      x > this.geo.x0 + this.geo.width ||
+      y < this.geo.y0 ||
+      y > this.geo.y0 + this.geo.height
+    )
+      return currentCursor;
+    for (let child of this.children) {
+      currentCursor = child.defineCursor(x - this.geo.x0, y - this.geo.y0, currentCursor);
+    }
+    return currentCursor;
+  }
 }

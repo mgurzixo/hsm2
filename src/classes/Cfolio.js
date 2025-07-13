@@ -4,6 +4,7 @@ import * as U from "src/lib/utils";
 import { hsm, ctx } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
+import { mousePos } from "src/lib/canvasListeners";
 
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
@@ -101,6 +102,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.x0 = x0 + dx;
     this.geo.y0 = y0 + dy;
     hsm.draw();
+    hsm.setCursor(this.defineCursor(hsm.RTL(mousePos.x), hsm.RTL(mousePos.y)));
   }
 
   dragEndP(dxP, dyP) {
@@ -142,5 +144,20 @@ export class Cfolio extends CbaseRegion {
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     hsm.draw();
+  }
+
+  defineCursor(x, y, currentCursor = "default") {
+    if (
+      x < this.geo.x0 ||
+      x > this.geo.x0 + this.geo.width ||
+      y < this.geo.y0 ||
+      y > this.geo.y0 + this.geo.height
+    )
+      return "default";
+    currentCursor = "grab";
+    for (let child of this.children) {
+      currentCursor = child.defineCursor(x - this.geo.x0, y - this.geo.y0, currentCursor);
+    }
+    return currentCursor;
   }
 }

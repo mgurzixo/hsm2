@@ -2,7 +2,7 @@
 
 import { canvas, folio, hsm } from "src/classes/Chsm";
 
-let mousePos = { x: 0, y: 0 };
+export let mousePos = { x: 0, y: 0 };
 let mouseDown = { x: 0, y: 0 };
 let mouseOut = { x: 0, y: 0 };
 let isDragging = false;
@@ -45,6 +45,8 @@ export function handleMouseMove(e) {
     const dy = y - mouseDown.y;
     // console.log(`[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging}`);
     folio.dragP(dx, dy);
+  } else {
+    hsm.setCursor(hsm.defineCursor(hsm.RTL(mousePos.x), hsm.RTL(mousePos.y)));
   }
 }
 

@@ -1,6 +1,6 @@
 <template>
   <div class="full-size">
-    <canvas ref="canvasRef" class="full-size"> </canvas>
+    <canvas ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor ygreen">
       <popup-menu :menu="contextMenu"></popup-menu>
     </div>
@@ -19,15 +19,18 @@
   top: 10px;
   left: 20px;
 }
+
+.canvas-cursor {
+  cursor: v-bind(cursor);
+}
 </style>
 
 <script setup>
 import * as V from "vue";
 import PopupMenu from "src/components/PopupMenu.vue";
-import MiniMenu from "src/components/MiniMenu.vue";
 import contextMenu from "src/menus/contextMenu";
 import { setCanvasListeners, removeCanvasListeners } from "src/lib/canvasListeners";
-import { Chsm, hsm } from "src/classes/Chsm";
+import { Chsm, hsm, cursor } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
 
 const canvasRef = V.ref(null);

@@ -34,20 +34,36 @@
 
 <script setup>
 import ButtonBurger from "components/ButtonBurger.vue";
-import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
+// import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { drawCanvas, setZoom, RTX, RTY } from "src/lib/canvas";
-import { theHsm, theVp, theCanvas, theSettings, theMouse } from "src/lib/hsmStore";
+import { hsm } from "src/classes/Chsm";
 
 function doLoadHsm() {
   loadHsm();
-  drawCanvas();
+  hsm.draw();
 }
 
+// export function setZoom(x, y, scale) {
+//   const oldScale = theVp.scale;
+//   // console.log(
+//   //   `[HsmCanvas.handleWheel] oldScale:${theVp.scale.toFixed(2)} newScale:${scale.toFixed(2)}`,
+//   // );
+//   // Restrict scale
+//   scale = Math.min(Math.max(0.1, scale), 10);
+//   // scale = 2;
+//   const rScale = scale / oldScale;
+//   const x0Mm = (theVp.x0 + (rScale - 1) * x) / rScale;
+//   const y0Mm = (theVp.y0 + (rScale - 1) * y) / rScale;
+//   setFolioScale(scale);
+//   setFolioOffsetMm(x0Mm, y0Mm);
+//   drawCanvas();
+// }
+
+// TODO
 function doZoom(delta) {
-  const scale = theVp.scale + 2 * delta * theSettings.deltaScale;
-  const widthMm = RTX(theCanvas.width);
-  const heightMm = RTX(theCanvas.height);
-  setZoom(theVp.x0Mm + widthMm / 2, theVp.y0Mm + heightMm / 2, scale);
+  // const scale = theVp.scale + 2 * delta * theSettings.deltaScale;
+  // const widthMm = RTX(theCanvas.width);
+  // const heightMm = RTX(theCanvas.height);
+  // setZoom(theVp.x0Mm + widthMm / 2, theVp.y0Mm + heightMm / 2, scale);
 }
 </script>

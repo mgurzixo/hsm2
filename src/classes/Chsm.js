@@ -1,5 +1,6 @@
 "use strict";
 
+import * as V from "vue";
 import * as U from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
@@ -9,6 +10,7 @@ export let canvas = null;
 export let ctx = null;
 export let hsm = null;
 export let folio = null;
+export let cursor = V.ref("default");
 
 export class Chsm extends CbaseElem {
   constructor(parent, options) {
@@ -20,6 +22,10 @@ export class Chsm extends CbaseElem {
     this.settings = {};
     this.isDirty = false;
     hsm = this;
+  }
+
+  setCursor(val) {
+    cursor.value = val;
   }
 
   setdirty() {
@@ -91,5 +97,10 @@ export class Chsm extends CbaseElem {
     canvas.width = bb.width;
     canvas.height = bb.height;
     this.draw();
+  }
+
+  defineCursor(x, y, currentCursor = "default") {
+    currentCursor = folio?.defineCursor(x, y, currentCursor);
+    return currentCursor;
   }
 }

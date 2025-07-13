@@ -327,9 +327,37 @@ export class Cstate extends CbaseState {
       y0 + titleHeight / 2,
       width - 1 * stateRadiusP,
     );
-
     for (let child of this.children) {
       child.draw();
     }
+  }
+
+  defineCursor(x, y, currentCursor = "default") {
+    const m = hsm.TL(hsm.settings.cursorMarginP);
+    const r = hsm.settings.stateRadiusMm;
+    if (
+      x < this.geo.x0 - m ||
+      x > this.geo.x0 + this.geo.width + m ||
+      y < this.geo.y0 - m ||
+      y > this.geo.y0 + this.geo.height + m
+    )
+      return currentCursor;
+    if (x <= this.geo.x0 + r) {
+      if (y <= this.geo.y0 + r)
+        currentCursor = "nw-resize"; // TL
+      else if (y >= this.geo.y0 + this.geo.height - r)
+        currentCursor = "sw-resize"; // BL
+      else if (x <= this.geo.x0 + m) currentCursor = "pointer"; // TL
+    } else currentCursor = "grab";
+
+    // ||
+    // x > this.geo.x0 + this.geo.width + m ||
+    // y < this.geo.y0 - m ||
+    // y > this.geo.y0 + this.geo.height + m
+
+    for (let child of this.children) {
+      currentCursor = child.defineCursor(x - this.geo.x0, y - this.geo.y0, currentCursor);
+    }
+    return currentCursor;
   }
 }

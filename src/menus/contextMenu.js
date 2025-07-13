@@ -1,7 +1,7 @@
 "use strict";
 
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { drawCanvas } from "src/lib/canvas";
+import { hsm } from "src/classes/Chsm";
 
 function doExit() {
   window.close();
@@ -9,7 +9,7 @@ function doExit() {
 
 function doLoadHsm() {
   loadHsm();
-  drawCanvas();
+  hsm.draw();
 }
 
 const contextMenu = {
