@@ -273,20 +273,18 @@ export class Cstate extends CbaseState {
   draw() {
     // console.log(`[Cstate.draw] Drawing ${this.id}`);
     // console.log(`[canvas.drawState] State:${state.name}`);
-    // const x0 = this.TX(this.geo.x0);
-    // const y0 = this.TY(this.geo.y0);
     let [x0, y0] = this.getXY0InFolio();
     // console.log(`[Cstate.draw] x0:${x0}`);
     let silhouetteWidth = hsm.settings.styles.stateSilhouetteWidth;
     if (hsm.hElems.getErrorId() == this.id) {
       silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
     }
-    x0 = RR(this.TL(x0), silhouetteWidth);
-    y0 = RR(this.TL(y0));
-    const width = R(this.TL(this.geo.width));
-    const height = R(this.TL(this.geo.height));
-    const titleHeight = R(this.TL(hsm.settings.stateRadiusMm));
-    const stateRadiusP = R(this.TL(hsm.settings.stateRadiusMm));
+    x0 = RR(this.mmToPL(x0), silhouetteWidth);
+    y0 = RR(this.mmToPL(y0));
+    const width = R(this.mmToPL(this.geo.width));
+    const height = R(this.mmToPL(this.geo.height));
+    const titleHeight = R(this.mmToPL(hsm.settings.stateRadiusMm));
+    const stateRadiusP = R(this.mmToPL(hsm.settings.stateRadiusMm));
     // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
     // Draw background
     ctx.fillStyle = hsm.settings.styles.stateBackground;
@@ -332,8 +330,9 @@ export class Cstate extends CbaseState {
     }
   }
 
-  defineCursor(x, y, currentCursor = "default") {
-    const m = hsm.TL(hsm.settings.cursorMarginP);
+  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
+    // console.log(`[Cstate.getIdAndZone] id:${this.id}`);
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
     const r = hsm.settings.stateRadiusMm;
     if (
       x < this.geo.x0 - m ||
@@ -341,23 +340,24 @@ export class Cstate extends CbaseState {
       y < this.geo.y0 - m ||
       y > this.geo.y0 + this.geo.height + m
     )
-      return currentCursor;
+      return idz;
+    let id = this.id;
+    let zone = "M";
     if (x <= this.geo.x0 + r) {
-      if (y <= this.geo.y0 + r)
-        currentCursor = "nw-resize"; // TL
-      else if (y >= this.geo.y0 + this.geo.height - r)
-        currentCursor = "sw-resize"; // BL
-      else if (x <= this.geo.x0 + m) currentCursor = "pointer"; // TL
-    } else currentCursor = "grab";
-
-    // ||
-    // x > this.geo.x0 + this.geo.width + m ||
-    // y < this.geo.y0 - m ||
-    // y > this.geo.y0 + this.geo.height + m
-
+      if (y <= this.geo.y0 + r) zone = "TL";
+      else if (y >= this.geo.y0 + this.geo.height - r) zone = "BL";
+      else if (x <= this.geo.x0 + m) zone = "L";
+    } else if (x >= this.geo.x0 + this.geo.width - r) {
+      if (y <= this.geo.y0 + r) zone = "TR";
+      else if (y >= this.geo.y0 + this.geo.height - r) zone = "BR";
+      else if (x >= this.geo.x0 + this.geo.width - m) zone = "R";
+    } else if (y <= this.geo.y0 + m) zone = "T";
+    else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
+    idz = { id: id, zone: zone };
     for (let child of this.children) {
-      currentCursor = child.defineCursor(x - this.geo.x0, y - this.geo.y0, currentCursor);
+      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    return currentCursor;
+    // console.log(`[Cstate.getIdAndZone] (${this.id}) id:${id} zone:${zone}`);
+    return idz;
   }
 }

@@ -121,31 +121,15 @@ export class CbaseElem {
     return folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
   }
 
-  pToMm(xP, yP) {
+  pToMmXY(xP, yP) {
     return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
   }
 
-  TX(xMm) {
-    return Math.round((this.parent.geo.x0 + xMm) * this.scalePhy()) + 0.5;
-  }
-
-  TY(yMm) {
-    return Math.round((this.parent.geo.y0 + yMm) * this.scalePhy()) + 0.5;
-  }
-
-  TL(lMm) {
+  mmToPL(lMm) {
     return Math.round(lMm * this.scalePhy());
   }
 
-  RTX(xP) {
-    return xP / this.scalePhy() - this.parent.geo.x0;
-  }
-
-  RTY(yP) {
-    return yP / this.scalePhy() - this.parent.geo.y0;
-  }
-
-  RTL(lP) {
+  pToMmL(lP) {
     return lP / this.scalePhy();
   }
 
@@ -165,17 +149,67 @@ export class CbaseElem {
     this.parent?.raiseChildR(this.id);
   }
 
-  defineCursor(x, y, currentCursor = "default") {
+  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (
       x < this.geo.x0 ||
       x > this.geo.x0 + this.geo.width ||
       y < this.geo.y0 ||
       y > this.geo.y0 + this.geo.height
     )
-      return currentCursor;
+      return idz;
+    idz = { id: this.id, zone: "M" };
     for (let child of this.children) {
-      currentCursor = child.defineCursor(x - this.geo.x0, y - this.geo.y0, currentCursor);
+      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    return currentCursor;
+    // console.log(`[CbaseElem.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    return idz;
+  }
+
+  defineCursor(idz) {
+    let cursor;
+    // console.log(`[CbaseElem.defineCursor] (${this.id}) errorId:${hsm.hElems.errorId}`);
+    // TODO adjust...
+    if (hsm.hElems.errorId) {
+      cursor = "no-drop";
+      return cursor;
+    }
+    if (hsm.hElems.getDraggedId()) {
+      cursor = "grabbing";
+      return cursor;
+    }
+    switch (idz.zone) {
+      case "M":
+        cursor = "grab";
+        break;
+      case "TL":
+        cursor = "nwse-resize";
+        break;
+      case "BL":
+        cursor = "nesw-resize";
+        break;
+      case "TR":
+        cursor = "nesw-resize";
+        break;
+      case "BR":
+        cursor = "nwse-resize";
+        break;
+      case "T":
+        cursor = "pointer";
+        break;
+      case "B":
+        cursor = "pointer";
+        break;
+      case "L":
+        cursor = "pointer";
+        break;
+      case "R":
+        cursor = "pointer";
+        break;
+      default:
+        cursor = "default";
+    }
+    // console.log(`[CbaseElem.defineCursor] (${this.id}) zone:${idz.zone} cursor:${cursor}`);
+    return cursor;
   }
 }

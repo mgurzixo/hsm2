@@ -5,6 +5,7 @@ import * as U from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
 import { Cfolio } from "src/classes/Cfolio";
+import { mousePos } from "src/lib/canvasListeners";
 
 export let canvas = null;
 export let ctx = null;
@@ -42,6 +43,8 @@ export class Chsm extends CbaseElem {
   load(hsmOptions) {
     this.settings = hsmOptions.settings;
     this.state = hsmOptions.state;
+    this.hElems.clear();
+    this.hElems.insert(this);
     for (let folioOptions of hsmOptions.folios) {
       this.addFolio(folioOptions);
     }
@@ -99,8 +102,16 @@ export class Chsm extends CbaseElem {
     this.draw();
   }
 
-  defineCursor(x, y, currentCursor = "default") {
-    currentCursor = folio?.defineCursor(x, y, currentCursor);
-    return currentCursor;
+  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
+    idz = folio?.getIdAndZone(x, y, idz);
+    // console.log(`[Chsm.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    return idz;
+  }
+
+  setupCursor() {
+    const idz = hsm.getIdAndZone(hsm.pToMmL(mousePos.x), hsm.pToMmL(mousePos.y));
+    const elem = hsm.hElems.getById(idz.id);
+    hsm.hElems.setIdAndZone(idz);
+    hsm.setCursor(elem.defineCursor(idz));
   }
 }

@@ -9,7 +9,7 @@
     deltaScale: 0.1,
     minDistanceMm: 0.5,
     dragResetSpeed: 3,
-    cursorMarginP: 5,
+    cursorMarginP: 8,
     styles: {
       silhouetteDefault: "black",
       silhouetteSelected: "black`",

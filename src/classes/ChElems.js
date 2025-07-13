@@ -10,6 +10,7 @@ export class ChElems {
     this.errorId = "";
     this.draggedId = "";
     this.dragCtx = {};
+    this.idAndZone = {};
   }
 
   insert(obj) {
@@ -35,6 +36,14 @@ export class ChElems {
 
   getSelectedId() {
     return this.selectedId;
+  }
+
+  setIdAndZone(idz) {
+    this.idAndZone = idz;
+  }
+
+  getIdAndZone() {
+    return this.idAndZone;
   }
 
   setErrorId(id) {

@@ -45,7 +45,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   hoverP(xP, yP) {
-    const [x, y] = this.pToMm(xP, yP);
+    const [x, y] = this.pToMmXY(xP, yP);
   }
 
   clickP(xP, yP) {
@@ -89,11 +89,15 @@ export class Cfolio extends CbaseRegion {
   dragP(dxP, dyP) {
     const dx = dxP / this.scalePhy();
     const dy = dyP / this.scalePhy();
+    const idz = hsm.getIdAndZone(hsm.pToMmL(mousePos.x), hsm.pToMmL(mousePos.y));
+    const elem = hsm.hElems.getById(idz.id);
+    hsm.hElems.setIdAndZone(idz);
     if (hsm.hElems.getDraggedId() != this.id) {
       for (let child of this.children.toReversed()) {
         child.drag(dx, dy);
       }
       hsm.draw();
+      hsm.setCursor(elem.defineCursor(idz));
       return;
     }
     // console.log(`[Cfolio.dragP] dx:${dx} dy:${dy}`);
@@ -102,7 +106,8 @@ export class Cfolio extends CbaseRegion {
     this.geo.x0 = x0 + dx;
     this.geo.y0 = y0 + dy;
     hsm.draw();
-    hsm.setCursor(this.defineCursor(hsm.RTL(mousePos.x), hsm.RTL(mousePos.y)));
+    console.log(`[Cfolio.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    hsm.setCursor(elem.defineCursor(idz));
   }
 
   dragEndP(dxP, dyP) {
@@ -119,6 +124,7 @@ export class Cfolio extends CbaseRegion {
     if (!hsm.hElems.getErrorId()) {
       hsm.hElems.dragEnd();
       hsm.draw();
+      hsm.setupCursor();
     }
     // Else resetDrag will do it!
   }
@@ -133,7 +139,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   wheelP(xP, yP, dyP) {
-    const [x, y] = this.pToMm(xP, yP);
+    const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
     let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
     scale = Math.min(Math.max(0.1, scale), 10);
@@ -146,18 +152,15 @@ export class Cfolio extends CbaseRegion {
     hsm.draw();
   }
 
-  defineCursor(x, y, currentCursor = "default") {
-    if (
-      x < this.geo.x0 ||
-      x > this.geo.x0 + this.geo.width ||
-      y < this.geo.y0 ||
-      y > this.geo.y0 + this.geo.height
-    )
-      return "default";
-    currentCursor = "grab";
+  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    if (x < this.geo.x0 || y < this.geo.y0) return idz;
+    if (x < this.geo.x0 || y < this.geo.y0) return idz;
+    idz = { id: this.id, zone: "M" };
     for (let child of this.children) {
-      currentCursor = child.defineCursor(x - this.geo.x0, y - this.geo.y0, currentCursor);
+      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    return currentCursor;
+    // console.log(`[Cfolio.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    return idz;
   }
 }

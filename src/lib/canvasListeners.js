@@ -46,7 +46,10 @@ export function handleMouseMove(e) {
     // console.log(`[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging}`);
     folio.dragP(dx, dy);
   } else {
-    hsm.setCursor(hsm.defineCursor(hsm.RTL(mousePos.x), hsm.RTL(mousePos.y)));
+    const idz = hsm.getIdAndZone(hsm.pToMmL(mousePos.x), hsm.pToMmL(mousePos.y));
+    const elem = hsm.hElems.getById(idz.id);
+    // console.log(`[canvasListeners.handleMouseMove] elem:${elem} ${JSON.stringify(idz)}`);
+    hsm.setCursor(elem.defineCursor(idz));
   }
 }
 
