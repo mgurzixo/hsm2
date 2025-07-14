@@ -13,9 +13,9 @@ export class CbaseRegion extends CbaseElem {
   // Returns childrenBB in parent origin
   getChildrenBB(bb) {
     if (this.id.startsWith("E")) return bb;
-    console.log(`[Cregion.getChildrenBB] geo.y0:${this.geo.y0}`);
+    // console.log(`[Cregion.getChildrenBB] geo.y0:${this.geo.y0}`);
     for (let child of this.children) {
-      console.log(`[Cregion.getChildrenBB] ${child.id}.geo.y0:${child.geo.y0}`);
+      // console.log(`[Cregion.getChildrenBB] ${child.id}.geo.y0:${child.geo.y0}`);
       let u = child.geo.x0;
       if (bb.x0 == null) bb.x0 = u;
       else if (u < bb.x0) bb.x0 = u;
@@ -41,7 +41,7 @@ export class CbaseRegion extends CbaseElem {
   }
 
   setChildrenDragOrigin() {
-    console.log(`[Cregion.setChildrenDragOrigin] myId:${this.id}`);
+    // console.log(`[Cregion.setChildrenDragOrigin] myId:${this.id}`);
     for (let child of this.children) {
       child.dragOrigin = { x0: child.geo.x0, y0: child.geo.y0 };
     }
@@ -73,21 +73,12 @@ export class Cregion extends CbaseRegion {
     myState.load(stateOptions);
   }
 
-  dragStart(xx, yy) {
-    // (xx, yy) in mm from parent origin
-    // Inside us
-    let elem;
-    const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
+  dragStart() {
     // console.log(
     //   `[Cregion.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
     // );
-    if (!U.pointInWH(x, y, this.geo)) return null;
-    for (let child of this.children.toReversed()) {
-      // Is it inside a child
-      elem = child.dragStart(x, y);
-      if (elem) break;
-    }
-    if (elem) return elem;
+    const idz = this.idz();
+    const [x, y] = [idz.x, idz.y];
     // For now, the region is not draggable
     // this.parent.raiseChildR(this.id);
     // hsm.hElems.setDragCtx(this.id, {x0:this.geo.x0, y0:this.geo.y0, type:"MOVE"});
@@ -133,5 +124,29 @@ export class Cregion extends CbaseRegion {
       myState.load(stateOption);
     }
     this.updateGeo00();
+  }
+
+  getIdAndZone(x, y, idz) {
+    const bak = Object.assign({}, idz);
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    if (
+      x < this.geo.x0 - m ||
+      x > this.geo.x0 + this.geo.width + m ||
+      y < this.geo.y0 - m ||
+      y > this.geo.y0 + this.geo.height + m
+    )
+      return idz;
+    idz = { id: this.id, zone: "M" };
+    for (let child of this.children) {
+      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
+    }
+    if (idz.id == this.id) {
+      // It is for us.
+      // In fact, the parent state has setup a correct idz
+      // and we have to use it
+      return bak;
+    }
+    // console.log(`[Cregion.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    return idz;
   }
 }

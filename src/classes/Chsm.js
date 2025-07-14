@@ -25,7 +25,9 @@ export class Chsm extends CbaseElem {
     hsm = this;
   }
 
-  setCursor(val) {
+  setCursor(idz) {
+    const elem = hsm.hElems.getById(idz.id);
+    const val = elem.defineCursor(idz);
     cursor.value = val;
   }
 
@@ -106,12 +108,5 @@ export class Chsm extends CbaseElem {
     idz = folio?.getIdAndZone(x, y, idz);
     // console.log(`[Chsm.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
     return idz;
-  }
-
-  setupCursor() {
-    const idz = hsm.getIdAndZone(hsm.pToMmL(mousePos.x), hsm.pToMmL(mousePos.y));
-    const elem = hsm.hElems.getById(idz.id);
-    hsm.hElems.setIdAndZone(idz);
-    hsm.setCursor(elem.defineCursor(idz));
   }
 }

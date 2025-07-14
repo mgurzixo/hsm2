@@ -82,67 +82,38 @@ export class Cstate extends CbaseState {
     return bb;
   }
 
-  dragStart(xx, yy) {
-    // (xx, yy) in mm from parent origin
-    // Inside us
-    let elem;
-    const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    // console.log(`[Cstate.dragStart] ${this.id} xx:${xx?.toFixed()} x:${x?.toFixed()}`);
+  dragStart() {
+    const idz = this.idz();
+    const [x, y] = [idz.x, idz.y];
+    // console.log(`[Cstate.dragStart] (${this.id}) x:${x?.toFixed()}`);
     // console.log(
     //   `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
     // );
-    if (!U.pointInWH(x, y, this.geo)) return null;
-    for (let child of this.children.toReversed()) {
-      // Is it inside a child
-      elem = child.dragStart(x, y);
-      if (elem) break;
-    }
-    if (elem) return elem;
-    // For us
-    // Is it an angle
-    let type = "";
-    const sSize = hsm.settings.stateRadiusMm;
-    const width = this.geo.width;
-    const height = this.geo.height;
-    if (x <= sSize) {
-      if (y <= sSize) type = "TL";
-      if (y >= height - sSize) type = "BL";
-    } else if (x >= width - sSize) {
-      if (y <= sSize) type = "TR";
-      if (y >= height - sSize) type = "BR";
-    }
-    if (!type) type = "M";
-    else {
-      this.setGrandchildrenDragOrigin();
-      this.grandchildrenBB = this.getGrandchildrenBB();
-    }
-    hsm.hElems.setDragCtx(this.id, {
+    this.grandchildrenBB = this.getGrandchildrenBB();
+    this.setGrandchildrenDragOrigin();
+    const dragCtx = {
       x0: this.geo.x0,
       y0: this.geo.y0,
       width: this.geo.width,
       height: this.geo.height,
-      type: type,
-    });
-    // console.log(`[Cstate.dragStart] ${this.id} type:${type}`);
+    };
+    // console.log(`[Cstate.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
+    hsm.hElems.setDragCtx(this.id, dragCtx);
     this.parent.raiseChildR(this.id);
     return this;
   }
 
   drag(dx, dy) {
-    if (hsm.hElems.getDraggedId() != this.id) {
-      for (let child of this.children.toReversed()) {
-        child.drag(dx, dy);
-      }
-      return;
-    }
-    // console.log(`[Cstate.drag] id:${this.id} dx:${dx} dy:${dy}`);
+    const idz = this.idz();
+    // console.log(`[Cstate.drag] id:${this.id} dx:${dx.toFixed()} dy:${dy.toFixed()}`);
     const dragCtx = hsm.hElems.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
     let width = dragCtx.width;
     let height = dragCtx.height;
-    if (dragCtx.type == "M") {
-      // console.log(`[Cstate.drag] id:${this.id} dragCtx.type:${dragCtx.type}`);
+    // console.log(`[Cstate.drag] dragCtx:${JSON.stringify(dragCtx)}`);
+    if (idz.zone == "M") {
+      // console.log(`[Cstate.drag] id:${this.id} idz.zone:${idz.zone}`);
       dx = U.myClamp(
         dx,
         x0,
@@ -160,7 +131,7 @@ export class Cstate extends CbaseState {
       x0 += dx;
       y0 += dy;
     } else {
-      if (dragCtx.type.includes("T")) {
+      if (idz.zone.includes("T")) {
         if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
         if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
         // console.log(
@@ -173,7 +144,7 @@ export class Cstate extends CbaseState {
         for (let child of this.children) {
           child.patchChildrenOrigin(null, dy);
         }
-      } else if (dragCtx.type.includes("B")) {
+      } else if (idz.zone.includes("B")) {
         if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
         if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
           dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
@@ -184,7 +155,7 @@ export class Cstate extends CbaseState {
           dy = this.grandchildrenBB.y1 + hsm.settings.minDistanceMm - height;
         height += dy;
       }
-      if (dragCtx.type.includes("L")) {
+      if (idz.zone.includes("L")) {
         if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
         if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
         if (this.grandchildrenBB.x0 && dx > this.grandchildrenBB.x0 - hsm.settings.minDistanceMm)
@@ -194,7 +165,7 @@ export class Cstate extends CbaseState {
         for (let child of this.children) {
           child.patchChildrenOrigin(dx, null);
         }
-      } else if (dragCtx.type.includes("R")) {
+      } else if (idz.zone.includes("R")) {
         if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
         if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
           dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
@@ -208,7 +179,7 @@ export class Cstate extends CbaseState {
     }
 
     // console.log(
-    //   `[Cstate.drag] type:${dragCtx.type} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
+    //   `[Cstate.drag] type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
     // );
     this.geo.x0 = x0;
     this.geo.y0 = y0;
@@ -216,9 +187,6 @@ export class Cstate extends CbaseState {
     this.geo.width = width;
     if (this.parent.childIntersect(this)) hsm.hElems.setErrorId(this.id);
     else hsm.hElems.setErrorId(null);
-    for (let child of this.children.toReversed()) {
-      child.drag(dx, dy);
-    }
   }
 
   resetDrag(deltaX, deltaY) {
@@ -243,6 +211,8 @@ export class Cstate extends CbaseState {
         window.requestIdleCallback(myCb);
       }
       hsm.draw();
+      const idz = hsm.hElems.getIdAndZone();
+      hsm.setCursor(idz);
     }
     window.requestIdleCallback(myCb);
   }
@@ -330,8 +300,8 @@ export class Cstate extends CbaseState {
     }
   }
 
-  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
-    // console.log(`[Cstate.getIdAndZone] id:${this.id}`);
+  getIdAndZone(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+    // console.log(`[Cstate.getIdAndZone] (${this.id}) x:${x}`);
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     const r = hsm.settings.stateRadiusMm;
     if (
@@ -353,7 +323,7 @@ export class Cstate extends CbaseState {
       else if (x >= this.geo.x0 + this.geo.width - m) zone = "R";
     } else if (y <= this.geo.y0 + m) zone = "T";
     else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
-    idz = { id: id, zone: zone };
+    idz = { id: id, zone: zone, x: x, y: y };
     for (let child of this.children) {
       idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
     }

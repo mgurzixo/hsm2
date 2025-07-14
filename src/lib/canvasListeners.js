@@ -24,45 +24,45 @@ export function getXYFromMouseEvent(e) {
 }
 
 export function handleMouseMove(e) {
-  const [x, y] = getXYFromMouseEvent(e);
-  mousePos.x = x;
-  mousePos.y = y;
+  const [xP, yP] = getXYFromMouseEvent(e);
+  mousePos.x = xP;
+  mousePos.y = yP;
+  const [x, y] = [hsm.pToMmL(xP), hsm.pToMmL(yP)];
 
   if (!isDragging && e.buttons & 1) {
-    const dx = x - mouseDown.x;
-    const dy = y - mouseDown.y;
-    const d = dx * dx + dy * dy;
+    const dxP = xP - mouseDown.x;
+    const dyP = yP - mouseDown.y;
+    const dP = dxP * dxP + dyP * dyP;
     // console.log(
     //   `[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging} buttons:${e.buttons} d:${d}`,
     // );
-    if (d > 5) {
+    if (dP > 16) {
       isDragging = true;
-      folio.dragStartP(mouseDown.x, mouseDown.y);
+      const [mdx, mdy] = [hsm.pToMmL(mouseDown.x), hsm.pToMmL(mouseDown.y)];
+      let idz = hsm.getIdAndZone(mdx, mdy);
+      hsm.hElems.setIdAndZone(idz);
+      folio.dragStart();
     }
   }
   if (isDragging == true) {
-    const dx = x - mouseDown.x;
-    const dy = y - mouseDown.y;
-    // console.log(`[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging}`);
-    folio.dragP(dx, dy);
+    const [dxP, dyP] = [xP - mouseDown.x, yP - mouseDown.y];
+    const [dx, dy] = [hsm.pToMmL(dxP), hsm.pToMmL(dyP)];
+    folio.drag(dx, dy);
   } else {
-    const idz = hsm.getIdAndZone(hsm.pToMmL(mousePos.x), hsm.pToMmL(mousePos.y));
-    const elem = hsm.hElems.getById(idz.id);
+    const idz = hsm.getIdAndZone(x, y);
     // console.log(`[canvasListeners.handleMouseMove] elem:${elem} ${JSON.stringify(idz)}`);
-    hsm.setCursor(elem.defineCursor(idz));
+    hsm.setCursor(idz);
   }
 }
 
 export function handleMouseDown(e) {
-  const [x, y] = getXYFromMouseEvent(e);
+  const [xP, yP] = getXYFromMouseEvent(e);
   if (e.buttons & 1) {
     button1Down = true;
-    mouseDown = { x: x, y: y };
-    // console.log(`[canvasListeners.handleMouseDown] x:${x} y:${y} Button 1`);
+    mouseDown = { x: xP, y: yP };
   }
   if (e.buttons & 2) {
     button2Down = true;
-    // console.log(`[canvasListeners.handleMouseDown] x:${x} y:${y} Button 2`);
   }
   // console.log(
   //   `[canvasListeners.handleMouseUp] button1Down:${button1Down} button2Down:${button2Down}`,
@@ -70,18 +70,21 @@ export function handleMouseDown(e) {
 }
 
 export function handleMouseUp(e) {
-  const [x, y] = getXYFromMouseEvent(e);
+  const [xP, yP] = getXYFromMouseEvent(e);
   // console.log(
   //   `[canvasListeners.handleMouseUp] x:${x} y:${y} buttons:${e.buttons} button1Down:${button1Down} button2Down:${button2Down}`,
   // );
   if (button1Down && ~e.buttons & 1) {
     // Button 1 released
     if (isDragging) {
-      folio.dragEndP(x - mouseDown.x, y - mouseDown.y);
+      const [dx, dy] = [hsm.pToMmL(xP - mouseDown.x), hsm.pToMmL(yP - mouseDown.y)];
+
+      folio.dragEnd(dx, dy);
       isDragging = false;
     } else {
+      const [x, y] = [hsm.pToMmL(xP), hsm.pToMmL(yP)];
       // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got click`);
-      folio.clickP(x, y);
+      folio.click(x, y);
     }
     button1Down = false;
   }
@@ -89,7 +92,7 @@ export function handleMouseUp(e) {
     // Button 2 released
     // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got right click`);
     button2Down = false;
-    hsm.handleRightClick(x, y, e.clientX, e.clientY);
+    hsm.handleRightClick(xP, yP, e.clientX, e.clientY);
   }
 }
 

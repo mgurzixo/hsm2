@@ -71,16 +71,11 @@ export class CbaseElem {
   hover(x, y) {}
   click(x, y) {}
   doubleClick(x, y) {}
-  dragStart(x, y) {
-    return null;
-  }
+  dragStart() {}
   drag(dx, dy) {}
 
   dragEnd(dx, dy) {
     // console.log(`[CbaseElem.dragEnd] id:${this.id}`);
-    for (let child of this.children.toReversed()) {
-      child.dragEnd(dx, dy);
-    }
   }
 
   dragCancel(dx, dy) {}
@@ -149,7 +144,7 @@ export class CbaseElem {
     this.parent?.raiseChildR(this.id);
   }
 
-  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
+  getIdAndZone(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (
       x < this.geo.x0 ||
@@ -158,7 +153,7 @@ export class CbaseElem {
       y > this.geo.y0 + this.geo.height
     )
       return idz;
-    idz = { id: this.id, zone: "M" };
+    idz = { id: this.id, zone: "M", x: x, y: y };
     for (let child of this.children) {
       idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
     }
@@ -180,7 +175,7 @@ export class CbaseElem {
     }
     switch (idz.zone) {
       case "M":
-        cursor = "grab";
+        cursor = "move";
         break;
       case "TL":
         cursor = "nwse-resize";
@@ -195,21 +190,25 @@ export class CbaseElem {
         cursor = "nwse-resize";
         break;
       case "T":
-        cursor = "pointer";
+        cursor = "row-resize";
         break;
       case "B":
-        cursor = "pointer";
+        cursor = "row-resize";
         break;
       case "L":
-        cursor = "pointer";
+        cursor = "col-resize";
         break;
       case "R":
-        cursor = "pointer";
+        cursor = "col-resize";
         break;
       default:
         cursor = "default";
     }
     // console.log(`[CbaseElem.defineCursor] (${this.id}) zone:${idz.zone} cursor:${cursor}`);
     return cursor;
+  }
+
+  idz() {
+    return hsm.hElems.getIdAndZone();
   }
 }
