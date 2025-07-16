@@ -2,7 +2,7 @@
   settings: {
     screenDpi: 94,
     stateRadiusMm: 4,
-    stateTitleHeight: 4,
+    stateTitleHeightMm: 6,
     stateMinHeight: 10,
     stateMinWidth: 10,
     deltaMouseWheel: 120,
@@ -15,6 +15,9 @@
       silhouetteSelected: "black`",
       silhouetteError: "red",
       folioBackground: "white",
+      stateLightnessPc: 90,
+      titleLightnessPcs: [70, 80],
+      stateColor: "blue",
       stateBackground: "FloralWhite",
       stateTitleBackground: "AntiqueWhite",
       stateTitleLine: "black",

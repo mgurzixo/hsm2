@@ -5,6 +5,7 @@ import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
 import { hsm, ctx } from "src/classes/Chsm";
+import Color from "colorjs.io";
 
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
@@ -230,11 +231,13 @@ export class Cstate extends CbaseState {
     } else this.drag(dx, dy);
   }
 
-  pathTitle(px, py, pwidth, pradius) {
+  pathTitle(px, py, pwidth, pheight, pradius) {
     ctx.beginPath();
     ctx.moveTo(px + pradius, py);
     ctx.lineTo(px + pwidth - pradius, py);
     ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+    ctx.lineTo(px + pwidth, py + pheight);
+    ctx.lineTo(px, py + pheight);
     ctx.lineTo(px, py + pradius);
     ctx.quadraticCurveTo(px, py, px + pradius, py);
     ctx.closePath();
@@ -253,15 +256,30 @@ export class Cstate extends CbaseState {
     y0 = RR(this.mmToPL(y0));
     const width = R(this.mmToPL(this.geo.width));
     const height = R(this.mmToPL(this.geo.height));
-    const titleHeight = R(this.mmToPL(hsm.settings.stateRadiusMm));
+    let titleHeight = R(this.mmToPL(hsm.settings.stateTitleHeightMm));
     const stateRadiusP = R(this.mmToPL(hsm.settings.stateRadiusMm));
+    if (titleHeight < hsm.settings.stateRadiusMm) titleHeight = hsm.settings.stateRadiusMm;
     // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
+    let stateBackgroundColor = new Color(hsm.settings.styles.stateColor);
+    const titleLightness = hsm.settings.styles.titleLightnessPcs;
+    let [stateTitleColor1, stateTitleColor2] = [
+      new Color(stateBackgroundColor),
+      new Color(stateBackgroundColor),
+    ];
+    stateBackgroundColor.lch.l = hsm.settings.styles.stateLightnessPc;
+    stateTitleColor1.lch.l = titleLightness[0];
+    stateTitleColor2.lch.l = titleLightness[1];
+    const stateBackgroundColorSrgb = stateBackgroundColor.to("srgb") + "";
+    // console.log(`[Cstate.draw] stateBackgroundColor:${stateBackgroundColor.to("srgb") + ""}`);
     // Draw background
-    ctx.fillStyle = hsm.settings.styles.stateBackground;
+    ctx.fillStyle = stateBackgroundColorSrgb;
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     ctx.fill();
-    ctx.fillStyle = hsm.settings.styles.stateTitleBackground;
-    this.pathTitle(x0, y0, width, stateRadiusP);
+    const titleGradient = ctx.createLinearGradient(x0, y0, x0, y0 + titleHeight);
+    titleGradient.addColorStop(1, stateTitleColor1.to("srgb") + "");
+    titleGradient.addColorStop(0, stateTitleColor2.to("srgb") + "");
+    ctx.fillStyle = titleGradient;
+    this.pathTitle(x0, y0, width, titleHeight, stateRadiusP);
     ctx.fill();
 
     // Draw silhouette
