@@ -131,7 +131,9 @@ export class Cfolio extends CbaseRegion {
   wheelP(xP, yP, dyP) {
     const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
+    console.log(`[Cfolio.getIdAndZone] scale0:${this.geo.scale}`);
     let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
+    if (scale >= 1.5) scale += deltas * hsm.settings.deltaScale;
     scale = Math.min(Math.max(0.1, scale), 10);
     const rScale = scale / this.geo.scale;
     this.geo.scale = scale;

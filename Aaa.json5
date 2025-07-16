@@ -7,6 +7,7 @@
     stateMinWidth: 10,
     deltaMouseWheel: 120,
     deltaScale: 0.1,
+    deltaScale2: 0.2,
     minDistanceMm: 0.5,
     dragResetSpeed: 3,
     cursorMarginP: 8,
