@@ -8,6 +8,7 @@ export class CbaseElem {
   static sernum = 0;
 
   constructor(parent, obj, type) {
+    console.log(`[CbaseElem.constructor] type:${type}`);
     let id = obj.id;
     if (!id) id = type + ++CbaseElem.sernum;
     this.id = id;
@@ -16,7 +17,10 @@ export class CbaseElem {
     this.children = [];
     if (obj.geo) this.geo = obj.geo;
     else this.geo = { x0: 0, y0: 0, x00: 0, y00: 0 }; // Offset from parent
-
+    if (obj.color) this.color = obj.color;
+    else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
+    else if (hsm) this.color = hsm.settings.styles.defaultColor;
+    else this.color = "grey";
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 

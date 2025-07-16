@@ -35,8 +35,8 @@ export class Cstate extends CbaseState {
     hsm.hElems.insert(myRegion);
     this.children.push(myRegion);
     myRegion.load(regionOptions);
-    myRegion.geo.y0 = hsm.settings.stateRadiusMm;
-    myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateRadiusMm;
+    myRegion.geo.y0 = hsm.settings.stateTitleHeightMm;
+    myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateTitleHeightMm;
   }
 
   load(stateOptions) {
@@ -260,7 +260,10 @@ export class Cstate extends CbaseState {
     const stateRadiusP = R(this.mmToPL(hsm.settings.stateRadiusMm));
     if (titleHeight < hsm.settings.stateRadiusMm) titleHeight = hsm.settings.stateRadiusMm;
     // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
-    let stateBackgroundColor = new Color(hsm.settings.styles.stateColor);
+    let stateBackgroundColor;
+    if (this.color) stateBackgroundColor = new Color(this.color);
+    else stateBackgroundColor = new Color(hsm.settings.styles.defaultColor);
+    stateBackgroundColor.lch.c = hsm.settings.styles.stateColorChroma;
     const titleLightness = hsm.settings.styles.titleLightnessPcs;
     let [stateTitleColor1, stateTitleColor2] = [
       new Color(stateBackgroundColor),
