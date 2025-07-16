@@ -5,12 +5,13 @@ import { hsm, ctx, folio } from "src/classes/Chsm";
 const inchInMm = 25.4;
 
 export class CbaseElem {
-  static sernum = 0;
+  static serNum = 0;
 
   constructor(parent, obj, type) {
     console.log(`[CbaseElem.constructor] type:${type}`);
     let id = obj.id;
-    if (!id) id = type + ++CbaseElem.sernum;
+    if (!id) id = type + ++CbaseElem.serNum;
+    else if (CbaseElem.serNum <= id) CbaseElem.serNum + 1;
     this.id = id;
     this.name = obj.name;
     this.parent = parent;

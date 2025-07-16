@@ -27,7 +27,7 @@
     },
   },
   state: {
-    serId: 4,
+    serNum: 4,
     filePath: "/home/mgouget/dev/hsm2/Aaa.json5",
     activeFolio: "F1",
   },

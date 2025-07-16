@@ -45,6 +45,7 @@ export class Chsm extends CbaseElem {
   load(hsmOptions) {
     this.settings = hsmOptions.settings;
     this.state = hsmOptions.state;
+    CbaseElem.serNum = hsmOptions.serNum;
     this.hElems.clear();
     this.hElems.insert(this);
     for (let folioOptions of hsmOptions.folios) {
