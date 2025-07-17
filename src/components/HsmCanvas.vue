@@ -52,10 +52,9 @@ function handleRightClick(mouseX, mouseY, rawMouseX, rawMouseY) {
 
 V.onMounted(() => {
   V.nextTick(() => {
-    new Chsm(null, { name: "Hsm" });
-    loadHsm(); // For devpt
     const canvas = canvasRef.value;
-    hsm.setCanvas(canvas);
+    new Chsm(null, { name: "Hsm", canvas: canvas });
+    loadHsm(); // For devpt
     setCanvasListeners();
     hsm.handleRightClick = handleRightClick;
   });

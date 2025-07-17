@@ -17,8 +17,8 @@
       silhouetteError: "red",
       folioBackground: "white",
       defaultColor: "darkorange",
-      stateColorChroma: 18,
-      stateLightnessPc: 97,
+      stateColorChroma: 30,
+      stateLightnessPc: 98,
       titleLightnessPcs: [80, 95],
       stateTitleLine: "black",
       silhouetteWidth: 1,
@@ -88,7 +88,7 @@
                         {
                           id: "S7",
                           name: "5th state",
-                          color: "blueviolet",
+                          color: "green",
                           geo: {
                             x0: 10,
                             y0: 10,
@@ -103,7 +103,7 @@
                 {
                   id: "S8",
                   name: "4th state with a very long name",
-                  color: "green",
+                  color: "red",
                   geo: {
                     x0: 60,
                     y0: 10,
@@ -118,12 +118,12 @@
         {
           id: "S3",
           name: "Second state",
-          color: "blue",
+          color: "green",
           geo: {
             x0: 20,
             y0: 120,
-            width: 40,
-            height: 20,
+            width: 90,
+            height: 40,
           },
         },
       ],

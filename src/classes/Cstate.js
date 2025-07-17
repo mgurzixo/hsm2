@@ -4,7 +4,7 @@ import * as U from "src/lib/utils";
 import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
-import { hsm, ctx } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx } from "src/classes/Chsm";
 import Color from "colorjs.io";
 
 class CbaseState extends CbaseElem {
@@ -32,7 +32,7 @@ export class Cstate extends CbaseState {
 
   addRegion(regionOptions) {
     const myRegion = new Cregion(this, regionOptions);
-    hsm.hElems.insert(myRegion);
+    hsm.hElems.insertElem(myRegion);
     this.children.push(myRegion);
     myRegion.load(regionOptions);
     myRegion.geo.y0 = hsm.settings.stateTitleHeightMm;
@@ -47,7 +47,6 @@ export class Cstate extends CbaseState {
       const regionOptions = stateOptions.regions[id];
       this.addRegion(regionOptions);
     }
-    this.updateGeo00();
   }
 
   click(xx, yy) {
@@ -93,13 +92,14 @@ export class Cstate extends CbaseState {
     this.grandchildrenBB = this.getGrandchildrenBB();
     this.setGrandchildrenDragOrigin();
     const dragCtx = {
+      id: this.id,
       x0: this.geo.x0,
       y0: this.geo.y0,
       width: this.geo.width,
       height: this.geo.height,
     };
     // console.log(`[Cstate.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
-    hsm.hElems.setDragCtx(this.id, dragCtx);
+    hCtx.setDragCtx(dragCtx);
     this.parent.raiseChildR(this.id);
     return this;
   }
@@ -107,7 +107,7 @@ export class Cstate extends CbaseState {
   drag(dx, dy) {
     const idz = this.idz();
     // console.log(`[Cstate.drag] id:${this.id} dx:${dx.toFixed()} dy:${dy.toFixed()}`);
-    const dragCtx = hsm.hElems.getDragCtx();
+    const dragCtx = hCtx.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
     let width = dragCtx.width;
@@ -186,8 +186,8 @@ export class Cstate extends CbaseState {
     this.geo.y0 = y0;
     this.geo.height = height;
     this.geo.width = width;
-    if (this.parent.childIntersect(this)) hsm.hElems.setErrorId(this.id);
-    else hsm.hElems.setErrorId(null);
+    if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
+    else hCtx.setErrorId(null);
   }
 
   resetDrag(deltaX, deltaY) {
@@ -196,23 +196,22 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.resetDrag] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
     let currentIteration = 0;
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
-    const myThis = this;
 
     function myCb() {
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
       // console.log(`[Cstate.resetDrag] #${currentIteration} ease:${ease.toFixed(2)}`);
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
-      myThis.drag(dx, dy);
+      hsm.drag(dx, dy);
       if (currentIteration >= totalIterations) {
-        hsm.hElems.setErrorId(null);
-        hsm.hElems.dragEnd();
+        hCtx.setErrorId(null);
+        hCtx.dragEnd();
       } else {
         currentIteration++;
         window.requestIdleCallback(myCb);
       }
       hsm.draw();
-      const idz = hsm.hElems.getIdAndZone();
+      const idz = hCtx.getIdz(); // This is not defined...
       hsm.setCursor(idz);
     }
     window.requestIdleCallback(myCb);
@@ -220,27 +219,24 @@ export class Cstate extends CbaseState {
 
   dragEnd(dx, dy) {
     // console.log(`[Cstate.dragEnd]`);
-    if (hsm.hElems.getDraggedId() != this.id) {
-      for (let child of this.children.toReversed()) {
-        child.dragEnd(dx, dy);
-      }
-      return;
-    }
-    if (hsm.hElems.getErrorId() == this.id) {
+    this.drag(dx, dy);
+    if (hCtx.getErrorId() == this.id) {
       this.resetDrag(dx, dy);
-    } else this.drag(dx, dy);
+      return false;
+    }
+    return true;
   }
 
   pathTitle(px, py, pwidth, pheight, pradius) {
-    ctx.beginPath();
-    ctx.moveTo(px + pradius, py);
-    ctx.lineTo(px + pwidth - pradius, py);
-    ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
-    ctx.lineTo(px + pwidth, py + pheight);
-    ctx.lineTo(px, py + pheight);
-    ctx.lineTo(px, py + pradius);
-    ctx.quadraticCurveTo(px, py, px + pradius, py);
-    ctx.closePath();
+    cCtx.beginPath();
+    cCtx.moveTo(px + pradius, py);
+    cCtx.lineTo(px + pwidth - pradius, py);
+    cCtx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+    cCtx.lineTo(px + pwidth, py + pheight);
+    cCtx.lineTo(px, py + pheight);
+    cCtx.lineTo(px, py + pradius);
+    cCtx.quadraticCurveTo(px, py, px + pradius, py);
+    cCtx.closePath();
   }
 
   draw() {
@@ -249,7 +245,7 @@ export class Cstate extends CbaseState {
     let [x0, y0] = this.getXY0InFolio();
     // console.log(`[Cstate.draw] x0:${x0}`);
     let silhouetteWidth = hsm.settings.styles.stateSilhouetteWidth;
-    if (hsm.hElems.getErrorId() == this.id) {
+    if (hCtx.getErrorId() == this.id) {
       silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
     }
     x0 = RR(this.mmToPL(x0), silhouetteWidth);
@@ -275,42 +271,42 @@ export class Cstate extends CbaseState {
     const stateBackgroundColorSrgb = stateBackgroundColor.to("srgb") + "";
     // console.log(`[Cstate.draw] stateBackgroundColor:${stateBackgroundColor.to("srgb") + ""}`);
     // Draw background
-    ctx.fillStyle = stateBackgroundColorSrgb;
+    cCtx.fillStyle = stateBackgroundColorSrgb;
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
-    ctx.fill();
-    const titleGradient = ctx.createLinearGradient(x0, y0, x0, y0 + titleHeight);
+    cCtx.fill();
+    const titleGradient = cCtx.createLinearGradient(x0, y0, x0, y0 + titleHeight);
     titleGradient.addColorStop(1, stateTitleColor1.to("srgb") + "");
     titleGradient.addColorStop(0, stateTitleColor2.to("srgb") + "");
-    ctx.fillStyle = titleGradient;
+    cCtx.fillStyle = titleGradient;
     this.pathTitle(x0, y0, width, titleHeight, stateRadiusP);
-    ctx.fill();
+    cCtx.fill();
 
     // Draw silhouette
-    ctx.lineWidth = silhouetteWidth;
-    if (hsm.hElems.getErrorId() == this.id) {
-      ctx.strokeStyle = hsm.settings.styles.silhouetteError;
-    } else if (hsm.hElems.getSelectedId() == this.id) {
-      ctx.strokeStyle = hsm.settings.styles.silhouetteSelected;
+    cCtx.lineWidth = silhouetteWidth;
+    if (hCtx.getErrorId() == this.id) {
+      cCtx.strokeStyle = hsm.settings.styles.silhouetteError;
+    } else if (hCtx.getSelectedId() == this.id) {
+      cCtx.strokeStyle = hsm.settings.styles.silhouetteSelected;
     } else {
-      ctx.strokeStyle = hsm.settings.styles.silhouetteDefault;
+      cCtx.strokeStyle = hsm.settings.styles.silhouetteDefault;
     }
 
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
-    ctx.stroke();
+    cCtx.stroke();
 
-    ctx.lineWidth = hsm.settings.styles.stateTitleWidth;
-    ctx.strokeStyle = hsm.settings.styles.stateTitleLine;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0 + titleHeight);
-    ctx.lineTo(x0 + width, y0 + titleHeight);
-    ctx.stroke();
+    cCtx.lineWidth = hsm.settings.styles.stateTitleWidth;
+    cCtx.strokeStyle = hsm.settings.styles.stateTitleLine;
+    cCtx.beginPath();
+    cCtx.moveTo(x0, y0 + titleHeight);
+    cCtx.lineTo(x0 + width, y0 + titleHeight);
+    cCtx.stroke();
 
     // Draw title
-    ctx.font = `${Math.round(0.7 * titleHeight)}px sans-serif`;
-    ctx.fillStyle = "black";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillText(
+    cCtx.font = `${Math.round(0.7 * titleHeight)}px sans-serif`;
+    cCtx.fillStyle = "black";
+    cCtx.textBaseline = "middle";
+    cCtx.textAlign = "center";
+    cCtx.fillText(
       `${this.id}: ${this.name}`,
       x0 + width / 2,
       y0 + titleHeight / 2,
@@ -321,8 +317,8 @@ export class Cstate extends CbaseState {
     }
   }
 
-  getIdAndZone(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
-    // console.log(`[Cstate.getIdAndZone] (${this.id}) x:${x}`);
+  makeIdz(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+    // console.log(`[Cstate.makeIdz] (${this.id}) x:${x} y:${y}`);
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     const r = hsm.settings.stateRadiusMm;
     if (
@@ -346,9 +342,17 @@ export class Cstate extends CbaseState {
     else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
     idz = { id: id, zone: zone, x: x, y: y };
     for (let child of this.children) {
-      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
+      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    // console.log(`[Cstate.getIdAndZone] (${this.id}) id:${id} zone:${zone}`);
+    // console.log(`[Cstate.makeIdz] (${this.id}) id:${id} zone:${zone}`);
     return idz;
+  }
+
+  canInsertState(idz) {
+    if (idz.zone != "M") return false;
+    // console.log(`[Cstate.canInsertState] (${this.id}) idz.y:${idz.y}`);
+    if (idz.y - this.geo.y0 < hsm.settings.stateTitleHeightMm + hsm.settings.minDistanceMm)
+      return false;
+    return true;
   }
 }

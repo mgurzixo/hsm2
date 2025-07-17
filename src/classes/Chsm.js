@@ -4,40 +4,47 @@ import * as V from "vue";
 import * as U from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
+import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
-import { mousePos } from "src/lib/canvasListeners";
 
-export let canvas = null;
-export let ctx = null;
 export let hsm = null;
-export let folio = null;
+export let cCtx = null; // canvas context
+export let hCtx = null; // hsm context
+
 export let cursor = V.ref("default");
+export let ctxMenu = V.ref(null);
 
 export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "M");
-    this.hElems = new ChElems();
-    this.activeFolio = null;
-    this.cCanvas = null;
-    this.folioActive = null;
     this.settings = {};
-    this.isDirty = false;
+    this.hElems = new ChElems();
+    this.hCtx = new ChCtx();
+    hCtx = this.hCtx;
+    this.canvas = options.canvas;
+    this.setCanvas(this.canvas);
     hsm = this;
   }
 
-  setCursor(idz) {
-    const elem = hsm.hElems.getById(idz.id);
-    const val = elem.defineCursor(idz);
-    cursor.value = val;
+  setCanvas(myCanvas) {
+    this.destroyResizeObserver();
+    this.canvas = myCanvas;
+    cCtx = this.canvas.getContext("2d");
+    const bindedAdjustSizes = this.adjustSizes.bind(this);
+    this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
+    this.resizeObserver.observe(this.canvas.parentElement);
   }
 
-  setdirty() {
-    this.isDirty = true;
+  setCursor(idz) {
+    const elem = this.hElems.getElemById(idz.id);
+    let val = elem.defineCursor(idz);
+    // console.log(`[Chsm.setCursor] cursor:${val}`);
+    cursor.value = val;
   }
 
   addFolio(folioOptions) {
     const myFolio = new Cfolio(this, folioOptions);
-    this.hElems.insert(myFolio);
+    this.hElems.insertElem(myFolio);
     this.children.push(myFolio);
     myFolio.load(folioOptions);
   }
@@ -46,68 +53,99 @@ export class Chsm extends CbaseElem {
     this.settings = hsmOptions.settings;
     this.state = hsmOptions.state;
     CbaseElem.serNum = hsmOptions.serNum;
-    this.hElems.clear();
-    this.hElems.insert(this);
+    this.hElems.clearElems();
+    this.hElems.insertElem(this);
     for (let folioOptions of hsmOptions.folios) {
       this.addFolio(folioOptions);
     }
-    folio = this.hElems.getById(this.state.activeFolio);
+    hCtx.folio = this.hElems.getElemById(this.state.activeFolio);
     // console.log(`[Chsm.load] id:${this.state.activeFolio} Active folio: ${folio?.id}`);
-    this.setGeo00();
     this.draw();
   }
 
-  destroy() {
-    super.destroy();
-    delete this.folioActive;
-    folio = null;
+  destroyResizeObserver() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       delete this.resizeObserver;
     }
-    ctx = null;
-    canvas = null;
+  }
+
+  destroy() {
+    super.destroy();
+    delete this.activeFolio;
+    hCtx.folio = null;
+    this.destroyResizeObserver();
+    this.canvas = null;
     hsm = null;
   }
 
   save() {}
 
-  setCanvas(myCanvas) {
-    if (this.resizeObserver) this.resizeObserver.disconnect();
-    canvas = myCanvas;
-
-    ctx = canvas.getContext("2d");
-    const bindedAdjustSizes = this.adjustSizes.bind(this);
-    this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
-    this.resizeObserver.observe(canvas.parentElement);
-  }
-
   draw() {
-    if (!ctx) return;
+    if (!cCtx) return;
     // console.log(`[Chsm.draw] Drawing ${this.id}`);
     // Clear canvas
-    ctx.fillStyle = "#ccc";
-    ctx.beginPath();
-    ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.fill();
-    if (!folio) return;
-    folio.draw();
+    cCtx.fillStyle = "#ccc";
+    cCtx.beginPath();
+    cCtx.rect(0, 0, this.canvas.width, this.canvas.height);
+    cCtx.fill();
+    if (!hCtx.folio) return;
+    hCtx.folio.draw();
+  }
+
+  dragStart(xDown, yDown) {
+    const idz = this.makeIdz(xDown, yDown);
+    hCtx.setIdz(idz);
+    if (idz.id == this.id) return;
+    this.hElems.getElemById(idz.id).dragStart();
+  }
+
+  drag(dx, dy) {
+    const dragCtx = hCtx.getDragCtx();
+    console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id}`);
+    if (dragCtx.id == this.id) return;
+    const elem = this.hElems.getElemById(dragCtx.id);
+    elem.drag(dx, dy);
+    this.draw();
+    hsm.setCursor(this.idz());
+  }
+
+  dragEnd(dx, dy) {
+    const idz = this.idz();
+    if (idz.id == this.id) return;
+    const elem = this.hElems.getElemById(idz.id);
+    const dragEnded = elem.dragEnd(dx, dy);
+
+    if (dragEnded) hCtx.dragEnd();
+    // else elem.resetDrag() will reset it
+    this.draw();
+    hsm.setCursor(this.idz());
+  }
+
+  mouseMove(x, y) {
+    const idz = hsm.makeIdz(x, y);
+    hCtx.setIdz(idz);
+    hsm.setCursor(idz);
   }
 
   adjustSizes() {
-    const cpe = canvas.parentElement;
+    const cpe = this.canvas.parentElement;
     const bb = cpe.getBoundingClientRect();
     // console.log(`[Chsm.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
-    canvas.x0 = bb.left;
-    canvas.y0 = bb.top;
-    canvas.width = bb.width;
-    canvas.height = bb.height;
+    this.canvas.x0 = bb.left;
+    this.canvas.y0 = bb.top;
+    this.canvas.width = bb.width;
+    this.canvas.height = bb.height;
     this.draw();
   }
 
-  getIdAndZone(x, y, idz = { id: hsm.id, zone: "" }) {
-    idz = folio?.getIdAndZone(x, y, idz);
-    // console.log(`[Chsm.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+  wheelP(xP, yP, dyP) {
+    hCtx.folio.wheelP(xP, yP, dyP);
+  }
+
+  makeIdz(x, y, idz = { id: hsm.id, zone: "" }) {
+    idz = hCtx.folio?.makeIdz(x, y, idz);
+    console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
   }
 }

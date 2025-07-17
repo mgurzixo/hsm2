@@ -1,7 +1,7 @@
 "use strict";
 
 import * as U from "src/lib/utils";
-import { hsm, ctx } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
 import { mousePos } from "src/lib/canvasListeners";
@@ -16,24 +16,23 @@ export class Cfolio extends CbaseRegion {
   load(folioOptions) {
     for (let stateOption of folioOptions.states) {
       const myState = new Cstate(this, stateOption);
-      hsm.hElems.insert(myState);
+      hsm.hElems.insertElem(myState);
       this.children.push(myState);
       myState.load(stateOption);
     }
-    this.updateGeo00();
   }
 
   drawFolioBackground() {
-    ctx.fillStyle = hsm.settings.styles.folioBackground;
-    ctx.beginPath();
+    cCtx.fillStyle = hsm.settings.styles.folioBackground;
+    cCtx.beginPath();
     const s = this.scalePhy();
-    ctx.rect(
+    cCtx.rect(
       Math.round(this.geo.x0 * s) + 0.5,
       Math.round(this.geo.y0 * s) + 0.5,
       Math.round(this.geo.width * s) + 0.5,
       Math.round(this.geo.height * s) + 0.5,
     );
-    ctx.fill();
+    cCtx.fill();
   }
 
   draw() {
@@ -67,56 +66,36 @@ export class Cfolio extends CbaseRegion {
   }
 
   dragStart() {
-    // (xx, yy) in mm from canvas origin
-    // Inside us
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // console.log(`[Cfolio.dragStartP] xx:${xx.toFixed()} x:${x.toFixed()}`);
-    if (!U.pointInWH(x, y, this.geo)) return null;
-    if (idz.id != this.id) {
-      hsm.hElems.getById(idz.id).dragStart();
-      return;
+    switch (hCtx.mode) {
+      case "INSERT_STATE": {
+        const myState = new Cstate(this);
+        hsm.hElems.insertElem(myState);
+        this.children.push(myState);
+      }
+      // FALLTHRU
+      // eslint-disable-next-line no-fallthrough
+      default:
+        hCtx.setMode("");
     }
-    // For us
-    this.parent.raiseChildR(this.id);
-    hsm.hElems.setDragCtx(this.id, { x0: this.geo.x0, y0: this.geo.y0, type: "M" });
+    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M" });
   }
 
   drag(dx, dy) {
     // console.log(`[Cfolio.dragP] dx:${dx} dy:${dy}`);
-    const idz = hsm.hElems.getIdAndZone();
-    if (idz.id != this.id) {
-      const elem = hsm.hElems.getById(idz.id);
-      elem.drag(dx, dy);
-      hsm.draw();
-      hsm.setCursor(idz);
-      return;
-    }
-    const dragCtx = hsm.hElems.getDragCtx();
+    const dragCtx = hCtx.getDragCtx();
     const [x0, y0] = [dragCtx.x0, dragCtx.y0];
     this.geo.x0 = x0 + dx;
     this.geo.y0 = y0 + dy;
-    hsm.draw();
-    // console.log(`[Cfolio.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
-    hsm.setCursor(idz);
+    // console.log(`[Cfolio.drag] (${this.id}) id:${idz.id} zone:${idz.zone}`);
   }
 
   dragEnd(dx, dy) {
     // console.log(`[Cfolio.dragEnd]`);
-    const idz = hsm.hElems.getIdAndZone();
-    if (idz.id != this.id) {
-      const elem = hsm.hElems.getById(idz.id);
-      elem.dragEnd(dx, dy);
-    } else {
-      this.drag(dx, dy);
-    }
-    if (!hsm.hElems.getErrorId()) {
-      hsm.hElems.dragEnd();
-      hsm.draw();
-      const idz = hsm.hElems.getIdAndZone();
-      hsm.setCursor(idz);
-    }
-    // Else resetDrag will do it!
+    this.drag(dx, dy);
+    return true;
   }
 
   dragCancelP(dxP, dyP) {
@@ -131,7 +110,7 @@ export class Cfolio extends CbaseRegion {
   wheelP(xP, yP, dyP) {
     const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
-    console.log(`[Cfolio.getIdAndZone] scale0:${this.geo.scale}`);
+    console.log(`[Cfolio.wheelP] scale0:${this.geo.scale}`);
     let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
     if (scale >= 1.5) scale += deltas * hsm.settings.deltaScale;
     scale = Math.min(Math.max(0.1, scale), 10);
@@ -144,15 +123,19 @@ export class Cfolio extends CbaseRegion {
     hsm.draw();
   }
 
-  getIdAndZone(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+  makeIdz(x, y, idz) {
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     idz = { id: this.id, zone: "M" };
     for (let child of this.children) {
-      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
+      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    // console.log(`[Cfolio.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    // console.log(`[Cfolio.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
     return idz;
+  }
+
+  canInsertState(idz) {
+    return true;
   }
 }

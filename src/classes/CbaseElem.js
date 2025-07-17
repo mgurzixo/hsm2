@@ -1,6 +1,6 @@
 "use strict";
 
-import { hsm, ctx, folio } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
 
@@ -8,7 +8,7 @@ export class CbaseElem {
   static serNum = 0;
 
   constructor(parent, obj, type) {
-    console.log(`[CbaseElem.constructor] type:${type}`);
+    // console.log(`[CbaseElem.constructor] type:${type}`);
     let id = obj.id;
     if (!id) id = type + ++CbaseElem.serNum;
     else if (CbaseElem.serNum <= id) CbaseElem.serNum + 1;
@@ -31,7 +31,7 @@ export class CbaseElem {
       // console.log(`[CbaseElem.destroy] this:${this.id} child:${child} childId:${child.id}`);
       child.destroy();
     }
-    hsm.hElems.removeById(this.id);
+    hsm.hElems.removeElemById(this.id);
     delete this.id;
     delete this.name;
     delete this.parent;
@@ -42,13 +42,13 @@ export class CbaseElem {
   link(parent) {
     this.parent = parent;
     parent.insertChild(this);
-    hsm.hElems.add(this);
+    hsm.hElems.addElem(this);
   }
 
   unlink() {
     this.parent = null;
     this.parent.excludeChild(this);
-    hsm.hElems.removeById(this.id);
+    hsm.hElems.removeElemById(this.id);
   }
 
   load(options) {
@@ -56,17 +56,17 @@ export class CbaseElem {
   }
 
   pathRoundedRectP(px, py, pwidth, pheight, pradius) {
-    ctx.beginPath();
-    ctx.moveTo(px + pradius, py);
-    ctx.lineTo(px + pwidth - pradius, py);
-    ctx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
-    ctx.lineTo(px + pwidth, py + pheight - pradius);
-    ctx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
-    ctx.lineTo(px + pradius, py + pheight);
-    ctx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
-    ctx.lineTo(px, py + pradius);
-    ctx.quadraticCurveTo(px, py, px + pradius, py);
-    ctx.closePath();
+    cCtx.beginPath();
+    cCtx.moveTo(px + pradius, py);
+    cCtx.lineTo(px + pwidth - pradius, py);
+    cCtx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+    cCtx.lineTo(px + pwidth, py + pheight - pradius);
+    cCtx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
+    cCtx.lineTo(px + pradius, py + pheight);
+    cCtx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
+    cCtx.lineTo(px, py + pradius);
+    cCtx.quadraticCurveTo(px, py, px + pradius, py);
+    cCtx.closePath();
   }
 
   draw() {
@@ -80,7 +80,8 @@ export class CbaseElem {
   drag(dx, dy) {}
 
   dragEnd(dx, dy) {
-    // console.log(`[CbaseElem.dragEnd] id:${this.id}`);
+    console.warn(`[CbaseElem.dragEnd] id:${this.id}`);
+    return true;
   }
 
   dragCancel(dx, dy) {}
@@ -94,31 +95,8 @@ export class CbaseElem {
     return [x, y];
   }
 
-  setGeo00() {
-    [this.geo.x00, this.geo.y00] = this.getXY0InFolio();
-  }
-
-  setGeo00X() {
-    for (let child of this.children) {
-      [child.geo.x00, child.geo.y00] = [this.geo.x00 + child.geo.x0, this.geo.y00 + child.geo.y0];
-      child.setGeo00X();
-    }
-  }
-
-  setGeo00R() {
-    this.setGeo00();
-    this.setGeo00X();
-  }
-
-  updateGeo00() {
-    [this.geo.x00, this.geo.y00] = [
-      this.parent.geo.x00 + this.geo.x0,
-      this.parent.geo.y00 + this.geo.y00,
-    ];
-  }
-
   scalePhy() {
-    return folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
+    return hCtx.folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
   }
 
   pToMmXY(xP, yP) {
@@ -149,7 +127,7 @@ export class CbaseElem {
     this.parent?.raiseChildR(this.id);
   }
 
-  getIdAndZone(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+  makeIdz(x, y, idz) {
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (
       x < this.geo.x0 ||
@@ -160,60 +138,70 @@ export class CbaseElem {
       return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
     for (let child of this.children) {
-      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
+      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    // console.log(`[CbaseElem.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    // console.log(`[CbaseElem.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
     return idz;
   }
 
   defineCursor(idz) {
     let cursor;
-    // console.log(`[CbaseElem.defineCursor] (${this.id}) errorId:${hsm.hElems.errorId}`);
+    // console.log(`[CbaseElem.defineCursor] (${this.id}) mode:'${hCtx.getMode()}' zone:${idz.zone}`);
     // TODO adjust...
-    if (hsm.hElems.errorId) {
+
+    if (hCtx.getMode() == "inserting-state") {
+      // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
+      if (this.id.startsWith("F") || this.id.startsWith("S")) {
+        if (this.canInsertState(idz)) return "default";
+        else return "not-allowed";
+      }
+      return "not-allowed";
+    }
+    if (hCtx.getErrorId() == this.id) {
       cursor = "no-drop";
       return cursor;
     }
-    if (hsm.hElems.getDraggedId()) {
+    if (hCtx.getDraggedId() == this.id) {
       cursor = "grabbing";
       return cursor;
     }
+    // console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone}`);
     switch (idz.zone) {
       case "M":
         cursor = "move";
         break;
       case "TL":
-        cursor = "nwse-resize";
+        cursor = "nw-resize";
         break;
       case "BL":
-        cursor = "nesw-resize";
+        cursor = "sw-resize";
         break;
       case "TR":
-        cursor = "nesw-resize";
+        cursor = "ne-resize";
         break;
       case "BR":
-        cursor = "nwse-resize";
+        cursor = "se-resize";
         break;
       case "T":
-        cursor = "row-resize";
+        cursor = "n-resize";
         break;
       case "B":
-        cursor = "row-resize";
+        cursor = "s-resize";
         break;
       case "L":
-        cursor = "col-resize";
+        cursor = "w-resize";
         break;
       case "R":
-        cursor = "col-resize";
+        cursor = "e-resize";
         break;
       default:
         cursor = "default";
     }
-    // console.log(`[CbaseElem.defineCursor] (${this.id}) zone:${idz.zone} cursor:${cursor}`);
+    // console.log(`[CbaseElem.defineCursor] res (${this.id}) zone:${idz.zone} cursor:${cursor}`);
     return cursor;
   }
 
   idz() {
-    return hsm.hElems.getIdAndZone();
+    return hCtx.getIdz();
   }
 }

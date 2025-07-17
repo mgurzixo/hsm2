@@ -1,7 +1,7 @@
 "use strict";
 
 import * as U from "src/lib/utils";
-import { hsm, ctx } from "src/classes/Chsm";
+import { hsm, hCtx } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cstate } from "src/classes/Cstate";
 
@@ -68,33 +68,24 @@ export class Cregion extends CbaseRegion {
 
   addState(stateOptions) {
     const myState = new Cstate(this, stateOptions);
-    hsm.hElems.insert(myState);
+    hsm.hElems.insertElem(myState);
     this.children.push(myState);
     myState.load(stateOptions);
   }
 
   dragStart() {
-    // console.log(
-    //   `[Cregion.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
-    // );
-    const idz = this.idz();
-    const [x, y] = [idz.x, idz.y];
-    // For now, the region is not draggable
-    // this.parent.raiseChildR(this.id);
-    // hsm.hElems.setDragCtx(this.id, {x0:this.geo.x0, y0:this.geo.y0, type:"MOVE"});
-    // return this;
-    return null;
+    console.warn(`[Cregion.dragStart] ${this.id}`);
   }
 
   drag(dx, dy) {
-    if (hsm.hElems.getDraggedId() != this.id) {
+    if (hCtx.getDraggedId() != this.id) {
       for (let child of this.children.toReversed()) {
         child.drag(dx, dy);
       }
       return;
     }
     // console.log(`[Cregion.drag] dx:${dx} dy:${dy}`);
-    const dragCtx = hsm.hElems.getDragCtx();
+    const dragCtx = hCtx.getDragCtx();
     const [x0, y0] = [dragCtx.x0, dragCtx.y0];
     dx = U.myClamp(dx, x0, this.geo.width, 0, this.parent.geo.width);
     dy = U.myClamp(dy, y0, this.geo.height, 0, this.parent.geo.height);
@@ -119,14 +110,13 @@ export class Cregion extends CbaseRegion {
     // console.log(`[Cregion.load] states:${regionOptions?.states}`);
     for (let stateOption of regionOptions.states) {
       const myState = new Cstate(this, stateOption);
-      hsm.hElems.insert(myState);
+      hsm.hElems.insertElem(myState);
       this.children.push(myState);
       myState.load(stateOption);
     }
-    this.updateGeo00();
   }
 
-  getIdAndZone(x, y, idz) {
+  makeIdz(x, y, idz) {
     const bak = Object.assign({}, idz);
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (
@@ -138,7 +128,7 @@ export class Cregion extends CbaseRegion {
       return idz;
     idz = { id: this.id, zone: "M" };
     for (let child of this.children) {
-      idz = child.getIdAndZone(x - this.geo.x0, y - this.geo.y0, idz);
+      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
     if (idz.id == this.id) {
       // It is for us.
@@ -146,7 +136,7 @@ export class Cregion extends CbaseRegion {
       // and we have to use it
       return bak;
     }
-    // console.log(`[Cregion.getIdAndZone] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    // console.log(`[Cregion.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
     return idz;
   }
 }
