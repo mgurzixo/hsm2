@@ -4,7 +4,7 @@ import * as U from "src/lib/utils";
 import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
-import { hsm, cCtx, hCtx } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 import Color from "colorjs.io";
 
 class CbaseState extends CbaseElem {
@@ -82,12 +82,68 @@ export class Cstate extends CbaseState {
     return bb;
   }
 
+  insertState(x, y) {
+    console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+    if (!this.children[0]) {
+      const rid = "R" + hsm.newSernum();
+      const regionOptions = {
+        id: rid,
+        name: "Region " + rid,
+        geo: {
+          x0: 0,
+          y0: 0,
+          width: 0,
+          height: 0,
+        },
+        states: [],
+      };
+      this.addRegion(regionOptions);
+    }
+    const h = hsm.settings.stateMinHeight;
+    const w = hsm.settings.stateMinWidth;
+    const t = hsm.settings.stateTitleHeightMm;
+    const id = "S" + hsm.newSernum();
+    const stateOptions = {
+      id: id,
+      name: "State " + id,
+      color: "blue",
+      geo: {
+        x0: x - this.geo.x0 - w,
+        y0: y - this.geo.y0 - t - h,
+        width: w,
+        height: h,
+      },
+    };
+    const myState = new Cstate(this.children[0], stateOptions, "S");
+    console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
+    hsm.hElems.insertElem(myState);
+
+    this.children[0].children.push(myState);
+    hsm.draw();
+    modeRef.value = "";
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
+
+    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz);
+    hCtx.setIdz(newIdz);
+    hsm.setCursor(newIdz);
+    myState.dragStart();
+  }
+
   dragStart() {
     const idz = this.idz();
+    const [x, y] = [idz.x, idz.y];
     // console.log(`[Cstate.dragStart] (${this.id}) x:${x?.toFixed()}`);
     // console.log(
     //   `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
     // );
+    switch (modeRef.value) {
+      case "inserting-state": {
+        this.insertState(x, y);
+        return;
+      }
+      default:
+        modeRef.value = "";
+    }
     this.grandchildrenBB = this.getGrandchildrenBB();
     this.setGrandchildrenDragOrigin();
     const dragCtx = {
@@ -105,7 +161,7 @@ export class Cstate extends CbaseState {
 
   drag(dx, dy) {
     const idz = this.idz();
-    console.log(`[Cstate.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    // console.log(`[Cstate.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
     const dragCtx = hCtx.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
@@ -178,9 +234,10 @@ export class Cstate extends CbaseState {
       }
     }
 
-    // console.log(
-    //   `[Cstate.drag] type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
-    // );
+    console.log(
+      `[Cstate.drag] (${this.id}) type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
+    );
+    console.log(`[Cstate.drag] (${this.id}) Parent id:${this.parent.id}`);
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
@@ -349,9 +406,21 @@ export class Cstate extends CbaseState {
 
   canInsertState(idz) {
     if (idz.zone != "M") return false;
+    const m = hsm.settings.minDistanceMm;
+    const h = hsm.settings.stateMinHeight + m;
+    const w = hsm.settings.stateMinWidth + m;
+    const t = hsm.settings.stateTitleHeightMm;
     // console.log(`[Cstate.canInsertState] (${this.id}) idz.y:${idz.y}`);
-    if (idz.y - this.geo.y0 < hsm.settings.stateTitleHeightMm + hsm.settings.minDistanceMm)
-      return false;
+    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    if (x0 < w || x0 >= this.geo.width - m) return false;
+    if (y0 < h + t || y0 >= this.geo.height - m) return false;
+    for (let child of this.children) {
+      for (let grandChild of child.children) {
+        let geo = { x0: idz.x - w, y0: idz.y - this.geo.y0 - h - t, width: w, height: h };
+        // console.log(`[Cstate.canInsertState] (${this.id}) gCId:${child.id}`);
+        if (U.rectsIntersect(grandChild.geo, geo)) return false;
+      }
+    }
     return true;
   }
 }

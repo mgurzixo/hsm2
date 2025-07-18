@@ -69,8 +69,10 @@ export class Cfolio extends CbaseRegion {
     console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
+    const id = "S" + hsm.newSernum();
     const stateOptions = {
-      name: "First state",
+      id: id,
+      name: "State " + id,
       color: "blue",
       geo: {
         x0: x - this.geo.x0 - w,
@@ -96,7 +98,7 @@ export class Cfolio extends CbaseRegion {
   dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
-    console.log(`[Cfolio.dragStartP] idz:${JSON.stringify(idz)}`);
+    // console.log(`[Cfolio.dragStartP] idz:${JSON.stringify(idz)}`);
     switch (modeRef.value) {
       case "inserting-state": {
         this.insertState(x, y);
@@ -166,7 +168,7 @@ export class Cfolio extends CbaseRegion {
     if (y0 < h || y0 >= this.geo.height - m) return false;
     for (let child of this.children) {
       let geo = { x0: idz.x - w, y0: idz.y - this.geo.y0 - h, width: w, height: h };
-      // console.log(`[Cstate.canInsertState] (${this.id}) gCId:${child.id}`);
+      // console.log(`[Cfolio.canInsertState] (${this.id}) gCId:${child.id}`);
       if (U.rectsIntersect(child.geo, geo)) return false;
     }
     return true;

@@ -123,7 +123,7 @@ export class Chsm extends CbaseElem {
   drag(dx, dy) {
     if (modeRef.value != "") return;
     const dragCtx = hCtx.getDragCtx();
-    console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()}`);
+    // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()}`);
     if (dragCtx.id == this.id) return;
     const elem = this.hElems.getElemById(dragCtx.id);
     elem.drag(dx, dy);

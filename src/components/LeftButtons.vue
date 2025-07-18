@@ -49,14 +49,14 @@ function doLoadHsm() {
 }
 
 V.watch(modeRef, (newMode, oldMode) => {
-  console.log(`[LeftButtons.modeRef] oldMode:${oldMode} newMode:${newMode}`);
+  // console.log(`[LeftButtons.modeRef] oldMode:${oldMode} newMode:${newMode}`);
   if (newMode == oldMode) {
     modeRef.value = "";
     return;
   }
   for (let mode of ["inserting-state", "inserting-trans", "inserting-choice", "inserting-note"]) {
     let elem = document.getElementById(mode);
-    console.log(`[LeftButtons.modeRef] elem:${elem} id:${elem?.id}`);
+    // console.log(`[LeftButtons.modeRef] elem:${elem} id:${elem?.id}`);
     if (elem.id == oldMode) {
       elem.classList.remove("bg-amber-5");
       elem.classList.add("bg-amber-2");
