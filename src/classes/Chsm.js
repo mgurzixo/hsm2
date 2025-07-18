@@ -10,6 +10,7 @@ import { Cfolio } from "src/classes/Cfolio";
 export let hsm = null;
 export let cCtx = null; // canvas context
 export let hCtx = null; // hsm context
+export let hElems = null;
 export let modeRef = V.ref(""); // "inserting-state", "inserting-trans"...
 
 export let cursor = V.ref("default");
@@ -26,6 +27,7 @@ export class Chsm extends CbaseElem {
     this.canvas = options.canvas;
     this.setCanvas(this.canvas);
     hsm = this;
+    hElems = this.hElems;
   }
 
   checkSernum(num) {
@@ -89,7 +91,7 @@ export class Chsm extends CbaseElem {
     hsm = null;
   }
 
-  save() {}
+  save() { }
 
   draw() {
     if (!cCtx) return;

@@ -15,6 +15,14 @@
       <div></div>
       <q-btn class="bg-amber-1" outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
       <q-btn class="bg-amber-1" outline round icon="mdi-magnify-minus" @click="doZoom(-1)" />
+      <q-btn class="bg-red-2" outline round icon="mdi-bomb" @click="doTest" />
+      <div>
+        x:{{ mousePos.x.toFixed() }}
+      </div>
+      <div>
+        y:{{ mousePos.y.toFixed() }}
+
+      </div>
     </div>
   </div>
 </template>
@@ -41,7 +49,10 @@ import * as V from "vue";
 import ButtonBurger from "components/ButtonBurger.vue";
 // import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { hsm, hCtx, modeRef } from "src/classes/Chsm";
+import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
+import { mousePos } from "src/lib/canvasListeners";
+import { R, RR } from "src/lib/utils";
+import { Ctrans } from "src/classes/Ctrans";
 
 function doLoadHsm() {
   loadHsm();
@@ -67,6 +78,48 @@ V.watch(modeRef, (newMode, oldMode) => {
     }
   }
 });
+
+
+
+
+
+function doTest() {
+  const tOptions = {
+    segments: [],
+    start: {
+      id: "S2",
+      side: "B",
+      pos: 0.2,
+    },
+    end: {
+      id: "S3",
+      side: "T",
+      pos: 0.7,
+    },
+  };
+  const trans = new Ctrans(null, tOptions, "T");
+  trans.load(tOptions);
+  trans.doIt();
+  trans.draw();
+
+}
+
+// function doTest() {
+//   console.log(`[LeftButtons.doTest]`);
+
+//   const [x0, y0] = idToXY("S2", "B", 0.2);
+//   const [x1, y1] = idToXY("S3", "T", 0.7);
+//   const [x0P, y0P] = [RR(hsm.mmToPL(x0)), RR(hsm.mmToPL(y0))];
+//   const [x1P, y1P] = [RR(hsm.mmToPL(x1)), RR(hsm.mmToPL(y1))];
+//   // cCtx.beginPath();
+//   // cCtx.moveTo(x0P, y0P);
+//   // cCtx.lineTo(x1P, y1P);
+//   cCtx.lineWidth = 1.5;
+//   const aWidthP = R(hsm.mmToPL(1));
+//   const aLengthP = R(hsm.mmToPL(3));
+//   drawLineWithArrows(x0P, y0P, x1P, y1P, aWidthP, aLengthP, false, true);
+//   cCtx.stroke();
+// }
 
 // export function setZoom(x, y, scale) {
 //   const oldScale = theVp.scale;

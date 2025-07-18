@@ -11,6 +11,8 @@
     minDistanceMm: 0.5,
     dragResetSpeed: 3,
     cursorMarginP: 8,
+    arrowLengthMm: 3,
+    arrowWidthMm: 1,
     styles: {
       silhouetteDefault: "black",
       silhouetteSelected: "black`",

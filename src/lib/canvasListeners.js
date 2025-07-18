@@ -1,8 +1,9 @@
 "use strict";
 
+import * as V from "vue";
 import { hsm, hCtx } from "src/classes/Chsm";
 
-export let mousePos = { x: 0, y: 0 };
+export let mousePos = V.ref({ xP: 0, yP: 0, x: 0, y: 0, buttons: 0 });
 let mouseDown = { x: 0, y: 0 };
 let mouseOut = { x: 0, y: 0 };
 let isDragging = false;
@@ -12,7 +13,7 @@ let button2Down = false;
 // TODO Must throttle all...
 
 function handleWheel(e) {
-  hsm.wheelP(mousePos.x, mousePos.y, e.deltaY);
+  hsm.wheelP(mousePos.value.xP, mousePos.value.yP, e.deltaY);
 }
 
 export function getXYFromMouseEvent(e) {
@@ -25,9 +26,8 @@ export function getXYFromMouseEvent(e) {
 
 export function handleMouseMove(e) {
   const [xP, yP] = getXYFromMouseEvent(e);
-  mousePos.x = xP;
-  mousePos.y = yP;
   const [x, y] = [hsm.pToMmL(xP), hsm.pToMmL(yP)];
+  mousePos.value = { xP: xP, yP: yP, x: x, y: y, buttons: e.buttons };
 
   if (!isDragging && e.buttons & 1) {
     const dxP = xP - mouseDown.x;
@@ -98,8 +98,8 @@ export function handleMouseOut(e) {
   if (isDragging) {
     // mouseOut.x = x;
     // mouseOut.y = y;
-    mouseOut.x = mousePos.x;
-    mouseOut.y = mousePos.y;
+    mouseOut.x = mousePos.value.xP;
+    mouseOut.y = mousePos.value.yP;
   }
 }
 

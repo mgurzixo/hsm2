@@ -4,7 +4,6 @@ import * as U from "src/lib/utils";
 import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
-import { mousePos } from "src/lib/canvasListeners";
 
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
