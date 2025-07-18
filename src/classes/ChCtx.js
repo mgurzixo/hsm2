@@ -4,7 +4,6 @@ const inchInMm = 25.4;
 
 export class ChCtx {
   constructor(obj) {
-    this.mode = ""; // "inserting-state", "inserting-trans"...
     this.folio = null;
     this.hoveredId = "";
     this.selectedId = "";
@@ -12,14 +11,6 @@ export class ChCtx {
     this.draggedId = "";
     this.dragCtx = {};
     this.idz = { id: "", zone: "" };
-  }
-
-  setMode(mode) {
-    this.mode = mode;
-  }
-
-  getMode() {
-    return this.mode;
   }
 
   setSelected(id) {

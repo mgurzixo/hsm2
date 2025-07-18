@@ -10,6 +10,7 @@ import { Cfolio } from "src/classes/Cfolio";
 export let hsm = null;
 export let cCtx = null; // canvas context
 export let hCtx = null; // hsm context
+export let modeRef = V.ref(""); // "inserting-state", "inserting-trans"...
 
 export let cursor = V.ref("default");
 export let ctxMenu = V.ref(null);
@@ -18,12 +19,21 @@ export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "M");
     this.settings = {};
+    this.sernum = 1;
     this.hElems = new ChElems();
     this.hCtx = new ChCtx();
     hCtx = this.hCtx;
     this.canvas = options.canvas;
     this.setCanvas(this.canvas);
     hsm = this;
+  }
+
+  checkSernum(num) {
+    if (this.sernum <= num) this.sernum = num + 1;
+  }
+
+  newSernum() {
+    return this.sernum++;
   }
 
   setCanvas(myCanvas) {
@@ -52,7 +62,7 @@ export class Chsm extends CbaseElem {
   load(hsmOptions) {
     this.settings = hsmOptions.settings;
     this.state = hsmOptions.state;
-    CbaseElem.serNum = hsmOptions.serNum;
+    this.serNum = hsmOptions.serNum;
     this.hElems.clearElems();
     this.hElems.insertElem(this);
     for (let folioOptions of hsmOptions.folios) {
@@ -97,12 +107,23 @@ export class Chsm extends CbaseElem {
     const idz = this.makeIdz(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
-    this.hElems.getElemById(idz.id).dragStart();
+    const elem = this.hElems.getElemById(idz.id);
+    console.log(`[Chsm.dragStart] elem:${elem?.id} Mode:'${modeRef.value}'`);
+    const mode = modeRef.value;
+    switch (mode) {
+      case "":
+        elem.dragStart();
+        break;
+      case "inserting-state":
+        if (elem.canInsertState(idz)) elem.dragStart();
+        break;
+    }
   }
 
   drag(dx, dy) {
+    if (modeRef.value != "") return;
     const dragCtx = hCtx.getDragCtx();
-    console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id}`);
+    console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()}`);
     if (dragCtx.id == this.id) return;
     const elem = this.hElems.getElemById(dragCtx.id);
     elem.drag(dx, dy);
@@ -111,11 +132,11 @@ export class Chsm extends CbaseElem {
   }
 
   dragEnd(dx, dy) {
+    if (modeRef.value != "") return;
     const idz = this.idz();
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
     const dragEnded = elem.dragEnd(dx, dy);
-
     if (dragEnded) hCtx.dragEnd();
     // else elem.resetDrag() will reset it
     this.draw();
@@ -143,9 +164,9 @@ export class Chsm extends CbaseElem {
     hCtx.folio.wheelP(xP, yP, dyP);
   }
 
-  makeIdz(x, y, idz = { id: hsm.id, zone: "" }) {
+  makeIdz(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
     idz = hCtx.folio?.makeIdz(x, y, idz);
-    console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
+    // console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
   }
 }

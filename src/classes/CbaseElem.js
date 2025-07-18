@@ -1,23 +1,25 @@
 "use strict";
 
-import { hsm, cCtx, hCtx } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
 
 export class CbaseElem {
-  static serNum = 0;
-
   constructor(parent, obj, type) {
     // console.log(`[CbaseElem.constructor] type:${type}`);
-    let id = obj.id;
-    if (!id) id = type + ++CbaseElem.serNum;
-    else if (CbaseElem.serNum <= id) CbaseElem.serNum + 1;
+    let id = obj?.id;
+    if (type == "M") id = "M1";
+    else {
+      if (!id) id = type + hsm.newSernum();
+      else hsm.checkSernum(Number(id.slice(1)));
+      // console.log(`[CbaseElem.constructor] id:${id}`);
+    }
     this.id = id;
-    this.name = obj.name;
+    this.name = obj?.name || `S${id}`;
     this.parent = parent;
     this.children = [];
     if (obj.geo) this.geo = obj.geo;
-    else this.geo = { x0: 0, y0: 0, x00: 0, y00: 0 }; // Offset from parent
+    else this.geo = { x0: 0, y0: 0 }; // Offset from parent
     if (obj.color) this.color = obj.color;
     else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
@@ -146,22 +148,24 @@ export class CbaseElem {
 
   defineCursor(idz) {
     let cursor;
-    // console.log(`[CbaseElem.defineCursor] (${this.id}) mode:'${hCtx.getMode()}' zone:${idz.zone}`);
+    // console.log(`[CbaseElem.defineCursor] (${this.id}) mode:'${modeRef.value}' zone:${idz.zone}`);
     // TODO adjust...
 
-    if (hCtx.getMode() == "inserting-state") {
-      // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    if (modeRef.value == "inserting-state") {
+      console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
+      //   cursor: url(http://cursor.in/assets/copy.svg), auto;
       if (this.id.startsWith("F") || this.id.startsWith("S")) {
-        if (this.canInsertState(idz)) return "default";
-        else return "not-allowed";
+        if (this.canInsertState(idz)) return "url(/assets/state16x16.png),default";
+        // if (this.canInsertState(idz)) return "grabbing";
+        else return "url(/assets/no-drop16x16.png),no-drop";
       }
-      return "not-allowed";
+      return "url(/assets/no-drop16x16.png),no-drop";
     }
     if (hCtx.getErrorId() == this.id) {
-      cursor = "no-drop";
+      cursor = "url(/assets/no-drop16x16.png),no-drop";
       return cursor;
     }
-    if (hCtx.getDraggedId() == this.id) {
+    if (!this.id.startsWith("S") && hCtx.getDraggedId() == this.id) {
       cursor = "grabbing";
       return cursor;
     }
@@ -203,5 +207,9 @@ export class CbaseElem {
 
   idz() {
     return hCtx.getIdz();
+  }
+
+  canInsertState(idz) {
+    return false;
   }
 }

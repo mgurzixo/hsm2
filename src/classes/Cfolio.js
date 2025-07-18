@@ -1,7 +1,7 @@
 "use strict";
 
 import * as U from "src/lib/utils";
-import { hsm, cCtx, hCtx } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
 import { mousePos } from "src/lib/canvasListeners";
@@ -65,20 +65,45 @@ export class Cfolio extends CbaseRegion {
     return this;
   }
 
+  insertState(x, y) {
+    console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+    const h = hsm.settings.stateMinHeight;
+    const w = hsm.settings.stateMinWidth;
+    const stateOptions = {
+      name: "First state",
+      color: "blue",
+      geo: {
+        x0: x - this.geo.x0 - w,
+        y0: y - this.geo.y0 - h,
+        width: w,
+        height: h,
+      },
+    };
+    const myState = new Cstate(this, stateOptions, "S");
+    console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
+    hsm.hElems.insertElem(myState);
+    this.children.push(myState);
+    hsm.draw();
+    modeRef.value = "";
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
+
+    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz);
+    hCtx.setIdz(newIdz);
+    hsm.setCursor(newIdz);
+    myState.dragStart();
+  }
+
   dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
-    // console.log(`[Cfolio.dragStartP] xx:${xx.toFixed()} x:${x.toFixed()}`);
-    switch (hCtx.mode) {
-      case "INSERT_STATE": {
-        const myState = new Cstate(this);
-        hsm.hElems.insertElem(myState);
-        this.children.push(myState);
+    console.log(`[Cfolio.dragStartP] idz:${JSON.stringify(idz)}`);
+    switch (modeRef.value) {
+      case "inserting-state": {
+        this.insertState(x, y);
+        return;
       }
-      // FALLTHRU
-      // eslint-disable-next-line no-fallthrough
       default:
-        hCtx.setMode("");
+        modeRef.value = "";
     }
     hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M" });
   }
@@ -96,10 +121,6 @@ export class Cfolio extends CbaseRegion {
     // console.log(`[Cfolio.dragEnd]`);
     this.drag(dx, dy);
     return true;
-  }
-
-  dragCancelP(dxP, dyP) {
-    this.dragEndP(dxP, dyP);
   }
 
   raiseChildR(id) {
@@ -127,7 +148,7 @@ export class Cfolio extends CbaseRegion {
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
-    idz = { id: this.id, zone: "M" };
+    idz = { id: this.id, zone: "M", x: x, y: y };
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
@@ -136,6 +157,18 @@ export class Cfolio extends CbaseRegion {
   }
 
   canInsertState(idz) {
+    console.log(`[Cstate.canInsertState] (${this.id}) idz.x:${idz.x}`);
+    const m = hsm.settings.minDistanceMm;
+    const h = hsm.settings.stateMinHeight + m;
+    const w = hsm.settings.stateMinWidth + m;
+    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    if (x0 < w || x0 >= this.geo.width - m) return false;
+    if (y0 < h || y0 >= this.geo.height - m) return false;
+    for (let child of this.children) {
+      let geo = { x0: idz.x - w, y0: idz.y - this.geo.y0 - h, width: w, height: h };
+      // console.log(`[Cstate.canInsertState] (${this.id}) gCId:${child.id}`);
+      if (U.rectsIntersect(child.geo, geo)) return false;
+    }
     return true;
   }
 }

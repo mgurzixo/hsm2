@@ -84,7 +84,6 @@ export class Cstate extends CbaseState {
 
   dragStart() {
     const idz = this.idz();
-    const [x, y] = [idz.x, idz.y];
     // console.log(`[Cstate.dragStart] (${this.id}) x:${x?.toFixed()}`);
     // console.log(
     //   `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
@@ -106,7 +105,7 @@ export class Cstate extends CbaseState {
 
   drag(dx, dy) {
     const idz = this.idz();
-    // console.log(`[Cstate.drag] id:${this.id} dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    console.log(`[Cstate.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
     const dragCtx = hCtx.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
@@ -203,7 +202,7 @@ export class Cstate extends CbaseState {
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       hsm.drag(dx, dy);
-      if (currentIteration >= totalIterations) {
+      if (!hCtx.getErrorId() || currentIteration >= totalIterations) {
         hCtx.setErrorId(null);
         hCtx.dragEnd();
       } else {

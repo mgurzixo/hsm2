@@ -1,17 +1,17 @@
 <template>
-  <div class="col-auto left-buttons overflow-auto">
+  <div class="col-auto left-buttons overflow-auto" @click="modeRef = ''">
     <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap text-black">
       <button-burger class=""></button-burger>
       <q-btn class="bg-amber-2 q-btn--active" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
 
-      <q-btn id="btn-state" class="bg-amber-2 elem-button" outline round icon="mdi-rectangle-outline"
-        @click="setMode('state')" />
-      <q-btn id="btn-trans" class="bg-amber-2 elem-button" outline round icon="mdi-arrow-right-top"
-        @click="setMode('trans')" />
-      <q-btn id="btn-choice" class="bg-amber-2 elem-button" outline round icon="mdi-rhombus-outline"
-        @click="setMode('choice')" />
-      <q-btn id="btn-note" class="bg-amber-2 elem-button" outline round icon="mdi-note-outline"
-        @click="setMode('note')" />
+      <q-btn id="inserting-state" class="bg-amber-2 elem-button" outline round icon="mdi-rectangle-outline"
+        @click.stop="modeRef = 'inserting-state'" />
+      <q-btn id="inserting-trans" class="bg-amber-2 elem-button" outline round icon="mdi-arrow-right-top"
+        @click.stop="modeRef = 'inserting-trans'" />
+      <q-btn id="inserting-choice" class="bg-amber-2 elem-button" outline round icon="mdi-rhombus-outline"
+        @click.stop="modeRef = 'inserting-choice'" />
+      <q-btn id="inserting-note" class="bg-amber-2 elem-button" outline round icon="mdi-note-outline"
+        @click.stop="modeRef = 'inserting-note'" />
       <div></div>
       <q-btn class="bg-amber-1" outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
       <q-btn class="bg-amber-1" outline round icon="mdi-magnify-minus" @click="doZoom(-1)" />
@@ -28,8 +28,6 @@
   border-radius: 8px;
 }
 
-.elem-selected {}
-
 .left-buttons {
   border-left: solid 1px;
   border-right: solid 1px;
@@ -39,42 +37,36 @@
 </style>
 
 <script setup>
+import * as V from "vue";
 import ButtonBurger from "components/ButtonBurger.vue";
 // import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { hsm, hCtx } from "src/classes/Chsm";
+import { hsm, hCtx, modeRef } from "src/classes/Chsm";
 
 function doLoadHsm() {
   loadHsm();
   hsm.draw();
 }
 
-function setMode(wantedMode) {
-  // console.log(`[LeftButtons.setMode]   res:${m}`);
-  if (wantedMode == "") hCtx.setMode("");
-  else hCtx.setMode(`inserting-${wantedMode}`);
-  for (let mode of ["state", "trans", "choice", "note"]) {
-    const id = `btn-${mode}`;
-    let elem = document.getElementById(id);
-    if (wantedMode == mode) {
-      // console.log(`[LeftButtons.setMode] SET m:${wantedMode} id:${id} elem:${elem}`);
-      if (elem.classList.contains("bg-amber-5")) {
-        elem.classList.remove("bg-amber-5");
-        elem.classList.add("bg-amber-2");
-        hCtx.setMode("");
-      }
-      else {
-        elem.classList.remove("bg-amber-2");
-        elem.classList.add("bg-amber-5");
-      }
-    }
-    else {
-      // console.log(`[LeftButtons.setMode] RESET m:${wantedMode} id:${id} elem:${elem}`);
+V.watch(modeRef, (newMode, oldMode) => {
+  console.log(`[LeftButtons.modeRef] oldMode:${oldMode} newMode:${newMode}`);
+  if (newMode == oldMode) {
+    modeRef.value = "";
+    return;
+  }
+  for (let mode of ["inserting-state", "inserting-trans", "inserting-choice", "inserting-note"]) {
+    let elem = document.getElementById(mode);
+    console.log(`[LeftButtons.modeRef] elem:${elem} id:${elem?.id}`);
+    if (elem.id == oldMode) {
       elem.classList.remove("bg-amber-5");
       elem.classList.add("bg-amber-2");
     }
+    else if (elem.id == newMode) {
+      elem.classList.remove("bg-amber-2");
+      elem.classList.add("bg-amber-5");
+    }
   }
-}
+});
 
 // export function setZoom(x, y, scale) {
 //   const oldScale = theVp.scale;
