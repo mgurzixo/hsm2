@@ -152,7 +152,7 @@ export class CbaseElem {
     // TODO adjust...
 
     if (modeRef.value == "inserting-state") {
-      console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
+      // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
       //   cursor: url(http://cursor.in/assets/copy.svg), auto;
       if (this.id.startsWith("F") || this.id.startsWith("S")) {
         if (this.canInsertState(idz)) return "url(/assets/state16x16.png),default";

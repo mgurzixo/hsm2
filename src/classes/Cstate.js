@@ -83,7 +83,7 @@ export class Cstate extends CbaseState {
   }
 
   insertState(x, y) {
-    console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+    // console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
     if (!this.children[0]) {
       const rid = "R" + hsm.newSernum();
       const regionOptions = {
@@ -115,7 +115,7 @@ export class Cstate extends CbaseState {
       },
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
-    console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
+    // console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
     hsm.hElems.insertElem(myState);
 
     this.children[0].children.push(myState);
@@ -234,10 +234,10 @@ export class Cstate extends CbaseState {
       }
     }
 
-    console.log(
-      `[Cstate.drag] (${this.id}) type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
-    );
-    console.log(`[Cstate.drag] (${this.id}) Parent id:${this.parent.id}`);
+    // console.log(
+    //   `[Cstate.drag] (${this.id}) type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
+    // );
+    // console.log(`[Cstate.drag] (${this.id}) Parent id:${this.parent.id}`);
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
@@ -416,7 +416,12 @@ export class Cstate extends CbaseState {
     if (y0 < h + t || y0 >= this.geo.height - m) return false;
     for (let child of this.children) {
       for (let grandChild of child.children) {
-        let geo = { x0: idz.x - w, y0: idz.y - this.geo.y0 - h - t, width: w, height: h };
+        let geo = {
+          x0: idz.x - this.geo.x0 - w,
+          y0: idz.y - this.geo.y0 - t - h,
+          width: w,
+          height: h,
+        };
         // console.log(`[Cstate.canInsertState] (${this.id}) gCId:${child.id}`);
         if (U.rectsIntersect(grandChild.geo, geo)) return false;
       }

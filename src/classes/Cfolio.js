@@ -66,7 +66,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   insertState(x, y) {
-    console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+    // console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
     const id = "S" + hsm.newSernum();
@@ -82,7 +82,7 @@ export class Cfolio extends CbaseRegion {
       },
     };
     const myState = new Cstate(this, stateOptions, "S");
-    console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
+    // console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
     hsm.hElems.insertElem(myState);
     this.children.push(myState);
     hsm.draw();
@@ -159,7 +159,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   canInsertState(idz) {
-    console.log(`[Cstate.canInsertState] (${this.id}) idz.x:${idz.x}`);
+    // console.log(`[Cfolio.canInsertState] (${this.id}) idz.x:${idz.x}`);
     const m = hsm.settings.minDistanceMm;
     const h = hsm.settings.stateMinHeight + m;
     const w = hsm.settings.stateMinWidth + m;

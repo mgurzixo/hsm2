@@ -108,7 +108,7 @@ export class Chsm extends CbaseElem {
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
-    console.log(`[Chsm.dragStart] elem:${elem?.id} Mode:'${modeRef.value}'`);
+    // console.log(`[Chsm.dragStart] elem:${elem?.id} Mode:'${modeRef.value}'`);
     const mode = modeRef.value;
     switch (mode) {
       case "":
