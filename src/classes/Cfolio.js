@@ -66,7 +66,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   insertState(x, y) {
-    // console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+    console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
     const id = "S" + hsm.newSernum();
