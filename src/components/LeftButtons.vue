@@ -94,8 +94,8 @@ function doTest() {
       pos: 0.2,
     },
     end: {
-      id: "S3",
-      side: "L",
+      id: "S2",
+      side: "R",
       pos: 0.7,
     },
     isInternal: true,
