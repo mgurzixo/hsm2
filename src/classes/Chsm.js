@@ -16,6 +16,8 @@ export let modeRef = V.ref(""); // "inserting-state", "inserting-trans"...
 export let cursor = V.ref("default");
 export let ctxMenu = V.ref(null);
 
+export let myTrans = V.ref(null);
+
 export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "M");
@@ -103,6 +105,10 @@ export class Chsm extends CbaseElem {
     cCtx.fill();
     if (!hCtx.folio) return;
     hCtx.folio.draw();
+    if (myTrans.value) {
+      myTrans.value.doIt();
+      myTrans.value.draw();
+    }
   }
 
   dragStart(xDown, yDown) {

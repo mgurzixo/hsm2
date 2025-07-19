@@ -9,7 +9,7 @@ import { Cstate } from "src/classes/Cstate";
 export class Ctrans extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
-    this.lineWidth = 1;
+    this.lineWidth = 1.5;
   }
 
   load(transOptions) {
@@ -21,35 +21,52 @@ export class Ctrans extends CbaseElem {
   connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
     let segments = [];
     const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
+    if (x1 == x0) {
+      if (y1 == y0) return segments;
+      if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+      return segments;
+    }
     switch (side0) {
       case "B":
       case "T": {
-        if (x1 == x0) {
-          if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-          break;
-        }
         switch (side1) {
           case "B":
           case "T": {
-            if (y1 > y0) {
-              segments.push({ dir: "S", len: dy / 2 });
-              segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-              if (!skipLast) segments.push({ dir: "S", len: dy - dy / 2 });
-            }
-            else {
-              segments.push({ dir: "N", len: dy - dy / 2 });
-              segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-              if (!skipLast) segments.push({ dir: "N", len: dy / 2 });
-            }
+            segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
+            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+            if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
           }
             break;
           case "R":
-            // TODO
-            break;
-          case "L":
-            // TODO
+          case "L": {
+            segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+            if (!skipLast) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+          }
             break;
         }
+        break;
+      }
+      case "R":
+      case "L": {
+        switch (side1) {
+          case "B":
+          case "T": {
+            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+            if (!skipLast && y1 != y0) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+          }
+            break;
+          case "R":
+          case "L": {
+            if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+            else {
+              segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
+              segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+              if (!skipLast) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
+            }
+          }
+            break;
+        }
+        break;
       }
     }
     return segments;
@@ -59,10 +76,11 @@ export class Ctrans extends CbaseElem {
     const [x0, y0] = U.idToXY(this.start);
     const [x1, y1] = U.idToXY(this.end);
     this.segments = this.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
-    console.log(`[Ctrans.draw] Segments:${JSON.stringify(this.segments)}`);
+    // console.log(`[Ctrans.draw] Segments:${JSON.stringify(this.segments)}`);
   }
 
   drawArrow(x, y, dir) {
+    // console.log(`[Ctrans.drawArrow] dir ${dir}`);
     let lenP = this.C(hsm.settings.arrowLengthMm);
     let widthP = this.C(hsm.settings.arrowWidthMm);
     const xP = this.C(x);
@@ -77,13 +95,13 @@ export class Ctrans extends CbaseElem {
         cCtx.lineTo(xP, yP);
         cCtx.lineTo(xP + widthP, yP - lenP);
         break;
-      case "E":
-        widthP = -widthP;
-      // eslint-disable-next-line no-fallthrough
       case "W":
-        cCtx.moveTo(xP - widthP, yP - lenP);
+        lenP = -lenP;
+      // eslint-disable-next-line no-fallthrough
+      case "E":
+        cCtx.moveTo(xP - lenP, yP - widthP);
         cCtx.lineTo(xP, yP);
-        cCtx.lineTo(x - widthP, yP + lenP);
+        cCtx.lineTo(xP - lenP, yP + widthP);
         break;
     }
     cCtx.stroke();
@@ -96,7 +114,7 @@ export class Ctrans extends CbaseElem {
   }
 
   draw() {
-    console.log(`[Ctrans.draw] Drawing ${this.id}`);
+    // console.log(`[Ctrans.draw] Drawing ${this.id}`);
     const [x0, y0] = U.idToXY(this.start);
     [this.geo.x0, this.geo.y0] = [x0, y0];
     const [x1, y1] = U.idToXY(this.end);
