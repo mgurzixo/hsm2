@@ -81,10 +81,6 @@ V.watch(modeRef, (newMode, oldMode) => {
   }
 });
 
-
-
-
-
 function doTest() {
   const tOptions = {
     segments: [],
@@ -95,7 +91,7 @@ function doTest() {
     },
     end: {
       id: "S2",
-      side: "R",
+      side: "L",
       pos: 0.7,
     },
     isInternal: true,

@@ -141,6 +141,7 @@ export async function isIdle() {
 }
 
 export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
+  // console.log(`[utils.drawArrow] side0:${side0} side1:${side1}`);
   let segments = [];
   const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
   if (x1 == x0) {
@@ -191,11 +192,12 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
       break;
     }
   }
+  // console.log(`[utils.connectPoints] Segments:${JSON.stringify(segments)}`);
   return segments;
 }
 
 export function drawArrow(cCtx, lineWidth, x, y, dir) {
-  // console.log(`[Ctrans.drawArrow] dir ${dir}`);
+  // console.log(`[utils.drawArrow] dir ${dir}`);
   function C(val) {
     const x = hsm.mmToPL(val);
     if (!lineWidth % 2) return Math.round(x);

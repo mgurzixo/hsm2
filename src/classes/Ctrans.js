@@ -18,62 +18,8 @@ export class Ctrans extends CbaseElem {
     this.end = transOptions.end;
   }
 
-  // connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
-  //   let segments = [];
-  //   const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
-  //   if (x1 == x0) {
-  //     if (y1 == y0) return segments;
-  //     if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-  //     return segments;
-  //   }
-  //   switch (side0) {
-  //     case "B":
-  //     case "T": {
-  //       switch (side1) {
-  //         case "B":
-  //         case "T": {
-  //           segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
-  //           segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-  //           if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
-  //         }
-  //           break;
-  //         case "R":
-  //         case "L": {
-  //           segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-  //           if (!skipLast) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-  //         }
-  //           break;
-  //       }
-  //       break;
-  //     }
-  //     case "R":
-  //     case "L": {
-  //       switch (side1) {
-  //         case "B":
-  //         case "T": {
-  //           segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-  //           if (!skipLast && y1 != y0) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-  //         }
-  //           break;
-  //         case "R":
-  //         case "L": {
-  //           if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-  //           else {
-  //             segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
-  //             segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-  //             if (!skipLast) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
-  //           }
-  //         }
-  //           break;
-  //       }
-  //       break;
-  //     }
-  //   }
-  //   return segments;
-  // }
-
   connectSelf() {
-    const segments = [];
+    let segments = [];
     const [x0, y0] = U.idToXY(this.start);
     const [x1, y1] = U.idToXY(this.end);
     if (this.start.side == this.end.side) {
@@ -101,7 +47,7 @@ export class Ctrans extends CbaseElem {
       }
     }
     else {
-      this.segments = U.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
+      segments = U.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
     }
     return segments;
   }
@@ -115,36 +61,8 @@ export class Ctrans extends CbaseElem {
     else {
       this.segments = this.connectSelf();
     }
-    // console.log(`[Ctrans.draw] Segments:${JSON.stringify(this.segments)}`);
+    // console.log(`[Ctrans.doIt] Segments:${JSON.stringify(this.segments)}`);
   }
-
-  // drawArrow(x, y, dir) {
-  //   // console.log(`[Ctrans.drawArrow] dir ${dir}`);
-  //   let lenP = this.C(hsm.settings.arrowLengthMm);
-  //   let widthP = this.C(hsm.settings.arrowWidthMm);
-  //   const xP = this.C(x);
-  //   const yP = this.C(y);
-  //   cCtx.beginPath();
-  //   switch (dir) {
-  //     case "N":
-  //       lenP = -lenP;
-  //     // eslint-disable-next-line no-fallthrough
-  //     case "S":
-  //       cCtx.moveTo(xP - widthP, yP - lenP);
-  //       cCtx.lineTo(xP, yP);
-  //       cCtx.lineTo(xP + widthP, yP - lenP);
-  //       break;
-  //     case "W":
-  //       lenP = -lenP;
-  //     // eslint-disable-next-line no-fallthrough
-  //     case "E":
-  //       cCtx.moveTo(xP - lenP, yP - widthP);
-  //       cCtx.lineTo(xP, yP);
-  //       cCtx.lineTo(xP - lenP, yP + widthP);
-  //       break;
-  //   }
-  //   cCtx.stroke();
-  // }
 
   C(val) {
     const x = hsm.mmToPL(val);
@@ -165,13 +83,13 @@ export class Ctrans extends CbaseElem {
     cCtx.moveTo(this.C(x), this.C(y));
     let curDir;
     const maxIdx = this.segments.length - 1;
-    // console.log(`[Ctrans.makeIdz] ----------------------- maxIdx:${maxIdx}`);
+    // console.log(`[Ctrans.draw] ----------------------- maxIdx:${maxIdx}`);
     let radius1 = 0;
     for (let idx in this.segments) {
       idx = Number(idx);
       let segment = this.segments[idx];
       const nextSeg = idx < maxIdx ? this.segments[idx + 1] : null;
-      // console.log(`[Ctrans.makeIdz] (${idx}) previousSeg:${previousSeg} nextSeg:${nextSeg}`);
+      // console.log(`[Ctrans.draw] (${idx}) previousSeg:${previousSeg} nextSeg:${nextSeg}`);
       curDir = segment.dir;
       let len = segment.len;
       let radius2 = hsm.settings.maxTransRadiusMm;
@@ -181,7 +99,7 @@ export class Ctrans extends CbaseElem {
       // radius1 = 0;
       // radius2 = 0;
       len = len - radius1 - radius2;
-      // console.log(`[Ctrans.makeIdz] (${idx}) len0:${segment.len.toFixed()} len:${len.toFixed()} dir:${segment.dir} radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
+      // console.log(`[Ctrans.draw] (${idx}) len0:${segment.len.toFixed()} len:${len.toFixed()} dir:${segment.dir} radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
       switch (segment.dir) {
         case "N":
           y = y - len;
