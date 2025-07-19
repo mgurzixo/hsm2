@@ -90,14 +90,15 @@ function doTest() {
     segments: [],
     start: {
       id: "S2",
-      side: "L",
+      side: "R",
       pos: 0.2,
     },
     end: {
       id: "S3",
-      side: "R",
+      side: "L",
       pos: 0.7,
     },
+    isInternal: true,
   };
   myTrans.value = new Ctrans(null, tOptions, "T");
   myTrans.value.load(tOptions);

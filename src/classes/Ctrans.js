@@ -2,7 +2,7 @@
 
 import * as U from "src/lib/utils";
 import { R, RR } from "src/lib/utils";
-import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
+import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cstate } from "src/classes/Cstate";
 
@@ -72,10 +72,40 @@ export class Ctrans extends CbaseElem {
     return segments;
   }
 
+  connectSelf() {
+    if (this.start.side == this.end.side) {
+      const [x0, y0] = U.idToXY(this.start);
+      const [x1, y1] = U.idToXY(this.end);
+      const [dx, dy] = [x1 - x0, y1 - y0];
+      let length = Math.sqrt(dx * dx + dy * dy);
+      // let radius =
+      const segments = [];
+      switch (this.start.side) {
+        case "T":
+          length = Math.abs();
+          break;
+        case "R":
+
+          break;
+        case "B":
+
+          break;
+        case "L":
+
+          break;
+      }
+    }
+  }
+
   doIt() {
     const [x0, y0] = U.idToXY(this.start);
     const [x1, y1] = U.idToXY(this.end);
-    this.segments = this.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
+    if (this.start.id != this.end.id) {
+      this.segments = this.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
+    }
+    else {
+      this.connectSelf();
+    }
     // console.log(`[Ctrans.draw] Segments:${JSON.stringify(this.segments)}`);
   }
 
@@ -131,20 +161,14 @@ export class Ctrans extends CbaseElem {
     for (let idx in this.segments) {
       idx = Number(idx);
       let segment = this.segments[idx];
-      const previousSeg = idx != 0 ? this.segments[idx - 1] : null;
       const nextSeg = idx < maxIdx ? this.segments[idx + 1] : null;
       // console.log(`[Ctrans.makeIdz] (${idx}) previousSeg:${previousSeg} nextSeg:${nextSeg}`);
       curDir = segment.dir;
       let len = segment.len;
-      function makeRadius(seg) {
-        let radius = hsm.settings.maxTransRadiusMm;
-        if (radius > segment.len / 2) radius = segment.len / 2;
-        if (!seg) radius = 0;
-        else if (radius > seg.len / 2) radius = seg.len / 2;
-        return radius;
-      }
-      let radius1 = makeRadius(previousSeg);
-      let radius2 = makeRadius(nextSeg);
+      let radius2 = hsm.settings.maxTransRadiusMm;
+      if (radius2 > segment.len / 2) radius2 = segment.len / 2;
+      if (!nextSeg) radius2 = 0;
+      else if (radius2 > nextSeg.len / 2) radius2 = nextSeg.len / 2;
       // radius1 = 0;
       // radius2 = 0;
       len = len - radius1 - radius2;
@@ -190,6 +214,7 @@ export class Ctrans extends CbaseElem {
         }
         // cCtx.lineTo(this.C(x), this.C(y));
         cCtx.quadraticCurveTo(this.C(cpx), this.C(cpy), this.C(x), this.C(y));
+        radius1 = radius2;
       }
     }
     cCtx.stroke();
