@@ -46,6 +46,7 @@
 
 <script setup>
 import * as V from "vue";
+import * as U from "src/lib/utils";
 import ButtonBurger from "components/ButtonBurger.vue";
 // import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
@@ -94,7 +95,7 @@ function doTest() {
     },
     end: {
       id: "S3",
-      side: "L",
+      side: "R",
       pos: 0.7,
     },
   };
@@ -104,6 +105,12 @@ function doTest() {
   // myTrans.value.draw();
 
 }
+
+V.onMounted(async () => {
+  await U.nextTick();
+  await U.timeout(100);
+  doTest();
+});
 
 
 // export function setZoom(x, y, scale) {

@@ -124,10 +124,31 @@ export class Ctrans extends CbaseElem {
     cCtx.beginPath();
     let [x, y] = [x0, y0];
     cCtx.moveTo(this.C(x), this.C(y));
-    let oldDir;
-    for (let segment of this.segments) {
-      oldDir = segment.dir;
-      const len = segment.len;
+    let curDir;
+    const maxIdx = this.segments.length - 1;
+    console.log(`[Ctrans.makeIdz] ----------------------- maxIdx:${maxIdx}`);
+    let radius1 = 0;
+    for (let idx in this.segments) {
+      idx = Number(idx);
+      let segment = this.segments[idx];
+      const previousSeg = idx != 0 ? this.segments[idx - 1] : null;
+      const nextSeg = idx < maxIdx ? this.segments[idx + 1] : null;
+      // console.log(`[Ctrans.makeIdz] (${idx}) previousSeg:${previousSeg} nextSeg:${nextSeg}`);
+      curDir = segment.dir;
+      let len = segment.len;
+      function makeRadius(seg) {
+        let radius = hsm.settings.maxTransRadiusMm;
+        if (radius > segment.len / 2) radius = segment.len / 2;
+        if (!seg) radius = 0;
+        else if (radius > seg.len / 2) radius = seg.len / 2;
+        return radius;
+      }
+      let radius1 = makeRadius(previousSeg);
+      let radius2 = makeRadius(nextSeg);
+      // radius1 = 0;
+      // radius2 = 0;
+      len = len - radius1 - radius2;
+      console.log(`[Ctrans.makeIdz] (${idx}) len0:${segment.len.toFixed()} len:${len.toFixed()} dir:${segment.dir} radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
       switch (segment.dir) {
         case "N":
           y = y - len;
@@ -143,9 +164,36 @@ export class Ctrans extends CbaseElem {
           break;
       }
       cCtx.lineTo(this.C(x), this.C(y));
+      let [cpx, cpy] = [x, y];
+      if (radius2) {
+        switch (segment.dir) {
+          case "N":
+            y -= radius2;
+            x += nextSeg.dir == "E" ? radius2 : -radius2;
+            cpy = y;
+            break;
+          case "S":
+            y += radius2;
+            x += nextSeg.dir == "E" ? radius2 : -radius2;
+            cpy = y;
+            break;
+          case "E":
+            x += radius2;
+            y += nextSeg?.dir == "S" ? radius2 : -radius2;
+            cpx = x;
+            break;
+          case "W":
+            x -= radius2;
+            y += nextSeg?.dir == "S" ? radius2 : -radius2;
+            cpx = x;
+            break;
+        }
+        // cCtx.lineTo(this.C(x), this.C(y));
+        cCtx.quadraticCurveTo(this.C(cpx), this.C(cpy), this.C(x), this.C(y));
+      }
     }
     cCtx.stroke();
-    this.drawArrow(x1, y1, oldDir);
+    if (curDir) this.drawArrow(x1, y1, curDir);
   }
 
 

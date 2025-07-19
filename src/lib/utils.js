@@ -2,6 +2,7 @@
 
 export const inchInMm = 25.4;
 
+import * as V from "vue";
 import { hsm, hElems, cCtx } from "src/classes/Chsm";
 
 export function RR(x, lineWidth = 1) {
@@ -118,4 +119,23 @@ export function drawLineWithArrows(x0, y0, x1, y1, aWidth, aLength, arrowStart, 
   //
   cCtx.stroke();
   cCtx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+export async function nextTick() {
+  return new Promise((res) => {
+    V.nextTick(() => res(true));
+  });
+}
+
+export async function timeout(timeout) {
+  if (!timeout) timeout = 0;
+  return new Promise((res) => {
+    setTimeout(() => res(true), timeout);
+  });
+}
+
+export async function isIdle() {
+  return new Promise((res) => {
+    requestIdleCallback(() => res(true));
+  });
 }
