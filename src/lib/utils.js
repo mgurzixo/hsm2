@@ -142,12 +142,13 @@ export async function isIdle() {
 
 export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
   // console.log(`[utils.drawArrow] side0:${side0} side1:${side1}`);
+  const r = hsm.settings.maxTransRadiusMm * 1.5;
   let segments = [];
   const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
   if (x1 == x0) {
     if (y1 == y0) return segments;
-    if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-    return segments;
+    // if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+    // return segments;
   }
   switch (side0) {
     case "B":
@@ -155,9 +156,17 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
       switch (side1) {
         case "B":
         case "T": {
-          segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
-          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-          if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
+          if (side0 == side1) {
+            if (side0 == "T") segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? r + dy : r });
+            else segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? r : r + dy });
+            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+            if (side0 == "T") segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? r : r + dy });
+            else segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? r + dy : r });
+          } else {
+            segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
+            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+            if (!skipLast) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
+          }
         }
           break;
         case "R":
@@ -180,11 +189,20 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
           break;
         case "R":
         case "L": {
-          if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-          else {
-            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
+          console.log(`[utils.connectPoints] side0:${side0} side1:${side1}`);
+          if (side0 == side1) {
+            if (side0 == "R") segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? r : r + dx });
+            else segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? r + dx : r });
             segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-            if (!skipLast) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
+            if (side0 == "R") segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? r + dx : r });
+            else segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? r : r + dx });
+          } else {
+            if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+            else {
+              segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
+              segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+              if (!skipLast) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
+            }
           }
         }
           break;

@@ -78,130 +78,141 @@
         scale: 1,
       },
       trs: [
+        // {
+        //   segments: [],
+        //   start: {
+        //     id: "S2",
+        //     side: "R",
+        //     pos: 0.2,
+        //   },
+        //   end: {
+        //     id: "S3",
+        //     side: "T",
+        //     pos: 0.3,
+        //   },
+        //   isInternal: true,
+        // },
+        // {
+        //   segments: [],
+        //   start: {
+        //     id: "S7",
+        //     side: "R",
+        //     pos: 0.2,
+        //   },
+        //   end: {
+        //     id: "S3",
+        //     side: "L",
+        //     pos: 0.6,
+        //   },
+        //   isInternal: true,
+        // },
         {
           segments: [],
           start: {
-            id: "S2",
-            side: "R",
-            pos: 0.2,
-          },
-          end: {
-            id: "S3",
-            side: "T",
-            pos: 0.3,
-          },
-          isInternal: true,
-        },
-        {
-          segments: [],
-          start: {
-            id: "S7",
-            side: "R",
-            pos: 0.2,
-          },
-          end: {
             id: "S3",
             side: "L",
-            pos: 0.6,
-          },
-          isInternal: true,
-        },
-        {
-          segments: [],
-          start: {
-            id: "S8",
-            side: "T",
             pos: 0.5,
           },
           end: {
-            id: "S6",
-            side: "T",
+            id: "S9",
+            side: "L",
             pos: 0.5,
           },
           isInternal: true,
         },
       ],
       states: [
-        {
-          id: "S2",
-          name: "First state",
-          color: "blue",
-          geo: {
-            x0: 10,
-            y0: 50,
-            width: 100,
-            height: 80,
-          },
-          regions: [
-            {
-              id: "R4",
-              name: "My region",
-              geo: {
-                x0: 0,
-                y0: 150,
-                width: 80,
-                height: 10,
-              },
-              states: [
-                {
-                  id: "S6",
-                  name: "Third state",
-                  color: "yellow",
-                  geo: {
-                    x0: 10,
-                    y0: 10,
-                    width: 40,
-                    height: 50,
-                  },
-                  regions: [
-                    {
-                      id: "R5",
-                      name: "My region",
-                      geo: {
-                        x0: 0,
-                        y0: 150,
-                        width: 80,
-                        height: 10,
-                      },
-                      states: [
-                        {
-                          id: "S7",
-                          name: "5th state",
-                          color: "green",
-                          geo: {
-                            x0: 10,
-                            y0: 10,
-                            width: 20,
-                            height: 30,
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  id: "S8",
-                  name: "4th state with a very long name",
-                  color: "purple",
-                  geo: {
-                    x0: 60,
-                    y0: 10,
-                    width: 30,
-                    height: 20,
-                  },
-                },
-              ],
-            },
-          ],
-        },
+        // {
+        //   id: "S2",
+        //   name: "First state",
+        //   color: "blue",
+        //   geo: {
+        //     x0: 20,
+        //     y0: 50,
+        //     width: 95,
+        //     height: 80,
+        //   },
+        //   regions: [
+        //     {
+        //       id: "R4",
+        //       name: "My region",
+        //       geo: {
+        //         x0: 0,
+        //         y0: 150,
+        //         width: 80,
+        //         height: 10,
+        //       },
+        //       states: [
+        //         {
+        //           id: "S6",
+        //           name: "Third state",
+        //           color: "yellow",
+        //           geo: {
+        //             x0: 10,
+        //             y0: 10,
+        //             width: 40,
+        //             height: 50,
+        //           },
+        //           regions: [
+        //             {
+        //               id: "R5",
+        //               name: "My region",
+        //               geo: {
+        //                 x0: 0,
+        //                 y0: 150,
+        //                 width: 80,
+        //                 height: 10,
+        //               },
+        //               states: [
+        //                 {
+        //                   id: "S7",
+        //                   name: "5th state",
+        //                   color: "green",
+        //                   geo: {
+        //                     x0: 10,
+        //                     y0: 10,
+        //                     width: 20,
+        //                     height: 30,
+        //                   },
+        //                 },
+        //               ],
+        //             },
+        //           ],
+        //         },
+        //         {
+        //           id: "S8",
+        //           name: "4th state with a very long name",
+        //           color: "purple",
+        //           geo: {
+        //             x0: 60,
+        //             y0: 10,
+        //             width: 30,
+        //             height: 20,
+        //           },
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // },
         {
           id: "S3",
-          name: "Second state",
+          name: "3rd state",
           color: "gold",
           geo: {
-            x0: 140,
-            y0: 90,
+            x0: 70,
+            y0: 50,
             width: 50,
+            height: 30,
+          },
+        },
+        {
+          id: "S9",
+          name: "9th state",
+          color: "gold",
+          geo: {
+            x0: 80,
+            y0: 90,
+            width: 30,
             height: 30,
           },
         },

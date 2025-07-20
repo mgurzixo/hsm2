@@ -75,7 +75,7 @@ export class Ctr extends CbaseElem {
     return Math.round(x) + 0.5;
   }
 
-  adjustXy(dx, dy) {
+  adjustXy(dx, dy, minseg = 0) {
     // console.log(`[Ctr.adjustXy] dx:${dx} dy:${dy}`);
     const r = hsm.settings.maxTransRadiusMm;
     for (let idx in this.segments) {
@@ -83,6 +83,7 @@ export class Ctr extends CbaseElem {
       const segment = this.segments[idx];
       switch (segment.dir) {
         case "W":
+          if (minseg && segment.len + dx < minseg) break;
           segment.len += dx;
           if (segment.len < 0) {
             segment.dir = "E";
@@ -91,6 +92,7 @@ export class Ctr extends CbaseElem {
           dx = 0;
           break;
         case "E":
+          if (minseg && segment.len - dx < minseg) break;
           segment.len -= dx;
           if (segment.len < 0) {
             segment.dir = "W";
@@ -99,6 +101,7 @@ export class Ctr extends CbaseElem {
           dx = 0;
           break;
         case "S":
+          if (minseg && segment.len - dy < minseg) break;
           segment.len -= dy;
           if (segment.len < 0) {
             segment.dir = "N";
@@ -107,6 +110,7 @@ export class Ctr extends CbaseElem {
           dy = 0;
           break;
         case "N":
+          if (minseg && segment.len + dy < minseg) break;
           segment.len += dy;
           if (segment.len < 0) {
             segment.dir = "S";
@@ -120,10 +124,17 @@ export class Ctr extends CbaseElem {
   }
 
   myAdjustXy(dx, dy) {
-    let [ddx, ddy] = this.adjustXy(dx / 2, dy / 2);
+    const r = hsm.settings.stateRadiusMm;
+    let [ddx, ddy] = this.adjustXy(dx / 2, dy / 2, r);
     this.segments = this.segments.reverse();
-    [dx, dy] = this.adjustXy(dx - dx / 2 + ddx, dy - dy / 2 + ddy);
+    [dx, dy] = this.adjustXy(dx - dx / 2 + ddx, dy - dy / 2 + ddy, r);
     this.segments = this.segments.reverse();
+    if (dx != 0 || dy != 0) {
+      let [ddx, ddy] = this.adjustXy(dx / 2, dy / 2);
+      this.segments = this.segments.reverse();
+      [dx, dy] = this.adjustXy(dx - dx / 2 + ddx, dy - dy / 2 + ddy);
+      this.segments = this.segments.reverse();
+    }
     if (dx != 0 || dy != 0) {
       this.segments = this.initialiseSegments();
     }
