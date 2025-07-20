@@ -51,7 +51,7 @@
         line: {
           chroma: 100,
           light: 30,
-          lineWidth: 1,
+          lineWidth: 1.5,
         },
         lineError: {
           color: "red",
