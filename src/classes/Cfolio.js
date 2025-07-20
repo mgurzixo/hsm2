@@ -15,7 +15,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   addTr(trOptions) {
-    const myTr = new Ctr(this, trOptions);
+    const myTr = new Ctr(this, trOptions, "T");
     hsm.hElems.insertElem(myTr);
     this.trs.push(myTr);
     myTr.load(trOptions);

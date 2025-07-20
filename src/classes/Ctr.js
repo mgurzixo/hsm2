@@ -4,7 +4,7 @@ import * as U from "src/lib/utils";
 import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
-import { Cstate } from "src/classes/Cstate";
+import { trStyles } from "src/lib/styles";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -16,6 +16,8 @@ export class Ctr extends CbaseElem {
     this.segments = transOptions.segments;
     this.start = transOptions.start;
     this.end = transOptions.end;
+    if (transOptions.color) this.color = transOptions.color;
+    else delete (this.color);
   }
 
   connectSelf() {
@@ -62,7 +64,7 @@ export class Ctr extends CbaseElem {
       segments = U.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
     }
     else segments = this.connectSelf();
-    console.warn(`[Ctr.initialiseSegments] oldX:${this.start.oldX} oldY:${this.start.oldY}`);
+    // console.warn(`[Ctr.initialiseSegments] oldX:${this.start.oldX} oldY:${this.start.oldY}`);
     // console.log(`[Ctr.initialiseSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
@@ -220,7 +222,18 @@ export class Ctr extends CbaseElem {
     const [x0, y0] = U.idToXY(this.start);
     [this.geo.x0, this.geo.y0] = [x0, y0];
     const [x1, y1] = U.idToXY(this.end);
-    // cCtx.lineWidth = 2;
+    let baseColor = this.color;
+    if (!baseColor) baseColor = hElems.getElemById(this.start.id).color;
+    // console.log(`[Ctr.draw] (${this.id}) startId:${this.start.id} baseColor:${baseColor}`);
+    const styles = trStyles(baseColor);
+    if (this.isIllegal) {
+      cCtx.lineWidth = styles.lineErrorWidth;
+      cCtx.strokeStyle = styles.lineError;
+    }
+    else {
+      cCtx.lineWidth = styles.lineWidth;
+      cCtx.strokeStyle = styles.line;
+    }
     cCtx.beginPath();
     let [x, y] = [x0, y0];
     cCtx.moveTo(this.C(x), this.C(y));

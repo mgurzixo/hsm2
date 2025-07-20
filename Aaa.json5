@@ -47,6 +47,17 @@
           sizePc: 70,
         },
       },
+      tr: {
+        line: {
+          chroma: 100,
+          light: 30,
+          lineWidth: 1,
+        },
+        lineError: {
+          color: "red",
+          lineWidth: 2,
+        },
+      },
       defaultColor: "darkorange",
     },
   },

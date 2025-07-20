@@ -40,3 +40,18 @@ export function stateStyles(baseColor) {
     titleTextSizePc: t.titleText.sizePc,
   };
 }
+
+export function trStyles(baseColor) {
+  const t = hsm.settings.styles.tr;
+  // Line
+  const line = new Color(baseColor);
+  line.lch.c = t.line.chroma;
+  line.lch.l = t.line.light;
+
+  return {
+    line: line.to("srgb") + "",
+    lineWidth: t.line.lineWidth,
+    lineError: t.lineError.color,
+    lineErrorWidth: t.lineError.lineWidth,
+  };
+}

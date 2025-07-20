@@ -10,7 +10,9 @@ export class CbaseElem {
     let id = obj?.id;
     if (type == "M") id = "M1";
     else {
-      if (!id) id = type + hsm.newSernum();
+      if (!id) {
+        id = type + hsm.newSernum();
+      }
       else hsm.checkSernum(Number(id.slice(1)));
       // console.log(`[CbaseElem.constructor] id:${id}`);
     }
@@ -75,18 +77,18 @@ export class CbaseElem {
     console.warn(`[CbaseElem.draw] Drawing ${this.id}`);
   }
 
-  hover(x, y) {}
-  click(x, y) {}
-  doubleClick(x, y) {}
-  dragStart() {}
-  drag(dx, dy) {}
+  hover(x, y) { }
+  click(x, y) { }
+  doubleClick(x, y) { }
+  dragStart() { }
+  drag(dx, dy) { }
 
   dragEnd(dx, dy) {
     console.warn(`[CbaseElem.dragEnd] id:${this.id}`);
     return true;
   }
 
-  dragCancel(dx, dy) {}
+  dragCancel(dx, dy) { }
 
   getXY0InFolio() {
     let [x, y] = [0, 0];

@@ -321,7 +321,7 @@ export class Cstate extends CbaseState {
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     cCtx.fill();
     // Draw state title background
-    console.log(`[Cstate.draw] titleBgs[0]:${styles.titleBgs[0]} titleBgs[1]:${styles.titleBgs[1]}`);
+    // console.log(`[Cstate.draw] titleBgs[0]:${styles.titleBgs[0]} titleBgs[1]:${styles.titleBgs[1]}`);
     const titleGradient = cCtx.createLinearGradient(x0, y0, x0, y0 + titleHeight);
     titleGradient.addColorStop(1, styles.titleBgs[0]);
     titleGradient.addColorStop(0, styles.titleBgs[1]);
