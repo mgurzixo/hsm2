@@ -186,9 +186,9 @@ export class Ctr extends CbaseElem {
     return [0, 0];
   }
 
-  isLegal() {
-    if (this.start.id == this.end.id) return true;
-    if (this.segments.length == 0) return true;
+  isIllLegal() {
+    if (this.start.id == this.end.id) return false;
+    if (this.segments.length == 0) return false;
     function check(side, dir) {
       if ((side == "T" && dir == "S") ||
         (side == "R" && dir == "W") ||
@@ -203,9 +203,9 @@ export class Ctr extends CbaseElem {
         (side == "L" && dir == "W")) return false;
       return true;
     }
-    if (!check(this.start.side, this.segments[0].dir)) return false;
-    else if (!check2(this.end.side, this.segments[this.segments.length - 1].dir)) return false;
-    return true;
+    if (!check(this.start.side, this.segments[0].dir)) return true;
+    else if (!check2(this.end.side, this.segments[this.segments.length - 1].dir)) return true;
+    return false;
   }
 
   // Get delta to add to [xx0,yy0]
@@ -282,7 +282,7 @@ export class Ctr extends CbaseElem {
     if (!baseColor) baseColor = hElems.getElemById(this.start.id).color;
     // console.log(`[Ctr.draw] (${this.id}) startId:${this.start.id} baseColor:${baseColor}`);
     const styles = trStyles(baseColor);
-    if (this.isIllegal) {
+    if (this.isIllLegal()) {
       cCtx.lineWidth = styles.lineErrorWidth;
       cCtx.strokeStyle = styles.lineError;
     }

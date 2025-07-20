@@ -13,7 +13,7 @@
     cursorMarginP: 8,
     maxTransRadiusMm: 4,
     arrowLengthMm: 3,
-    arrowWidthMm: 1,
+    arrowWidthMm: 0.75,
     styles: {
       silhouetteSelected: "black",
       folioBackground: "white",

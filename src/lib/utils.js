@@ -214,35 +214,4 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
   return segments;
 }
 
-export function drawArrow(cCtx, lineWidth, x, y, dir) {
-  // console.log(`[utils.drawArrow] dir ${dir}`);
-  function C(val) {
-    const x = hsm.mmToPL(val);
-    if (!lineWidth % 2) return Math.round(x);
-    return Math.round(x) + 0.5;
-  }
-  let lenP = C(hsm.settings.arrowLengthMm);
-  let widthP = C(hsm.settings.arrowWidthMm);
-  const xP = C(x);
-  const yP = C(y);
-  cCtx.beginPath();
-  switch (dir) {
-    case "N":
-      lenP = -lenP;
-    // eslint-disable-next-line no-fallthrough
-    case "S":
-      cCtx.moveTo(xP - widthP, yP - lenP);
-      cCtx.lineTo(xP, yP);
-      cCtx.lineTo(xP + widthP, yP - lenP);
-      break;
-    case "W":
-      lenP = -lenP;
-    // eslint-disable-next-line no-fallthrough
-    case "E":
-      cCtx.moveTo(xP - lenP, yP - widthP);
-      cCtx.lineTo(xP, yP);
-      cCtx.lineTo(xP - lenP, yP + widthP);
-      break;
-  }
-  cCtx.stroke();
-}
+
