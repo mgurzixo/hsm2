@@ -157,14 +157,22 @@ export class CbaseElem {
       // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
       //   cursor: url(http://cursor.in/assets/copy.svg), auto;
       if (this.id.startsWith("F") || this.id.startsWith("S")) {
-        if (this.canInsertState(idz)) return "url(/assets/state16x16.png),default";
+        if (this.canInsertState(idz)) return "url(/assets/state16x16.png) 8 8,default";
         // if (this.canInsertState(idz)) return "grabbing";
-        else return "url(/assets/no-drop16x16.png),no-drop";
+        else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
       }
       return "url(/assets/no-drop16x16.png),no-drop";
+    } else if (modeRef.value == "inserting-trans") {
+      // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
+      if (this.id.startsWith("S")) {
+        if (this.canInsertTr(idz)) return "url(/assets/anchor16x16.png) 8 8,default";
+        // if (this.canInsertState(idz)) return "grabbing";
+        else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+      }
+      return "url(/assets/no-drop16x16.png) 8 8,no-drop";
     }
     if (hCtx.getErrorId() == this.id) {
-      cursor = "url(/assets/no-drop16x16.png),no-drop";
+      cursor = "url(/assets/no-drop16x16.png) 8 8,no-drop";
       return cursor;
     }
     if (!this.id.startsWith("S") && hCtx.getDraggedId() == this.id) {

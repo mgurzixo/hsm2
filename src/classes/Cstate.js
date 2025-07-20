@@ -84,7 +84,7 @@ export class Cstate extends CbaseState {
   }
 
   insertState(x, y) {
-    // console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+    // console.log(`[Cstate.dragStartP] Inserting state x:${x.toFixed()}`);
     if (!this.children[0]) {
       const rid = "R" + hsm.newSernum();
       const regionOptions = {
@@ -116,7 +116,7 @@ export class Cstate extends CbaseState {
       },
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
-    // console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
+    // console.log(`[Cstate.dragStartP] New state id:${myState?.id}`);
     hsm.hElems.insertElem(myState);
 
     this.children[0].children.push(myState);
@@ -130,6 +130,25 @@ export class Cstate extends CbaseState {
     myState.dragStart();
   }
 
+  insertTr(x, y) {
+    // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()}`);
+    const trOptions = {
+      geo: {
+        x0: x - this.geo.x0,
+        y0: y - this.geo.y0,
+      },
+    };
+    const myTr = hCtx.folio.addTr(trOptions);
+
+    hsm.draw();
+    modeRef.value = "";
+    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const newIdz = myTr.makeIdz(x - this.geo.x0, y, this.idz);
+    hCtx.setIdz(newIdz);
+    hsm.setCursor(newIdz);
+    myTr.dragStart();
+  }
+
   dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
@@ -140,6 +159,10 @@ export class Cstate extends CbaseState {
     switch (modeRef.value) {
       case "inserting-state": {
         this.insertState(x, y);
+        return;
+      }
+      case "inserting-trans": {
+        this.insertTr(x, y);
         return;
       }
       default:
@@ -416,5 +439,13 @@ export class Cstate extends CbaseState {
       }
     }
     return true;
+  }
+
+  canInsertTr(idz) {
+    if (idz.zone == "T" ||
+      idz.zone == "R" ||
+      idz.zone == "B" ||
+      idz.zone == "L") return true;
+    return false;
   }
 }

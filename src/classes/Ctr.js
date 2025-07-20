@@ -5,6 +5,7 @@ import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { trStyles } from "src/lib/styles";
+import { pathSegments } from "src/lib/segments";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -19,6 +20,50 @@ export class Ctr extends CbaseElem {
     if (transOptions.color) this.color = transOptions.color;
     else delete (this.color);
   }
+
+  dragStart() {
+    const idz = this.idz();
+    const [x, y] = [idz.x, idz.y];
+    // console.log(`[Ctr.dragStart] (${this.id}) x:${x?.toFixed()}`);
+    // console.log(
+    //   `[Ctr.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
+    // );
+    switch (modeRef.value) {
+      case "inserting-trans": {
+        this.insertTr(x, y);
+        return;
+      }
+      default:
+        modeRef.value = "";
+    }
+    const dragCtx = {
+      id: this.id,
+      x0: this.geo.x0,
+      y0: this.geo.y0,
+    };
+    console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
+    hCtx.setDragCtx(dragCtx);
+    return this;
+  }
+
+  drag(dx, dy) {
+    const idz = this.idz();
+    console.log(`[Ctr.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    const dragCtx = hCtx.getDragCtx();
+    let x0 = dragCtx.x0;
+    let y0 = dragCtx.y0;
+  }
+
+  dragEnd(dx, dy) {
+    console.log(`[Ctr.dragEnd]`);
+    this.drag(dx, dy);
+    if (hCtx.getErrorId() == this.id) {
+      this.resetDrag(dx, dy);
+      return false;
+    }
+    return true;
+  }
+
 
   connectSelf() {
     let segments = [];
@@ -245,80 +290,13 @@ export class Ctr extends CbaseElem {
       cCtx.lineWidth = styles.lineWidth;
       cCtx.strokeStyle = styles.line;
     }
-    cCtx.beginPath();
-    let [x, y] = [x0, y0];
-    cCtx.moveTo(this.C(x), this.C(y));
-    let curDir;
-    const maxIdx = this.segments.length - 1;
-    // console.log(`[Ctr.draw]----------------------- maxIdx: ${ maxIdx }`);
-    let radius1 = 0;
-    for (let idx in this.segments) {
-      idx = Number(idx);
-      let segment = this.segments[idx];
-      const nextSeg = idx < maxIdx ? this.segments[idx + 1] : null;
-      // console.log(`[Ctr.draw](${ idx }) previousSeg: ${ previousSeg } nextSeg: ${ nextSeg }`);
-      curDir = segment.dir;
-      let len = segment.len;
-      let radius2 = hsm.settings.maxTransRadiusMm;
-      if (radius2 > segment.len / 2) radius2 = segment.len / 2;
-      if (!nextSeg) radius2 = 0;
-      else if (radius2 > nextSeg.len / 2) radius2 = nextSeg.len / 2;
-      // radius1 = 0;
-      // radius2 = 0;
-      len = len - radius1 - radius2;
-      // console.log(`[Ctr.draw](${ idx }) len0: ${ segment.len.toFixed() } len: ${ len.toFixed() } dir: ${ segment.dir } radius1: ${ radius1.toFixed() } radius2: ${ radius2.toFixed() }`);
-      switch (segment.dir) {
-        case "N":
-          y = y - len;
-          break;
-        case "E":
-          x = x + len;
-          break;
-        case "S":
-          y = y + len;
-          break;
-        case "W":
-          x = x - len;
-          break;
-      }
-      cCtx.lineTo(this.C(x), this.C(y));
-      let [cpx, cpy] = [x, y];
-      if (radius2) {
-        switch (segment.dir) {
-          case "N":
-            y -= radius2;
-            x += nextSeg.dir == "E" ? radius2 : -radius2;
-            cpy = y;
-            break;
-          case "S":
-            y += radius2;
-            x += nextSeg.dir == "E" ? radius2 : -radius2;
-            cpy = y;
-            break;
-          case "E":
-            x += radius2;
-            y += nextSeg?.dir == "S" ? radius2 : -radius2;
-            cpx = x;
-            break;
-          case "W":
-            x -= radius2;
-            y += nextSeg?.dir == "S" ? radius2 : -radius2;
-            cpx = x;
-            break;
-        }
-        // cCtx.lineTo(this.C(x), this.C(y));
-        cCtx.quadraticCurveTo(this.C(cpx), this.C(cpy), this.C(x), this.C(y));
-        radius1 = radius2;
-      }
-    }
-    cCtx.stroke();
-    if (curDir) U.drawArrow(cCtx, this.lineWidth, x1, y1, curDir);
+    pathSegments(this.segments, x0, y0, x1, y1);
   }
 
 
 
   makeIdz(x, y, idz) {
-    // console.log(`[Ctr.makeIdz](${ this.id }) id: ${ idz.id } zone: ${ idz.zone }`);
+    console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
     return idz;
   }
 

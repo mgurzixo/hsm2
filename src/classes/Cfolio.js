@@ -19,6 +19,7 @@ export class Cfolio extends CbaseRegion {
     hsm.hElems.insertElem(myTr);
     this.trs.push(myTr);
     myTr.load(trOptions);
+    return myTr;
   }
 
   load(folioOptions) {
