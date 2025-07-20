@@ -4,8 +4,9 @@ import * as U from "src/lib/utils";
 import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
-import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import Color from "colorjs.io";
+
 
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
@@ -295,11 +296,13 @@ export class Cstate extends CbaseState {
     cCtx.closePath();
   }
 
-  draw() {
-    // console.log(`[Cstate.draw] Drawing ${this.id}`);
+  draw(xx0, yy0) {
+    // console.log(`[Cstate.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
     // console.log(`[canvas.drawState] State:${state.name}`);
+    this.geo.xx0 = xx0 + this.geo.x0;
+    this.geo.yy0 = yy0 + this.geo.y0;
     let [x0, y0] = this.getXY0InFolio();
-    // console.log(`[Cstate.draw] x0:${x0}`);
+    // console.log(`[Cstate.draw] Drawing ${this.id} yy0:${yy0} geo.y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
     let silhouetteWidth = hsm.settings.styles.stateSilhouetteWidth;
     if (hCtx.getErrorId() == this.id) {
       silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
@@ -369,7 +372,7 @@ export class Cstate extends CbaseState {
       width - 1 * stateRadiusP,
     );
     for (let child of this.children) {
-      child.draw();
+      child.draw(this.geo.xx0, this.geo.yy0);
     }
   }
 

@@ -93,8 +93,11 @@ export class Cregion extends CbaseRegion {
     this.geo.y0 = y0 + dy;
   }
 
-  draw() {
-    // console.log(`[Cregion.draw] Drawing ${this.id}`);
+  draw(xx0, yy0) {
+    // console.log(`[Cregion.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
+    this.geo.xx0 = xx0 + this.geo.x0;
+    this.geo.yy0 = yy0 + this.geo.y0;
+    // console.log(`[Cregion.draw] Drawing ${this.id} y0:${this.geo.y0} yy0:${yy0} geo.yy0:${this.geo.yy0}`);
     // For now, no region background
     // console.log(`[Cregion.draw]`);
     // Sync with a modified state size
@@ -102,7 +105,7 @@ export class Cregion extends CbaseRegion {
     this.geo.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
     this.geo.width = this.parent.geo.width;
     for (let child of this.children) {
-      child.draw();
+      child.draw(this.geo.xx0, this.geo.yy0);
     }
   }
 

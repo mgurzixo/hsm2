@@ -1,15 +1,24 @@
 "use strict";
 
 import * as U from "src/lib/utils";
-import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
+import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
+import { Ctr } from "src/classes/Ctr";
 
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
     super(parent, options, "F");
     this.geo = options.geo;
+    this.trs = [];
     // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
+  }
+
+  addTr(trOptions) {
+    const myTr = new Ctr(this, trOptions);
+    hsm.hElems.insertElem(myTr);
+    this.trs.push(myTr);
+    myTr.load(trOptions);
   }
 
   load(folioOptions) {
@@ -18,6 +27,9 @@ export class Cfolio extends CbaseRegion {
       hsm.hElems.insertElem(myState);
       this.children.push(myState);
       myState.load(stateOption);
+    }
+    for (let trOptions of folioOptions.trs) {
+      this.addTr(trOptions);
     }
   }
 
@@ -35,10 +47,16 @@ export class Cfolio extends CbaseRegion {
   }
 
   draw() {
-    // console.log(`[Cfolio.draw] Drawing ${this.id}`);
+    // console.log(`[Cfolio.draw] Drawing ${this.id} ----------------------`);
     this.drawFolioBackground();
+    this.geo.xx0 = this.geo.x0;
+    this.geo.yy0 = this.geo.y0;
+    // console.log(`[Cfolio.draw] Drawing ${this.id} y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
     for (let child of this.children) {
-      child.draw();
+      child.draw(this.geo.xx0, this.geo.yy0);
+    }
+    for (let tr of this.trs) {
+      tr.draw();
     }
   }
 

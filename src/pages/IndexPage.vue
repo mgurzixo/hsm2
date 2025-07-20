@@ -19,19 +19,19 @@ import * as V from "vue";
 const containerRef = V.ref(null);
 
 
-function adjustSizes() {
+function adjustContainerSize() {
   const container = containerRef.value;
   const height = window.innerHeight - container.getBoundingClientRect().top;
   container.style.height = height - 2 + "px";
   const width = window.innerWidth - container.getBoundingClientRect().left;
   container.style.width = width - 2 + "px";
-  // console.log(`[HsmCanvas.adjustSizes] height:${height}`);
+  console.log(`[HsmCanvas.adjustContainerSize] height:${height}`);
 }
 
 V.onMounted(() => {
   V.nextTick(() => {
-    adjustSizes();
-    window.onresize = adjustSizes;
+    adjustContainerSize();
+    window.onresize = adjustContainerSize;
   });
 });
 </script>

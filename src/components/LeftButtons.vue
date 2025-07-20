@@ -53,12 +53,10 @@ import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/canvasListeners";
 import { R, RR } from "src/lib/utils";
-import { Ctrans } from "src/classes/Ctrans";
-import { myTrans } from "src/classes/Chsm";
+import { Ctr } from "src/classes/Ctr";
 
 function doLoadHsm() {
   loadHsm();
-  hsm.draw();
 }
 
 V.watch(modeRef, (newMode, oldMode) => {
@@ -82,24 +80,6 @@ V.watch(modeRef, (newMode, oldMode) => {
 });
 
 function doTest() {
-  const tOptions = {
-    segments: [],
-    start: {
-      id: "S2",
-      side: "R",
-      pos: 0.2,
-    },
-    end: {
-      id: "S2",
-      side: "L",
-      pos: 0.7,
-    },
-    isInternal: true,
-  };
-  myTrans.value = new Ctrans(null, tOptions, "T");
-  myTrans.value.load(tOptions);
-  // myTrans.value.doIt();
-  // myTrans.value.draw();
 
 }
 

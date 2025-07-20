@@ -16,8 +16,6 @@ export let modeRef = V.ref(""); // "inserting-state", "inserting-trans"...
 export let cursor = V.ref("default");
 export let ctxMenu = V.ref(null);
 
-export let myTrans = V.ref(null);
-
 export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "M");
@@ -65,15 +63,15 @@ export class Chsm extends CbaseElem {
 
   load(hsmOptions) {
     this.settings = hsmOptions.settings;
-    this.state = hsmOptions.state;
+    this.status = hsmOptions.status;
     this.serNum = hsmOptions.serNum;
     this.hElems.clearElems();
     this.hElems.insertElem(this);
     for (let folioOptions of hsmOptions.folios) {
       this.addFolio(folioOptions);
     }
-    hCtx.folio = this.hElems.getElemById(this.state.activeFolio);
-    // console.log(`[Chsm.load] id:${this.state.activeFolio} Active folio: ${folio?.id}`);
+    hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
+    // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
     this.draw();
   }
 
@@ -105,10 +103,6 @@ export class Chsm extends CbaseElem {
     cCtx.fill();
     if (!hCtx.folio) return;
     hCtx.folio.draw();
-    if (myTrans.value) {
-      myTrans.value.doIt();
-      myTrans.value.draw();
-    }
   }
 
   dragStart(xDown, yDown) {
