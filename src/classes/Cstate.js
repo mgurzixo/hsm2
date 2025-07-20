@@ -5,7 +5,7 @@ import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
-import Color from "colorjs.io";
+import { stateStyles } from "src/lib/styles";
 
 
 class CbaseState extends CbaseElem {
@@ -315,54 +315,40 @@ export class Cstate extends CbaseState {
     const stateRadiusP = R(this.mmToPL(hsm.settings.stateRadiusMm));
     if (titleHeight < hsm.settings.stateRadiusMm) titleHeight = hsm.settings.stateRadiusMm;
     // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
-    let stateBackgroundColor;
-    if (this.color) stateBackgroundColor = new Color(this.color);
-    else stateBackgroundColor = new Color(hsm.settings.styles.defaultColor);
-    stateBackgroundColor.lch.c = hsm.settings.styles.stateColorChroma;
-    const titleLightness = hsm.settings.styles.titleLightnessPcs;
-    let [stateTitleColor1, stateTitleColor2] = [
-      new Color(stateBackgroundColor),
-      new Color(stateBackgroundColor),
-    ];
-    stateBackgroundColor.lch.l = hsm.settings.styles.stateLightnessPc;
-    stateTitleColor1.lch.l = titleLightness[0];
-    stateTitleColor2.lch.l = titleLightness[1];
-    const stateBackgroundColorSrgb = stateBackgroundColor.to("srgb") + "";
-    // console.log(`[Cstate.draw] stateBackgroundColor:${stateBackgroundColor.to("srgb") + ""}`);
-    // Draw background
-    cCtx.fillStyle = stateBackgroundColorSrgb;
+    const styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
+    // Draw state background
+    cCtx.fillStyle = styles.bg;
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     cCtx.fill();
+    // Draw state title background
+    console.log(`[Cstate.draw] titleBgs[0]:${styles.titleBgs[0]} titleBgs[1]:${styles.titleBgs[1]}`);
     const titleGradient = cCtx.createLinearGradient(x0, y0, x0, y0 + titleHeight);
-    titleGradient.addColorStop(1, stateTitleColor1.to("srgb") + "");
-    titleGradient.addColorStop(0, stateTitleColor2.to("srgb") + "");
+    titleGradient.addColorStop(1, styles.titleBgs[0]);
+    titleGradient.addColorStop(0, styles.titleBgs[1]);
     cCtx.fillStyle = titleGradient;
     this.pathTitle(x0, y0, width, titleHeight, stateRadiusP);
     cCtx.fill();
-
-    // Draw silhouette
-    cCtx.lineWidth = silhouetteWidth;
+    // Draw border
+    cCtx.lineWidth = styles.borderWidth;
+    cCtx.strokeStyle = styles.border;
     if (hCtx.getErrorId() == this.id) {
-      cCtx.strokeStyle = hsm.settings.styles.silhouetteError;
+      cCtx.strokeStyle = styles.borderError;
+      cCtx.lineWidth = styles.borderErrorWidth;
     } else if (hCtx.getSelectedId() == this.id) {
       cCtx.strokeStyle = hsm.settings.styles.silhouetteSelected;
-    } else {
-      cCtx.strokeStyle = hsm.settings.styles.silhouetteDefault;
     }
-
     this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
     cCtx.stroke();
-
-    cCtx.lineWidth = hsm.settings.styles.stateTitleWidth;
-    cCtx.strokeStyle = hsm.settings.styles.stateTitleLine;
+    // Draw title line
+    cCtx.lineWidth = styles.titleLineWidth;
+    cCtx.strokeStyle = styles.titleLine;
     cCtx.beginPath();
     cCtx.moveTo(x0, y0 + titleHeight);
     cCtx.lineTo(x0 + width, y0 + titleHeight);
     cCtx.stroke();
-
-    // Draw title
-    cCtx.font = `${Math.round(0.7 * titleHeight)}px sans-serif`;
-    cCtx.fillStyle = "black";
+    // Draw title text
+    cCtx.font = `${Math.round((styles.titleTextSizePc / 100) * titleHeight)}px ${styles.titleTextFont}`;
+    cCtx.fillStyle = styles.titleText;
     cCtx.textBaseline = "middle";
     cCtx.textAlign = "center";
     cCtx.fillText(

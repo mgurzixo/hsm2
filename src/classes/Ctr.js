@@ -128,9 +128,9 @@ export class Ctr extends CbaseElem {
     return [0, 0];
   }
 
-  fixTr(segments) {
-    if (this.start.id == this.end.id) return segments;
-    if (segments.length == 0) return this.initialiseSegments();
+  isLegal() {
+    if (this.start.id == this.end.id) return true;
+    if (this.segments.length == 0) return true;
     function check(side, dir) {
       if ((side == "T" && dir == "S") ||
         (side == "R" && dir == "W") ||
@@ -145,12 +145,9 @@ export class Ctr extends CbaseElem {
         (side == "L" && dir == "W")) return false;
       return true;
     }
-    const r = hsm.settings.maxTransRadiusMm;
-    if (segments[0].len < r) return this.initialiseSegments();
-    if (segments[segments.length - 1].len < r) return this.initialiseSegments();
-    if (!check(this.start.side, segments[0].dir)) segments = this.initialiseSegments();
-    else if (!check2(this.end.side, segments[segments.length - 1].dir)) segments = this.initialiseSegments();
-    return segments;
+    if (!check(this.start.side, this.segments[0].dir)) return false;
+    else if (!check2(this.end.side, this.segments[this.segments.length - 1].dir)) return false;
+    return true;
   }
 
   // Get delta to add to [xx0,yy0]
@@ -212,7 +209,7 @@ export class Ctr extends CbaseElem {
       [dxe, dye] = this.myAdjustXy(-dxe, -dye);
       if (dxe != 0 || dye != 0) console.error(`[Ctr.adjustSegments] BAD dxe:${dxe} dye:${dye}`);
     }
-    // this.segments = this.fixTr(this.segments);
+    // this.segments = this.isLegal(this.segments);
 
     [this.end.oldX, this.end.oldY] = [xe, ye];
   }

@@ -15,18 +15,39 @@
     arrowLengthMm: 3,
     arrowWidthMm: 1,
     styles: {
-      silhouetteDefault: "black",
-      silhouetteSelected: "black`",
-      silhouetteError: "red",
+      silhouetteSelected: "black",
       folioBackground: "white",
+      state: {
+        border: {
+          chroma: 50,
+          light: 30,
+          lineWidth: 1,
+        },
+        borderError: {
+          color: "red",
+          lineWidth: 2,
+        },
+        titleLine: {
+          chroma: 50,
+          light: 20,
+          lineWidth: 1,
+        },
+        bg: {
+          chroma: 30,
+          light: 98,
+        },
+        titleBg: {
+          chroma: 50,
+          lights: [80, 95],
+        },
+        titleText: {
+          chroma: 100,
+          light: 5,
+          font: "sans-serif",
+          sizePc: 70,
+        },
+      },
       defaultColor: "darkorange",
-      stateColorChroma: 30,
-      stateLightnessPc: 98,
-      titleLightnessPcs: [80, 95],
-      stateTitleLine: "black",
-      silhouetteWidth: 1,
-      silhouetteErrorWidth: 2,
-      stateTitleWidth: 1,
     },
   },
   status: {
@@ -71,6 +92,20 @@
             id: "S3",
             side: "L",
             pos: 0.6,
+          },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          start: {
+            id: "S8",
+            side: "T",
+            pos: 0.5,
+          },
+          end: {
+            id: "S6",
+            side: "T",
+            pos: 0.5,
           },
           isInternal: true,
         },
@@ -136,7 +171,7 @@
                 {
                   id: "S8",
                   name: "4th state with a very long name",
-                  color: "red",
+                  color: "purple",
                   geo: {
                     x0: 60,
                     y0: 10,
@@ -151,7 +186,7 @@
         {
           id: "S3",
           name: "Second state",
-          color: "green",
+          color: "gold",
           geo: {
             x0: 140,
             y0: 90,
