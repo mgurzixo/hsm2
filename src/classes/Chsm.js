@@ -137,8 +137,14 @@ export class Chsm extends CbaseElem {
   }
 
   dragEnd(dx, dy) {
-    if (modeRef.value != "") return;
     const idz = this.idz();
+    console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
+    if (modeRef.value != "") {
+      modeRef.value = "";
+      this.draw();
+      hsm.setCursor(this.idz());
+      return;
+    }
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
     const dragEnded = elem.dragEnd(dx, dy);

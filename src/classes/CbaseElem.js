@@ -222,4 +222,8 @@ export class CbaseElem {
   canInsertState(idz) {
     return false;
   }
+
+  canInsertTr(idz) {
+    return false;
+  }
 }
