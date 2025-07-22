@@ -24,6 +24,19 @@ export class Ctr extends CbaseElem {
 
   dragStart() {
     // console.log(`[Ctr.dragStart] (${this.id})`);
+    const idz = this.idz();
+    if (modeRef.value == "") {
+      if (idz.type == "A") {
+        const dragCtx = {
+          id: this.id,
+          type: idz.zone,
+          xx0: idz.x,
+          yy0: idz.y,
+        };
+        // console.log(`[Cstate.insertTr] dragCtx:${JSON.stringify(dragCtx)}`);
+        hCtx.setDragCtx(dragCtx);
+      }
+    }
     return this;
   }
 
@@ -77,12 +90,22 @@ export class Ctr extends CbaseElem {
     const idz = this.idz();
     // console.log(`[Ctr.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
     const dragCtx = hCtx.getDragCtx();
-    const [theElem, theSide, thePos] = this.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
-    // console.log(`[Ctr.drag] (${this.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
-    this.end.id = theElem.id;
-    this.end.side = theSide;
-    this.end.pos = thePos;
-    this.segments = this.initialiseSegments();
+    if (idz.zone == "END") {
+      const [theElem, theSide, thePos] = this.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+      // console.log(`[Ctr.drag] (${this.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
+      this.end.id = theElem.id;
+      this.end.side = theSide;
+      this.end.pos = thePos;
+      this.segments = this.initialiseSegments();
+    }
+    else if (idz.zone == "START") {
+      const [theElem, theSide, thePos] = this.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+      // console.log(`[Ctr.drag] (${this.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
+      this.start.id = theElem.id;
+      this.start.side = theSide;
+      this.start.pos = thePos;
+      this.segments = this.initialiseSegments();
+    }
   }
 
   dragEnd(dx, dy) {
@@ -150,7 +173,7 @@ export class Ctr extends CbaseElem {
   }
 
   C(val) {
-    const x = hsm.mmToPL(val);
+    const x = U.mmToPL(val);
     if (!this.lineWidth % 2) return Math.round(x);
     return Math.round(x) + 0.5;
   }
@@ -312,7 +335,6 @@ export class Ctr extends CbaseElem {
     if (hCtx.getErrorId() == this.start.id || hCtx.getErrorId() == this.end.id) return;
     const [x0, y0] = U.idToXY(this.start);
     [this.geo.x0, this.geo.y0] = [x0, y0];
-    const [x1, y1] = U.idToXY(this.end);
     let baseColor = this.color;
     if (!baseColor) baseColor = hElems.getElemById(this.start.id).color;
     // console.log(`[Ctr.draw] (${this.id}) startId:${this.start.id} baseColor:${baseColor}`);
@@ -325,7 +347,7 @@ export class Ctr extends CbaseElem {
       cCtx.lineWidth = styles.lineWidth;
       cCtx.strokeStyle = styles.line;
     }
-    pathSegments(this.segments, x0, y0, x1, y1);
+    pathSegments(this.segments, x0, y0);
   }
 
 
@@ -333,9 +355,56 @@ export class Ctr extends CbaseElem {
   makeIdz(x, y, idz) {
     // [x,y] in mm in this tr frame
     // console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
-    // TODO
-    return idz;
+    let [x0, y0] = U.idToXY(this.start);
+    let bestD2 = Number.MAX_VALUE;
+    let bestZone = "END";
+    let bestType;
+    let newIdz;
+    const maxAnchorD2 = U.pToMmL(hsm.settings.cursorMarginP);
+    if (((x - x0) * (x - x0) + (y - y0) * (y - y0) < maxAnchorD2)) {
+      // Force an anchor
+      return {
+        id: this.id, zone: "START", type: "A", dist2P: 0, x: x, y: y
+      };
+    }
+    for (let idx in this.segments) {
+      idx = Number(idx);
+      let segment = this.segments[idx];
+      let [x1, y1] = [x0, y0];
+      switch (segment.dir) {
+        case "N":
+          y1 = y0 - segment.len;
+          break;
+        case "E":
+          x1 = x0 + segment.len;
+          break;
+        case "S":
+          y1 = y0 + segment.len;
+          break;
+        case "W":
+          x1 = x0 - segment.len;
+          break;
+      }
+      let [d2, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: x0, y: y0 }, { x: x1, y: y1 });
+      // if (this.id == "T9") console.log(`[Ctr.makeIdz](${this.id}) (x:${x}, y:${y}) dir:${segment.dir} (x0:${x0}, y0:${y0}) (x1:${x1}, y1:${y1}) idx:${idx} d2:${d2.toFixed()}`);
+      [x0, y0] = [x1, y1];
+      if ((idx == this.segments.length - 1) && (((x - x1) * (x - x1) + (y - y1) * (y - y1)) < maxAnchorD2)) {
+        return {
+          id: this.id, zone: "END", type: "A", dist2P: 0, x: x, y: y
+        };
+      }
+      if (d2 <= bestD2) {
+        let type = "V";
+        if (segment.dir == "E" || segment.dir == "W") type = "H";
+        let zone = idx;
+        bestType = type;
+        bestZone = zone;
+        bestD2 = d2;
+
+      }
+    } newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
+    return newIdz;
   }
 
 
-};;
+}

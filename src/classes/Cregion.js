@@ -122,7 +122,7 @@ export class Cregion extends CbaseRegion {
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     const bak = Object.assign({}, idz);
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
     if (
       x < this.geo.x0 - m ||
       x > this.geo.x0 + this.geo.width + m ||

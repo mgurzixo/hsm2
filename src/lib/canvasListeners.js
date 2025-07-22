@@ -1,5 +1,6 @@
 "use strict";
 
+import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, hCtx } from "src/classes/Chsm";
 
@@ -26,7 +27,7 @@ export function getXYFromMouseEvent(e) {
 
 export function handleMouseMove(e) {
   const [xP, yP] = getXYFromMouseEvent(e);
-  const [x, y] = [hsm.pToMmL(xP), hsm.pToMmL(yP)];
+  const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
   mousePos.value = { xP: xP, yP: yP, x: x, y: y, buttons: e.buttons };
 
   if (!isDragging && e.buttons & 1) {
@@ -38,13 +39,13 @@ export function handleMouseMove(e) {
     // );
     if (dP > 2 * 2) {
       isDragging = true;
-      const [mdx, mdy] = [hsm.pToMmL(mouseDown.x), hsm.pToMmL(mouseDown.y)];
+      const [mdx, mdy] = [U.pToMmL(mouseDown.x), U.pToMmL(mouseDown.y)];
       hsm.dragStart(mdx, mdy);
     }
   }
   if (isDragging == true) {
     const [dxP, dyP] = [xP - mouseDown.x, yP - mouseDown.y];
-    const [dx, dy] = [hsm.pToMmL(dxP), hsm.pToMmL(dyP)];
+    const [dx, dy] = [U.pToMmL(dxP), U.pToMmL(dyP)];
     hsm.drag(dx, dy);
   } else {
     hsm.mouseMove(x, y);
@@ -74,11 +75,11 @@ export function handleMouseUp(e) {
   if (button1Down && ~e.buttons & 1) {
     // Button 1 released
     if (isDragging) {
-      const [dx, dy] = [hsm.pToMmL(xP - mouseDown.x), hsm.pToMmL(yP - mouseDown.y)];
+      const [dx, dy] = [U.pToMmL(xP - mouseDown.x), U.pToMmL(yP - mouseDown.y)];
       hsm.dragEnd(dx, dy);
       isDragging = false;
     } else {
-      const [x, y] = [hsm.pToMmL(xP), hsm.pToMmL(yP)];
+      const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
       // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got click`);
       hsm.click(x, y);
     }
@@ -108,7 +109,7 @@ export function handleMouseEnter(e) {
   // console.log(`[canvasListeners.handleMouseEnter] x:${x} y:${y} isDragging:${isDragging}`);
   if (isDragging) {
     if (!e.buttons & 1) {
-      const [dx, dy] = [hsm.pToMmL(mouseOut.x - mouseDown.x), hsm.pToMmL(mouseOut.y - mouseDown.y)];
+      const [dx, dy] = [U.pToMmL(mouseOut.x - mouseDown.x), U.pToMmL(mouseOut.y - mouseDown.y)];
       hsm.dragEnd(dx, dy);
       isDragging = false;
     }

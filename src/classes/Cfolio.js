@@ -105,7 +105,7 @@ export class Cfolio extends CbaseRegion {
     this.children.push(myState);
     hsm.draw();
     modeRef.value = "";
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
 
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
@@ -166,17 +166,24 @@ export class Cfolio extends CbaseRegion {
 
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
+    // console.log(`[Cfolio.makeIdz] S id:${idz.id} zone:${idz.zone}`);
+    let bestTIdz = { dist2P: Number.MAX_VALUE };
     for (let tr of this.trs) {
-      tr.makeIdz(x, y, idz);
+      const tIdz = tr.makeIdz(x, y, idz);
+      if (tIdz.dist2P <= bestTIdz.dist2P) bestTIdz = tIdz;
+      // if (tr.id == "T9") console.log(`[Cfolio.makeIdz]  (${tIdz.id}) dist2P:${tIdz.dist2P.toFixed()} zone:${tIdz.zone} type:${tIdz.type}`);
     }
-    // console.log(`[Cfolio.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
+    if (bestTIdz.dist2P < hsm.settings.cursorMarginP) {
+      idz = bestTIdz;
+    }
+    // console.log(`[Cfolio.makeIdz] T id:${bestTIdz.id} dist2P:${bestTIdz.dist2P.toFixed()} zone:${bestTIdz.zone} type:${bestTIdz.type}`);
     return idz;
   }
 

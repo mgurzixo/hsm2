@@ -8,7 +8,7 @@ import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 export function drawArrow(cCtx, x, y, dir) {
   // console.log(`[utils.drawArrow] dir ${dir}`);
   function C(val) {
-    const x = hsm.mmToPL(val);
+    const x = U.mmToPL(val);
     return x;
     // if (!cCtx.lineWidth % 2) return Math.round(x);
     // return Math.round(x) + 0.5;
@@ -42,9 +42,9 @@ export function drawArrow(cCtx, x, y, dir) {
   cCtx.lineJoin = "miter";
 }
 
-export function pathSegments(segments, x0, y0, x1, y1) {
+export function pathSegments(segments, x0, y0) {
   function C(val) {
-    const x = hsm.mmToPL(val);
+    const x = U.mmToPL(val);
     if (!cCtx.lineWidth.lineWidth % 2) return Math.round(x);
     return Math.round(x) + 0.5;
   }

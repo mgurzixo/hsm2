@@ -122,7 +122,7 @@ export class Cstate extends CbaseState {
     this.children[0].children.push(myState);
     modeRef.value = "";
     hsm.draw();
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
 
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz());
     hCtx.setIdz(newIdz);
@@ -198,7 +198,6 @@ export class Cstate extends CbaseState {
     const dragCtx = {
       id: myTr.id,
       type: "END",
-
       xx0: xx0 + x,
       yy0: yy0 + y,
     };
@@ -206,7 +205,7 @@ export class Cstate extends CbaseState {
     hCtx.setDragCtx(dragCtx);
 
 
-    // const m = this.pToMmL(hsm.settings.cursorMarginP);
+    // const m = U.pToMmL(hsm.settings.cursorMarginP);
     // const newIdz = myTr.makeIdz(x, y, this.idz());
     const newIdz = {
       id: myTr.id,
@@ -216,7 +215,6 @@ export class Cstate extends CbaseState {
     modeRef.value = "";
     hsm.draw();
     hsm.setCursor(newIdz);
-    myTr.dragStart();
   }
 
   dragStart() {
@@ -400,14 +398,14 @@ export class Cstate extends CbaseState {
     if (hCtx.getErrorId() == this.id) {
       silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
     }
-    const x0P = RR(this.mmToPL(this.geo.xx0), silhouetteWidth);
-    const y0P = RR(this.mmToPL(this.geo.yy0));
-    const widthP = R(this.mmToPL(this.geo.width));
-    const heightP = R(this.mmToPL(this.geo.height));
+    const x0P = RR(U.mmToPL(this.geo.xx0), silhouetteWidth);
+    const y0P = RR(U.mmToPL(this.geo.yy0));
+    const widthP = R(U.mmToPL(this.geo.width));
+    const heightP = R(U.mmToPL(this.geo.height));
     let th = hsm.settings.stateTitleHeightMm;
     if (th < hsm.settings.stateRadiusMm) th = hsm.settings.stateRadiusMm;
-    let titleHeightP = R(this.mmToPL(th));
-    const stateRadiusP = R(this.mmToPL(hsm.settings.stateRadiusMm));
+    let titleHeightP = R(U.mmToPL(th));
+    const stateRadiusP = R(U.mmToPL(hsm.settings.stateRadiusMm));
     if (titleHeightP < hsm.settings.stateRadiusMm) titleHeightP = hsm.settings.stateRadiusMm;
     const styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
     // Draw state background
@@ -460,7 +458,7 @@ export class Cstate extends CbaseState {
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     // console.log(`[Cstate.makeIdz] (${this.id}) x:${x} y:${y}`);
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
     const r = hsm.settings.stateRadiusMm;
     if (
       x < this.geo.x0 - m ||

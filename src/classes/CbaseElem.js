@@ -1,5 +1,6 @@
 "use strict";
 
+import * as U from "src/lib/utils";
 import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
@@ -107,13 +108,7 @@ export class CbaseElem {
     return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
   }
 
-  mmToPL(lMm) {
-    return Math.round(lMm * this.scalePhy());
-  }
 
-  pToMmL(lP) {
-    return lP / this.scalePhy();
-  }
 
   raiseChild(childId) {
     const c = [];
@@ -132,7 +127,7 @@ export class CbaseElem {
   }
 
   makeIdz(x, y, idz) {
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
     if (
       x < this.geo.x0 ||
       x > this.geo.x0 + this.geo.width ||
@@ -179,8 +174,16 @@ export class CbaseElem {
       cursor = "grabbing";
       return cursor;
     }
-    // console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone}`);
-    switch (idz.zone) {
+    console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone} type:${idz.type}`);
+    if (Number.isInteger(idz.zone)) {
+      if (idz.type == "V") cursor = "col-resize";
+      else cursor = "row-resize";
+    }
+    else switch (idz.zone) {
+      case "START":
+      case "END":
+        cursor = "url(/assets/anchor16x16.png) 8 8,default";
+        break;
       case "M":
         cursor = "move";
         break;

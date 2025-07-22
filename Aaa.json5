@@ -10,7 +10,7 @@
     deltaScale2: 0.2,
     minDistanceMm: 0.5,
     dragResetSpeed: 3,
-    cursorMarginP: 8,
+    cursorMarginP: 9,
     maxTransRadiusMm: 4,
     initialTransLength: 2,
     arrowLengthMm: 3,
