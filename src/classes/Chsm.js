@@ -119,6 +119,9 @@ export class Chsm extends CbaseElem {
       case "inserting-state":
         if (elem.canInsertState(idz)) elem.dragStart();
         break;
+      case "inserting-trans":
+        if (elem.canInsertTr(idz)) elem.dragStart();
+        break;
     }
   }
 

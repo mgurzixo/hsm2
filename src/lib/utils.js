@@ -58,14 +58,16 @@ export function pointInWH(x, y, r) {
   return true;
 }
 
+// return anchor in mm in folio frame
 export function idToXY(p) {
   const elem = hElems.getElemById(p.id);
   if (p.pos > 1) p.pos = 1;
-  let [x0, y0] = [elem.geo.x0, elem.geo.y0];
-  for (let parent = elem.parent; parent; parent = parent.parent) {
-    x0 += parent.geo.x0;
-    y0 += parent.geo.y0;
-  }
+  // let [x0, y0] = [elem.geo.x0, elem.geo.y0];
+  // for (let parent = elem.parent; parent; parent = parent.parent) {
+  //   x0 += parent.geo.x0;
+  //   y0 += parent.geo.y0;
+  // }
+  let [x0, y0] = [elem.geo.xx0, elem.geo.yy0];
   const r = hsm.settings.stateRadiusMm;
   const w = elem.geo.width;
   const h = elem.geo.height;
@@ -189,7 +191,7 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
           break;
         case "R":
         case "L": {
-          console.log(`[utils.connectPoints] side0:${side0} side1:${side1}`);
+          // console.log(`[utils.connectPoints] side0:${side0} side1:${side1}`);
           if (side0 == side1) {
             if (side0 == "R") segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? r : r + dx });
             else segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? r + dx : r });
@@ -215,3 +217,21 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
 }
 
 
+// cf. https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+export function distToSegmentSquared(p, v, w) {
+  function sqr(x) { return x * x; }
+  function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y); }
+  var l2 = dist2(v, w);
+  if (l2 == 0) return [dist2(p, v), 0];
+  var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  const d2 = dist2(p, {
+    x: v.x + t * (w.x - v.x),
+    y: v.y + t * (w.y - v.y)
+  });
+  return [d2, t];
+}
+
+export function distToSegment(p, v, w) {
+  return Math.sqrt(distToSegmentSquared(p, v, w));
+}

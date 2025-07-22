@@ -12,6 +12,7 @@
     dragResetSpeed: 3,
     cursorMarginP: 8,
     maxTransRadiusMm: 4,
+    initialTransLength: 2,
     arrowLengthMm: 3,
     arrowWidthMm: 0.75,
     styles: {
@@ -79,6 +80,20 @@
         scale: 1,
       },
       trs: [
+        // {
+        //   segments: [],
+        //   start: {
+        //     id: "S2",
+        //     side: "T",
+        //     pos: 0.0,
+        //   },
+        //   end: {
+        //     id: "S2",
+        //     side: "T",
+        //     pos: 0.2,
+        //   },
+        //   isInternal: false,
+        // },
         {
           segments: [],
           start: {

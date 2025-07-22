@@ -107,7 +107,7 @@ export class Cfolio extends CbaseRegion {
     modeRef.value = "";
     const m = this.pToMmL(hsm.settings.cursorMarginP);
 
-    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz);
+    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
     hsm.setCursor(newIdz);
     myState.dragStart();
@@ -165,12 +165,16 @@ export class Cfolio extends CbaseRegion {
   }
 
   makeIdz(x, y, idz) {
+    // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+    }
+    for (let tr of this.trs) {
+      tr.makeIdz(x, y, idz);
     }
     // console.log(`[Cfolio.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
     return idz;

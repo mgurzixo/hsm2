@@ -120,31 +120,112 @@ export class Cstate extends CbaseState {
     hsm.hElems.insertElem(myState);
 
     this.children[0].children.push(myState);
-    hsm.draw();
     modeRef.value = "";
+    hsm.draw();
     const m = this.pToMmL(hsm.settings.cursorMarginP);
 
-    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz);
+    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz());
     hCtx.setIdz(newIdz);
     hsm.setCursor(newIdz);
     myState.dragStart();
   }
 
+  makeTrXY(side, pos) {
+    const r = hsm.settings.stateRadiusMm;
+    let len = this.geo.width - 2 * r;
+    let [x, y] = [0, 0];
+    if (side == "L" || side == "R") {
+      len = this.geo.height - 2 * r;
+      y = r + len * pos;
+      if (side == "R") x += this.geo.width;
+    }
+    else {
+      len = this.geo.width - 2 * r;
+      x = r + len * pos;
+      if (side == "B") y += this.geo.height;
+    }
+    console.log(`[Cstate.makeTrXY] side:${side} pos:${pos.toFixed(2)} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
+    return [x, y];
+  }
+
+  makeTrPos(side, x, y) {
+    const r = hsm.settings.stateRadiusMm;
+    let len = this.geo.width;
+    let p0 = this.geo.x0;
+    let p1 = x;
+    if (side == "L" || side == "R") {
+      len = this.geo.height;
+      p0 = this.geo.y0;
+      p1 = y;
+    }
+    const pos = (p1 - (p0 + r)) / (len - 2 * r);
+    return pos;
+  }
+
   insertTr(x, y) {
-    // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()}`);
+    // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
+    // console.log(`[Cstate.insertTr] idz:${JSON.stringify(this.idz())}`);
+    const idz = this.idz();
+    // const r = hsm.settings.stateRadiusMm;
+    // let len = this.geo.width;
+    // let p0 = this.geo.x0;
+    // let pos = x;
+    // if (this.idz().zone == "L" || this.idz().zone == "R") {
+    //   len = this.geo.height;
+    //   p0 = this.geo.y0;
+    //   pos = y;
+    // }
+    // const pos2 = (pos - (p0 + r)) / (len - 2 * r);
+    // const pos1 = (pos - hsm.settings.initialTransLength - (p0 + r)) / (len - 2 * r);
+    const side = idz.zone;
+    const pos2 = this.makeTrPos(side, x, y);
+    // console.log(`[Cstate.insertTr] pos2:${pos2.toFixed(2)}`);
+    let [xp, yp] = [x, y];
+    if (side == "L" || side == "R") yp -= hsm.settings.initialTransLength;
+    else xp -= hsm.settings.initialTransLength;
+    const pos1 = this.makeTrPos(side, xp, yp);
+    // console.log(`[Cstate.insertTr] (x:${(x - this.geo.x0).toFixed(1)} y:${(y - this.geo.y0).toFixed(1)})`);
     const trOptions = {
-      geo: {
-        x0: x - this.geo.x0,
-        y0: y - this.geo.y0,
+      segments: [],
+      start: {
+        id: this.id,
+        side: idz.zone,
+        pos: pos1,
       },
+      end: {
+        id: this.id,
+        side: idz.zone,
+        pos: pos2,
+      },
+      isInternal: false,
     };
     const myTr = hCtx.folio.addTr(trOptions);
+    let [xx0, yy0] = [0, 0];
+    for (let parent = this.parent; parent; parent = parent.parent) {
+      xx0 += parent.geo.x0;
+      yy0 += parent.geo.y0;
+    }
+    // console.log(`[Cstate.insertTr] (${this.id}) xx0:${xx0.toFixed()} yy0:${yy0.toFixed()}`);
+    const dragCtx = {
+      id: myTr.id,
+      type: "END",
 
-    hsm.draw();
-    modeRef.value = "";
-    const m = this.pToMmL(hsm.settings.cursorMarginP);
-    const newIdz = myTr.makeIdz(x - this.geo.x0, y, this.idz);
+      xx0: xx0 + x,
+      yy0: yy0 + y,
+    };
+    // console.log(`[Cstate.insertTr] dragCtx:${JSON.stringify(dragCtx)}`);
+    hCtx.setDragCtx(dragCtx);
+
+
+    // const m = this.pToMmL(hsm.settings.cursorMarginP);
+    // const newIdz = myTr.makeIdz(x, y, this.idz());
+    const newIdz = {
+      id: myTr.id,
+      zone: "END", x: x, y: y
+    };
     hCtx.setIdz(newIdz);
+    modeRef.value = "";
+    hsm.draw();
     hsm.setCursor(newIdz);
     myTr.dragStart();
   }
@@ -152,6 +233,7 @@ export class Cstate extends CbaseState {
   dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
+    // [x,y] in mm in this.geo.x/y frame
     // console.log(`[Cstate.dragStart] (${this.id}) x:${x?.toFixed()}`);
     // console.log(
     //   `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
@@ -324,32 +406,32 @@ export class Cstate extends CbaseState {
     // console.log(`[canvas.drawState] State:${state.name}`);
     this.geo.xx0 = xx0 + this.geo.x0;
     this.geo.yy0 = yy0 + this.geo.y0;
-    let [x0, y0] = this.getXY0InFolio();
     // console.log(`[Cstate.draw] Drawing ${this.id} yy0:${yy0} geo.y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
     let silhouetteWidth = hsm.settings.styles.stateSilhouetteWidth;
     if (hCtx.getErrorId() == this.id) {
       silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
     }
-    x0 = RR(this.mmToPL(x0), silhouetteWidth);
-    y0 = RR(this.mmToPL(y0));
-    const width = R(this.mmToPL(this.geo.width));
-    const height = R(this.mmToPL(this.geo.height));
-    let titleHeight = R(this.mmToPL(hsm.settings.stateTitleHeightMm));
+    const x0P = RR(this.mmToPL(this.geo.xx0), silhouetteWidth);
+    const y0P = RR(this.mmToPL(this.geo.yy0));
+    const widthP = R(this.mmToPL(this.geo.width));
+    const heightP = R(this.mmToPL(this.geo.height));
+    let th = hsm.settings.stateTitleHeightMm;
+    if (th < hsm.settings.stateRadiusMm) th = hsm.settings.stateRadiusMm;
+    let titleHeightP = R(this.mmToPL(th));
     const stateRadiusP = R(this.mmToPL(hsm.settings.stateRadiusMm));
-    if (titleHeight < hsm.settings.stateRadiusMm) titleHeight = hsm.settings.stateRadiusMm;
-    // console.log(`[Cstate.draw] x0:${theFolio.rect.x0 + state.rect.x0} x0P:${x0}`);
+    if (titleHeightP < hsm.settings.stateRadiusMm) titleHeightP = hsm.settings.stateRadiusMm;
     const styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
     // Draw state background
     cCtx.fillStyle = styles.bg;
-    this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
+    this.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.fill();
     // Draw state title background
     // console.log(`[Cstate.draw] titleBgs[0]:${styles.titleBgs[0]} titleBgs[1]:${styles.titleBgs[1]}`);
-    const titleGradient = cCtx.createLinearGradient(x0, y0, x0, y0 + titleHeight);
+    const titleGradient = cCtx.createLinearGradient(x0P, y0P, x0P, y0P + titleHeightP);
     titleGradient.addColorStop(1, styles.titleBgs[0]);
     titleGradient.addColorStop(0, styles.titleBgs[1]);
     cCtx.fillStyle = titleGradient;
-    this.pathTitle(x0, y0, width, titleHeight, stateRadiusP);
+    this.pathTitle(x0P, y0P, widthP, titleHeightP, stateRadiusP);
     cCtx.fill();
     // Draw border
     cCtx.lineWidth = styles.borderWidth;
@@ -360,32 +442,34 @@ export class Cstate extends CbaseState {
     } else if (hCtx.getSelectedId() == this.id) {
       cCtx.strokeStyle = hsm.settings.styles.silhouetteSelected;
     }
-    this.pathRoundedRectP(x0, y0, width, height, stateRadiusP);
+    // cCtx.rect(x0P, y0P, widthP, heightP);
+    this.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.stroke();
     // Draw title line
     cCtx.lineWidth = styles.titleLineWidth;
     cCtx.strokeStyle = styles.titleLine;
     cCtx.beginPath();
-    cCtx.moveTo(x0, y0 + titleHeight);
-    cCtx.lineTo(x0 + width, y0 + titleHeight);
+    cCtx.moveTo(x0P, y0P + titleHeightP);
+    cCtx.lineTo(x0P + widthP, y0P + titleHeightP);
     cCtx.stroke();
     // Draw title text
-    cCtx.font = `${Math.round((styles.titleTextSizePc / 100) * titleHeight)}px ${styles.titleTextFont}`;
+    cCtx.font = `${Math.round((styles.titleTextSizePc / 100) * titleHeightP)}px ${styles.titleTextFont}`;
     cCtx.fillStyle = styles.titleText;
     cCtx.textBaseline = "middle";
     cCtx.textAlign = "center";
     cCtx.fillText(
       `${this.id}: ${this.name}`,
-      x0 + width / 2,
-      y0 + titleHeight / 2,
-      width - 1 * stateRadiusP,
+      x0P + widthP / 2,
+      y0P + titleHeightP / 2,
+      widthP - 1 * stateRadiusP,
     );
     for (let child of this.children) {
       child.draw(this.geo.xx0, this.geo.yy0);
     }
   }
 
-  makeIdz(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+  makeIdz(x, y, idz) {
+    // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     // console.log(`[Cstate.makeIdz] (${this.id}) x:${x} y:${y}`);
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     const r = hsm.settings.stateRadiusMm;
@@ -412,7 +496,7 @@ export class Cstate extends CbaseState {
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    // console.log(`[Cstate.makeIdz] (${this.id}) id:${id} zone:${zone}`);
+    // console.log(`[Cstate.makeIdz] (${this.id}) id:${id} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
     return idz;
   }
 
@@ -442,10 +526,22 @@ export class Cstate extends CbaseState {
   }
 
   canInsertTr(idz) {
-    if (idz.zone == "T" ||
-      idz.zone == "R" ||
-      idz.zone == "B" ||
-      idz.zone == "L") return true;
-    return false;
+    if (idz.zone != "T" &&
+      idz.zone != "R" &&
+      idz.zone != "B" &&
+      idz.zone != "L") return false;
+    const r = hsm.settings.initialTransLength;
+    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    switch (idz.zone) {
+      case "R":
+      case "L":
+        if (y0 < r) return false;
+        break;
+      case "T":
+      case "B":
+        if (x0 < r) return false;
+        break;
+    }
+    return true;
   }
 }

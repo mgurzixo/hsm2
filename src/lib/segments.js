@@ -17,6 +17,8 @@ export function drawArrow(cCtx, x, y, dir) {
   let widthP = C(hsm.settings.arrowWidthMm);
   const xP = C(x);
   const yP = C(y);
+  // Avoid erasing state border
+  cCtx.lineJoin = "round";
   cCtx.beginPath();
   switch (dir) {
     case "N":
@@ -37,6 +39,7 @@ export function drawArrow(cCtx, x, y, dir) {
       break;
   }
   cCtx.stroke();
+  cCtx.lineJoin = "miter";
 }
 
 export function pathSegments(segments, x0, y0, x1, y1) {

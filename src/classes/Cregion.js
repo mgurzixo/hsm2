@@ -120,6 +120,7 @@ export class Cregion extends CbaseRegion {
   }
 
   makeIdz(x, y, idz) {
+    // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     const bak = Object.assign({}, idz);
     const m = this.pToMmL(hsm.settings.cursorMarginP);
     if (
@@ -129,7 +130,7 @@ export class Cregion extends CbaseRegion {
       y > this.geo.y0 + this.geo.height + m
     )
       return idz;
-    idz = { id: this.id, zone: "M" };
+    idz = { id: this.id, zone: "M", x: x, y: y };
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }

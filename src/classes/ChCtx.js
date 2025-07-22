@@ -10,7 +10,7 @@ export class ChCtx {
     this.errorId = "";
     this.draggedId = "";
     this.dragCtx = {};
-    this.idz = { id: "", zone: "" };
+    this.idz = { id: "", zone: "", x: 0, y: 0 };
   }
 
   setSelected(id) {

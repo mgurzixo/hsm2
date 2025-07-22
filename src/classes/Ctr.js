@@ -11,6 +11,7 @@ export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
     this.lineWidth = 1.5;
+    this.initialDrag = true;
   }
 
   load(transOptions) {
@@ -22,50 +23,83 @@ export class Ctr extends CbaseElem {
   }
 
   dragStart() {
-    const idz = this.idz();
-    const [x, y] = [idz.x, idz.y];
-    // console.log(`[Ctr.dragStart] (${this.id}) x:${x?.toFixed()}`);
-    // console.log(
-    //   `[Ctr.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
-    // );
-    switch (modeRef.value) {
-      case "inserting-trans": {
-        this.insertTr(x, y);
-        return;
-      }
-      default:
-        modeRef.value = "";
-    }
-    const dragCtx = {
-      id: this.id,
-      x0: this.geo.x0,
-      y0: this.geo.y0,
-    };
-    console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
-    hCtx.setDragCtx(dragCtx);
+    // console.log(`[Ctr.dragStart] (${this.id})`);
     return this;
+  }
+
+  findNearestTarget(x0, y0) {
+    // console.log(`[Ctr.findNearestTarget] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()}`);
+    let bestDist = Number.MAX_VALUE;
+    let bestElem;
+    let bestPos;
+    let bestSide = "T";
+
+    function visit(myElem) {
+      if (myElem.id.startsWith("S")) {
+        for (let mySide of ["T", "R", "B", "L"]) {
+          const geo = myElem.geo;
+          let myX0, myY0, myX1, myY1;
+          switch (mySide) {
+            case "T":
+            case "B":
+              myX0 = geo.xx0;
+              myX1 = geo.xx0 + geo.width;
+              myY0 = mySide == "T" ? geo.yy0 : geo.yy0 + geo.height;
+              myY1 = myY0;
+              break;
+            case "L":
+            case "R":
+              myY0 = geo.yy0;
+              myY1 = geo.yy0 + geo.height;
+              myX0 = mySide == "L" ? geo.xx0 : geo.xx0 + geo.width;
+              myX1 = myX0;
+              break;
+          }
+          const [d, pos] = U.distToSegmentSquared({ x: x0, y: y0 }, { x: myX0, y: myY0 }, { x: myX1, y: myY1 });
+          if (d < bestDist) {
+            bestDist = d;
+            bestElem = myElem;
+            bestPos = pos;
+            bestSide = mySide;
+          }
+        }
+      }
+      for (let elem1 of myElem.children) {
+        visit(elem1);
+      }
+    }
+
+    visit(hCtx.folio);
+    return [bestElem, bestSide, bestPos];
   }
 
   drag(dx, dy) {
     const idz = this.idz();
-    console.log(`[Ctr.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    // console.log(`[Ctr.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
     const dragCtx = hCtx.getDragCtx();
-    let x0 = dragCtx.x0;
-    let y0 = dragCtx.y0;
+    const [theElem, theSide, thePos] = this.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+    // console.log(`[Ctr.drag] (${this.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
+    this.end.id = theElem.id;
+    this.end.side = theSide;
+    this.end.pos = thePos;
+    this.segments = this.initialiseSegments();
   }
 
   dragEnd(dx, dy) {
-    console.log(`[Ctr.dragEnd]`);
+    // console.log(`[Ctr.dragEnd]`);
     this.drag(dx, dy);
     if (hCtx.getErrorId() == this.id) {
       this.resetDrag(dx, dy);
+      this.initialDrag = false;
       return false;
     }
+    this.initialDrag = false;
     return true;
   }
 
 
   connectSelf() {
+    // console.log(`[Ctr.connectSelf]`);
     let segments = [];
     const [x0, y0] = U.idToXY(this.start);
     const [x1, y1] = U.idToXY(this.end);
@@ -78,24 +112,25 @@ export class Ctr extends CbaseElem {
         case "T":
         case "B":
           dir1 = side == "T" ? "N" : "S";
-          dir2 = side == "B" ? "S" : "N";
-          segments.push({ dir: dir1, len: radius });
+          dir2 = side == "T" ? "S" : "N";
+          segments.push({ dir: dir1, len: radius * 1.5 });
           segments.push({ dir: dx > 0 ? "E" : "W", len: Math.abs(dx) });
-          segments.push({ dir: dir2, len: radius });
+          segments.push({ dir: dir2, len: radius * 1.5 });
           break;
         case "R":
         case "L":
           dir1 = side == "R" ? "E" : "W";
           dir2 = side == "R" ? "W" : "E";
-          segments.push({ dir: dir1, len: radius });
+          segments.push({ dir: dir1, len: radius * 1.5 });
           segments.push({ dir: dy > 0 ? "S" : "N", len: Math.abs(dy) });
-          segments.push({ dir: dir2, len: radius });
+          segments.push({ dir: dir2, len: radius * 1.5 });
           break;
       }
     }
     else {
       segments = U.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
     }
+    // console.log(`[Ctr.connectSelf] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
 
@@ -296,7 +331,9 @@ export class Ctr extends CbaseElem {
 
 
   makeIdz(x, y, idz) {
-    console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
+    // [x,y] in mm in this tr frame
+    // console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
+    // TODO
     return idz;
   }
 
