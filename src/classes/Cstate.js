@@ -166,17 +166,6 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
     // console.log(`[Cstate.insertTr] idz:${JSON.stringify(this.idz())}`);
     const idz = this.idz();
-    // const r = hsm.settings.stateRadiusMm;
-    // let len = this.geo.width;
-    // let p0 = this.geo.x0;
-    // let pos = x;
-    // if (this.idz().zone == "L" || this.idz().zone == "R") {
-    //   len = this.geo.height;
-    //   p0 = this.geo.y0;
-    //   pos = y;
-    // }
-    // const pos2 = (pos - (p0 + r)) / (len - 2 * r);
-    // const pos1 = (pos - hsm.settings.initialTransLength - (p0 + r)) / (len - 2 * r);
     const side = idz.zone;
     const pos2 = this.makeTrPos(side, x, y);
     // console.log(`[Cstate.insertTr] pos2:${pos2.toFixed(2)}`);

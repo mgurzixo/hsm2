@@ -110,7 +110,7 @@ export class Cfolio extends CbaseRegion {
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
     hsm.setCursor(newIdz);
-    myState.dragStart();
+    myState.dragStart(); // Will create dragCtx
   }
 
   dragStart() {
