@@ -58,39 +58,6 @@ export function pointInWH(x, y, r) {
   return true;
 }
 
-// return anchor in mm in folio frame
-export function idToXY(p) {
-  const elem = hElems.getElemById(p.id);
-  if (p.pos > 1) p.pos = 1;
-  // let [x0, y0] = [elem.geo.x0, elem.geo.y0];
-  // for (let parent = elem.parent; parent; parent = parent.parent) {
-  //   x0 += parent.geo.x0;
-  //   y0 += parent.geo.y0;
-  // }
-  let [x0, y0] = [elem.geo.xx0, elem.geo.yy0];
-  const r = hsm.settings.stateRadiusMm;
-  const w = elem.geo.width;
-  const h = elem.geo.height;
-  switch (p.side) {
-    case "R":
-      x0 += w;
-      y0 += r + (h - 2 * r) * p.pos;
-      break;
-    case "B":
-      x0 += r + (w - 2 * r) * p.pos;
-      y0 += h;
-      break;
-    case "L":
-      y0 += r + (h - 2 * r) * p.pos;
-      break;
-    case "T":
-    default:
-      x0 += r + (w - 2 * r) * p.pos;
-      break;
-  }
-  return [x0, y0];
-}
-
 export function myClamp(dx, x0, len0, x1, len1) {
   if (x0 + dx < x1) dx = x1 - x0;
   if (x0 + dx + len0 > x1 + len1) dx = x1 + len1 - x0 - len0;
@@ -229,6 +196,7 @@ export function distToSegmentSquared(p, v, w) {
     x: v.x + t * (w.x - v.x),
     y: v.y + t * (w.y - v.y)
   });
+  // if (window.windump) console.log(`[utils.distToSegmentSquared] (x:${p.x.toFixed(2)}, y:${p.y.toFixed(2)}) (xs:${v.x}, ys:${v.y})  (xe:${w.x}, ye:${w.y}) d:${Math.sqrt(d2).toFixed(2)} t:${t.toFixed(2)}`);
   return [d2, t];
 }
 

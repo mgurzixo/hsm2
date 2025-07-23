@@ -34,6 +34,15 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
+  onLoaded() {
+    for (let child of this.children) {
+      child.onLoaded();
+    }
+    for (let tr of this.trs) {
+      tr.onLoaded();
+    }
+  }
+
   drawFolioBackground() {
     cCtx.fillStyle = hsm.settings.styles.folioBackground;
     cCtx.beginPath();
@@ -59,28 +68,6 @@ export class Cfolio extends CbaseRegion {
     for (let tr of this.trs) {
       tr.draw();
     }
-  }
-
-  hoverP(xP, yP) {
-    const [x, y] = this.pToMmXY(xP, yP);
-  }
-
-  clickP(xP, yP) {
-    const [xx, yy] = [xP / this.scalePhy(), yP / this.scalePhy()];
-    // (xx, yy) in mm from parent origin
-    if (!U.pointInRect(xx, yy, this.geo)) return null;
-    // Inside us
-    let elem;
-    const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    for (let child of this.children.toReversed()) {
-      // Is it inside a child
-      elem = child.click(x, y);
-      if (elem) break;
-    }
-    if (elem) return elem;
-    // For us
-    this.parent.raiseChildR(this.id);
-    return this;
   }
 
   insertState(x, y) {
@@ -146,6 +133,15 @@ export class Cfolio extends CbaseRegion {
   raiseChildR(id) {
     super.raiseChildR(id);
     hsm.draw();
+  }
+
+  adjustChange(changedId) {
+    for (let child of this.children) {
+      child.adjustChange(changedId);
+    }
+    for (let tr of this.trs) {
+      tr.adjustChange(changedId);
+    }
   }
 
   wheelP(xP, yP, dyP) {

@@ -1,6 +1,7 @@
 "use strict";
 
 import * as U from "src/lib/utils";
+import * as T from "src/lib/trUtils";
 import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
@@ -11,7 +12,6 @@ export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
     this.lineWidth = 1.5;
-    this.initialDrag = true;
   }
 
   load(transOptions) {
@@ -22,22 +22,9 @@ export class Ctr extends CbaseElem {
     else delete (this.color);
   }
 
-  dragStart() {
-    // console.log(`[Ctr.dragStart] (${this.id})`);
-    const idz = this.idz();
-    if (modeRef.value == "") {
-      if (idz.type == "A") {
-        const dragCtx = {
-          id: this.id,
-          type: idz.zone,
-          xx0: idz.x,
-          yy0: idz.y,
-        };
-        // console.log(`[Cstate.insertTr] dragCtx:${JSON.stringify(dragCtx)}`);
-        hCtx.setDragCtx(dragCtx);
-      }
-    }
-    return this;
+  async onLoaded() {
+    // console.log(`[Ctr.onLoaded] (${this.id})}`);
+    if (this.segments.length == 0) this.segments = this.getInitialSegments();
   }
 
   findNearestTarget(x0, y0) {
@@ -86,90 +73,59 @@ export class Ctr extends CbaseElem {
     return [bestElem, bestSide, bestPos];
   }
 
-  drag(dx, dy) {
+
+  dragStart() {
+    // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
-    // console.log(`[Ctr.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    if (modeRef.value == "") {
+      const dragCtx = {
+        id: this.id,
+        zone: idz.zone,
+        type: idz.type,
+        xx0: idz.x,
+        yy0: idz.y,
+      };
+      console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
+      hCtx.setDragCtx(dragCtx);
+    }
+    window.windump = true;
+    return this;
+  }
+
+  drag(dx, dy) {
     const dragCtx = hCtx.getDragCtx();
-    if (idz.zone == "END") {
-      const [theElem, theSide, thePos] = this.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
-      // console.log(`[Ctr.drag] (${this.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
-      this.end.id = theElem.id;
-      this.end.side = theSide;
-      this.end.pos = thePos;
-      this.segments = this.initialiseSegments();
-    }
-    else if (idz.zone == "START") {
-      const [theElem, theSide, thePos] = this.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
-      // console.log(`[Ctr.drag] (${this.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
-      this.start.id = theElem.id;
-      this.start.side = theSide;
-      this.start.pos = thePos;
-      this.segments = this.initialiseSegments();
-    }
+    if (dragCtx.zone == "START") T.dragStartAnchor(this, dx, dy);
+    else if (dragCtx.zone == "END") T.dragEndAnchor(this, dx, dy);
+    else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
+    else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
   }
 
   dragEnd(dx, dy) {
     // console.log(`[Ctr.dragEnd]`);
     this.drag(dx, dy);
     if (hCtx.getErrorId() == this.id) {
-      this.resetDrag(dx, dy);
-      this.initialDrag = false;
       return false;
     }
-    this.initialDrag = false;
+    window.windump = false;
     return true;
   }
 
 
-  connectSelf() {
-    // console.log(`[Ctr.connectSelf]`);
+  getInitialSegments() {
     let segments = [];
-    const [x0, y0] = U.idToXY(this.start);
-    const [x1, y1] = U.idToXY(this.end);
-    if (this.start.side == this.end.side) {
-      const [dx, dy] = [x1 - x0, y1 - y0];
-      let radius = hsm.settings.maxTransRadiusMm;
-      const side = this.start.side;
-      let dir1, dir2;
-      switch (side) {
-        case "T":
-        case "B":
-          dir1 = side == "T" ? "N" : "S";
-          dir2 = side == "T" ? "S" : "N";
-          segments.push({ dir: dir1, len: radius * 1.5 });
-          segments.push({ dir: dx > 0 ? "E" : "W", len: Math.abs(dx) });
-          segments.push({ dir: dir2, len: radius * 1.5 });
-          break;
-        case "R":
-        case "L":
-          dir1 = side == "R" ? "E" : "W";
-          dir2 = side == "R" ? "W" : "E";
-          segments.push({ dir: dir1, len: radius * 1.5 });
-          segments.push({ dir: dy > 0 ? "S" : "N", len: Math.abs(dy) });
-          segments.push({ dir: dir2, len: radius * 1.5 });
-          break;
-      }
-    }
-    else {
-      segments = U.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
-    }
-    // console.log(`[Ctr.connectSelf] Segments:${JSON.stringify(segments)}`);
+    const [x0, y0] = T.anchorToXY(this.start);
+    const [x1, y1] = T.anchorToXY(this.end);
+    [this.start.oldX, this.start.oldY] = [x0, y0];
+    [this.end.oldX, this.end.oldY] = [x1, y1];
+    segments = T.createSegments(this);
+    // console.warn(`[Ctr.getInitialSegments] (${this.id}) oldX:${this.start.oldX} oldY:${this.start.oldY}`);
+    // console.log(`[Ctr.getInitialSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
 
-  initialiseSegments() {
-    let segments = [];
-    const [x0, y0] = U.idToXY(this.start);
-    const [x1, y1] = U.idToXY(this.end);
-    [this.start.oldX, this.start.oldY] = [x0, y0];
-    [this.end.oldX, this.end.oldY] = [x1, y1];
-    if (this.start.id != this.end.id) {
-      segments = U.connectPoints(x0, y0, this.start.side, x1, y1, this.end.side, false);
-    }
-    else segments = this.connectSelf();
-    // console.warn(`[Ctr.initialiseSegments] oldX:${this.start.oldX} oldY:${this.start.oldY}`);
-    // console.log(`[Ctr.initialiseSegments] Segments:${JSON.stringify(segments)}`);
-    return segments;
+  click(x, y) {
+    console.log(`[Ctr.click] (${this.id})`);
+    T.reverseTr(this);
   }
 
   C(val) {
@@ -239,7 +195,7 @@ export class Ctr extends CbaseElem {
       this.segments = this.segments.reverse();
     }
     if (dx != 0 || dy != 0) {
-      this.segments = this.initialiseSegments();
+      this.segments = this.getInitialSegments();
     }
     return [0, 0];
   }
@@ -295,13 +251,13 @@ export class Ctr extends CbaseElem {
   }
 
   adjustSegments() {
-    // console.log(`[Ctr.adjustSegments] oldX:${this.start.oldX} oldY:${this.start.oldY}`);
-    if (this.segments.length == 0) this.segments = this.initialiseSegments();
+    console.log(`[Ctr.adjustSegments] oldX:${this.start.oldX} oldY:${this.start.oldY}`);
+    if (this.segments.length == 0) this.segments = this.getInitialSegments();
     if (this.start.oldX == undefined || this.start.oldY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
-      [this.start.oldX, this.start.oldY] = U.idToXY(this.start);
-      [this.end.oldX, this.end.oldY] = U.idToXY(this.end);
+      [this.start.oldX, this.start.oldY] = T.anchorToXY(this.start);
+      [this.end.oldX, this.end.oldY] = T.anchorToXY(this.end);
       return;
     }
     const elemStart = hElems.getElemById(this.start.id);
@@ -331,13 +287,12 @@ export class Ctr extends CbaseElem {
   }
 
   draw() {
-    this.adjustSegments();
     if (hCtx.getErrorId() == this.start.id || hCtx.getErrorId() == this.end.id) return;
-    const [x0, y0] = U.idToXY(this.start);
+    const [x0, y0] = T.anchorToXY(this.start);
     [this.geo.x0, this.geo.y0] = [x0, y0];
     let baseColor = this.color;
     if (!baseColor) baseColor = hElems.getElemById(this.start.id).color;
-    // console.log(`[Ctr.draw] (${this.id}) startId:${this.start.id} baseColor:${baseColor}`);
+    // console.log(`[Ctr.draw] (${this.id}) startId:${this.start.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
     const styles = trStyles(baseColor);
     if (this.isIllLegal()) {
       cCtx.lineWidth = styles.lineErrorWidth;
@@ -350,12 +305,17 @@ export class Ctr extends CbaseElem {
     pathSegments(this.segments, x0, y0);
   }
 
-
+  adjustChange(changedId) {
+    // if (changedId == this.start.id || changedId == this.end.id || changedId == this.id) {
+    // console.log(`[Ctr.adjustChange](${this.id}) changedId:${changedId}`);
+    this.adjustSegments();
+    // }
+  }
 
   makeIdz(x, y, idz) {
     // [x,y] in mm in this tr frame
     // console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
-    let [x0, y0] = U.idToXY(this.start);
+    let [x0, y0] = T.anchorToXY(this.start);
     let bestD2 = Number.MAX_VALUE;
     let bestZone = "END";
     let bestType;

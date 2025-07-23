@@ -47,7 +47,7 @@ export class Chsm extends CbaseElem {
     this.resizeObserver.observe(this.canvas.parentElement);
   }
 
-  setCursor(idz) {
+  setCursor(idz = this.idz()) {
     const elem = this.hElems.getElemById(idz.id);
     let val = elem.defineCursor(idz);
     // console.log(`[Chsm.setCursor] cursor:${val}`);
@@ -72,6 +72,8 @@ export class Chsm extends CbaseElem {
     }
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
+    this.makeIdz(this.idz.x, this.idz.y);
+    hCtx.folio.onLoaded();
     this.draw();
   }
 
@@ -105,6 +107,17 @@ export class Chsm extends CbaseElem {
     hCtx.folio.draw();
   }
 
+  click(xDown, yDown) {
+    let idz = this.makeIdz(xDown, yDown);
+    hCtx.setIdz(idz);
+    if (idz.id == this.id) return;
+    const elem = this.hElems.getElemById(idz.id);
+    elem.click();
+    idz = this.makeIdz(xDown, yDown);
+    hCtx.folio.draw();
+    this.setCursor();
+  }
+
   dragStart(xDown, yDown) {
     const idz = this.makeIdz(xDown, yDown);
     hCtx.setIdz(idz);
@@ -128,21 +141,21 @@ export class Chsm extends CbaseElem {
   drag(dx, dy) {
     if (modeRef.value != "") return;
     const dragCtx = hCtx.getDragCtx();
-    // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()}`);
     if (dragCtx.id == this.id) return;
     const elem = this.hElems.getElemById(dragCtx.id);
     elem.drag(dx, dy);
     this.draw();
-    hsm.setCursor(this.idz());
+    // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()} zone:${this.idz().zone}`);
+    this.setCursor();
   }
 
   dragEnd(dx, dy) {
     const idz = this.idz();
-    console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
+    // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
     if (modeRef.value != "") {
       modeRef.value = "";
       this.draw();
-      hsm.setCursor(this.idz());
+      this.setCursor();
       return;
     }
     if (idz.id == this.id) return;
@@ -151,13 +164,13 @@ export class Chsm extends CbaseElem {
     if (dragEnded) hCtx.dragEnd();
     // else elem.resetDrag() will reset it
     this.draw();
-    hsm.setCursor(this.idz());
+    this.setCursor();
   }
 
   mouseMove(x, y) {
     const idz = hsm.makeIdz(x, y);
     hCtx.setIdz(idz);
-    hsm.setCursor(idz);
+    this.setCursor();
   }
 
   adjustSizes() {

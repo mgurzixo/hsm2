@@ -50,24 +50,6 @@ export class Cstate extends CbaseState {
     }
   }
 
-  click(xx, yy) {
-    // (xx, yy) in mm from parent origin
-    if (!U.pointInRect(xx, yy, this.geo)) return null;
-    // Inside us
-    let elem;
-    const [x, y] = [xx - this.geo.x0, yy - this.geo.y0];
-    for (let child of this.children) {
-      // Is it inside a child
-      elem = child.click(x, y);
-      if (elem) break;
-    }
-    if (elem) return elem;
-    // For us
-    // console.log(`[Cstate.click] Raising ${this.id}`);
-    this.parent.raiseChildR(this.id);
-    return this;
-  }
-
   setGrandchildrenDragOrigin() {
     for (let child of this.children) {
       child.setChildrenDragOrigin();
@@ -197,7 +179,8 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.insertTr] (${this.id}) xx0:${xx0.toFixed()} yy0:${yy0.toFixed()}`);
     const dragCtx = {
       id: myTr.id,
-      type: "END",
+      zone: "END",
+      type: "A",
       xx0: xx0 + x,
       yy0: yy0 + y,
     };
@@ -249,6 +232,7 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
     this.parent.raiseChildR(this.id);
+    hsm.adjustChange(this.id);
     return this;
   }
 
@@ -337,6 +321,7 @@ export class Cstate extends CbaseState {
     this.geo.width = width;
     if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
     else hCtx.setErrorId(null);
+    hsm.adjustChange(this.id);
   }
 
   resetDrag(deltaX, deltaY) {

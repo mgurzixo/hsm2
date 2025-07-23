@@ -79,10 +79,21 @@ export class CbaseElem {
   }
 
   hover(x, y) { }
-  click(x, y) { }
+
+  click() {
+    console.warn(`[CbaseElem.click] id:${this.idz().id}`);
+  }
+
   doubleClick(x, y) { }
   dragStart() { }
   drag(dx, dy) { }
+
+  adjustChange(changedId) {
+    // console.log(`[CbaseElem.adjustChange] id:${this.id}`);
+    for (let child of this.children) {
+      child.adjustChange(changedId);
+    }
+  }
 
   dragEnd(dx, dy) {
     console.warn(`[CbaseElem.dragEnd] id:${this.id}`);
@@ -170,11 +181,7 @@ export class CbaseElem {
       cursor = "url(/assets/no-drop16x16.png) 8 8,no-drop";
       return cursor;
     }
-    if (!this.id.startsWith("S") && hCtx.getDraggedId() == this.id) {
-      cursor = "grabbing";
-      return cursor;
-    }
-    console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone} type:${idz.type}`);
+    // console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone} type:${idz.type}`);
     if (Number.isInteger(idz.zone)) {
       if (idz.type == "V") cursor = "col-resize";
       else cursor = "row-resize";
@@ -228,5 +235,12 @@ export class CbaseElem {
 
   canInsertTr(idz) {
     return false;
+  }
+
+  onLoaded() {
+    // Called when everything is loaded
+    for (let child of this.children) {
+      child.onLoaded();
+    }
   }
 }
