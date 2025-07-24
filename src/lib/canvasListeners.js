@@ -37,7 +37,8 @@ export function handleMouseMove(e) {
     // console.log(
     //   `[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging} buttons:${e.buttons} d:${d}`,
     // );
-    if (dP > 2 * 2) {
+    // if (dP > 2 * 2) {
+    if (dP > 256) {
       isDragging = true;
       const [mdx, mdy] = [U.pToMmL(mouseDown.x), U.pToMmL(mouseDown.y)];
       hsm.dragStart(mdx, mdy);
@@ -51,6 +52,12 @@ export function handleMouseMove(e) {
     hsm.mouseMove(x, y);
     // console.log(`[canvasListeners.handleMouseMove] elem:${elem} ${JSON.stringify(idz)}`);
   }
+}
+
+export function patchMouseDown() {
+  if (!isDragging) return;
+  mouseDown.x = mousePos.value.xP;
+  mouseDown.y = mousePos.value.yP;
 }
 
 export function handleMouseDown(e) {

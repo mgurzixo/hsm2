@@ -3,7 +3,30 @@
 import * as U from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 
+export function reverseDir(dir) {
+  switch (dir) {
+    case "N":
+      return "S";
+    case "S":
+      return "N";
+    case "W":
+      return "E";
+    case "E":
+      return "W";
+  }
+}
 
+export function isHoriz(dir) {
+  switch (dir) {
+    case "N":
+    case "S":
+      return false;
+    case "W":
+    case "E":
+      return true;
+  }
+  console.error(`[trUtils.isHoriz] Unknown dir:${dir}`);
+}
 
 export function drawArrow(cCtx, x, y, dir) {
   // console.log(`[utils.drawArrow] dir ${dir}`);
@@ -42,34 +65,78 @@ export function drawArrow(cCtx, x, y, dir) {
   cCtx.lineJoin = "miter";
 }
 
+export function removeNullSegments(segs) {
+  const res = [];
+  let gotNul = false;
+  for (let i = 0; i < segs.length; i++) {
+    if (segs[i].len == 0) {
+      if (!i) continue;
+      if (i == segs.length - 1) break;
+      gotNul = true;
+      continue;
+    }
+    const seg = segs[i];
+    if (gotNul) {
+      const prev = res.pop();
+      // console.warn(`[segments.removeNullSegments] i:${i} resLen:${res.length} prev:${prev}`);
+      let len = prev.len + seg.len;
+      let dir = prev.dir;
+      if (dir != seg.dir) len = prev - seg.len;
+      if (len == 0) continue;
+      if (len < 0) {
+        len = -len;
+        dir = reverseDir(dir);
+      }
+      res.push({ len: len, dir: dir });
+      // console.warn(`[segments.removeNullSegments] i:${i} res#:${res.length - 1} dir:${dir} len:${len}`);
+      gotNul = false;
+      continue;
+    }
+    res.push({ len: seg.len, dir: seg.dir });
+  }
+  return res;
+}
+
 export function pathSegments(segments, x0, y0) {
+  // Warning, a segment len can be null when dragging
+  // but 2 sonsecutive segs cant be both null
   function C(val) {
     const x = U.mmToPL(val);
     if (!cCtx.lineWidth.lineWidth % 2) return Math.round(x);
     return Math.round(x) + 0.5;
   }
+
+  segments = removeNullSegments(segments);
   cCtx.beginPath();
   let [x, y] = [x0, y0];
   cCtx.moveTo(C(x), C(y));
   let curDir;
   const maxIdx = segments.length - 1;
-  // console.log(`[Ctr.draw]----------------------- maxIdx: ${ maxIdx }`);
+  // console.log(`[segments.pathSegments]----------------------- maxIdx: ${ maxIdx }`);
   let radius1 = 0;
   for (let idx in segments) {
     idx = Number(idx);
     let segment = segments[idx];
-    const nextSeg = idx < maxIdx ? segments[idx + 1] : null;
-    // console.log(`[Ctr.draw](${ idx }) previousSeg: ${ previousSeg } nextSeg: ${ nextSeg }`);
-    curDir = segment.dir;
     let len = segment.len;
+    if (len == 0) continue;
+    if (len <= 0) console.error(`[segments.pathSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+    let nextSeg = null;
+    for (let idn = idx + 1; idn <= maxIdx; idn++) {
+      if (segments[idn].len == 0) continue;
+      nextSeg = segments[idn];
+      break;
+    }
+    // const nextSeg = idx < maxIdx ? segments[idx + 1] : null;
+    // console.log(`[segments.pathSegments] (${ idx }) previousSeg: ${ previousSeg } nextSeg: ${ nextSeg }`);
+    curDir = segment.dir;
     let radius2 = hsm.settings.maxTransRadiusMm;
     if (radius2 > segment.len / 2) radius2 = segment.len / 2;
     if (!nextSeg) radius2 = 0;
     else if (radius2 > nextSeg.len / 2) radius2 = nextSeg.len / 2;
     // radius1 = 0;
-    // radius2 = 0;
+    // radius2 = 0; // REMOVE
     len = len - radius1 - radius2;
-    // console.log(`[Ctr.draw](${ idx }) len0: ${ segment.len.toFixed() } len: ${ len.toFixed() } dir: ${ segment.dir } radius1: ${ radius1.toFixed() } radius2: ${ radius2.toFixed() }`);
+    // console.log(`[segments.pathSegments] (${ idx }) len0: ${ segment.len.toFixed() } len: ${ len.toFixed() } dir: ${ segment.dir } radius1: ${ radius1.toFixed() } radius2: ${ radius2.toFixed() }`);
     switch (segment.dir) {
       case "N":
         y = y - len;
@@ -109,7 +176,7 @@ export function pathSegments(segments, x0, y0) {
           cpx = x;
           break;
       }
-      // cCtx.lineTo(C(x), C(y));
+      // cCtx.lineTo(C(x), C(y)); // REMOVE
       cCtx.quadraticCurveTo(C(cpx), C(cpy), C(x), C(y));
       radius1 = radius2;
     }

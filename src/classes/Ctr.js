@@ -6,7 +6,7 @@ import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { trStyles } from "src/lib/styles";
-import { pathSegments } from "src/lib/segments";
+import { pathSegments, removeNullSegments } from "src/lib/segments";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -85,7 +85,7 @@ export class Ctr extends CbaseElem {
         xx0: idz.x,
         yy0: idz.y,
       };
-      console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
+      // console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
       hCtx.setDragCtx(dragCtx);
     }
     window.windump = true;
@@ -98,11 +98,13 @@ export class Ctr extends CbaseElem {
     else if (dragCtx.zone == "END") T.dragEndAnchor(this, dx, dy);
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
+    else T.dragNormalSegment(this, dx, dy);
   }
 
   dragEnd(dx, dy) {
     // console.log(`[Ctr.dragEnd]`);
     this.drag(dx, dy);
+    this.segments = removeNullSegments(this.segments);
     if (hCtx.getErrorId() == this.id) {
       return false;
     }
@@ -183,6 +185,7 @@ export class Ctr extends CbaseElem {
   }
 
   myAdjustXy(dx, dy) {
+    console.log(`[Ctr.myAdjustXy] dx:${dx} dy:${dy}`);
     const r = hsm.settings.stateRadiusMm;
     let [ddx, ddy] = this.adjustXy(dx / 2, dy / 2, r);
     this.segments = this.segments.reverse();

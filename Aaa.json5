@@ -110,15 +110,15 @@
         },
         {
           segments: [],
-          start: {
+          end: {
             id: "S7",
-            side: "R",
+            side: "B",
             pos: 0.2,
           },
-          end: {
+          start: {
             id: "S3",
             side: "L",
-            pos: 0.6,
+            pos: 0.8,
           },
           isInternal: true,
         },
@@ -133,6 +133,20 @@
             id: "S6",
             side: "T",
             pos: 0.5,
+          },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          start: {
+            id: "S6",
+            side: "R",
+            pos: 0.5,
+          },
+          end: {
+            id: "S3",
+            side: "L",
+            pos: 0.3,
           },
           isInternal: true,
         },
@@ -216,7 +230,7 @@
           color: "gold",
           geo: {
             x0: 140,
-            y0: 90,
+            y0: 130,
             width: 50,
             height: 30,
           },

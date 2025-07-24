@@ -2,6 +2,8 @@
 
 import * as U from "src/lib/utils";
 import { hsm, hElems, hCtx } from "src/classes/Chsm";
+import { reverseDir, isHoriz } from "src/lib/segments";
+import { patchMouseDown } from "src/lib/canvasListeners";
 
 // All distances in mm from folio origin
 
@@ -203,28 +205,100 @@ function prevXY(segment, x, y) {
   return [x, y];
 }
 
-function reverseDir(dir) {
-  switch (dir) {
-    case "N":
-      return "S";
-    case "S":
-      return "N";
-    case "W":
-      return "E";
-    case "E":
-      return "W";
-  }
-}
 
-function isHoriz(dir) {
-  switch (dir) {
-    case "N":
-    case "S":
-      return false;
-    case "W":
-    case "E":
-      return true;
+
+export function dragNormalSegment(tr, dx, dy) {
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) START segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragNormalSegment] ------------------------------------------`);
+  const dragCtx = hCtx.getDragCtx();
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id})  xxD:${dragCtx.xxD.toFixed(3)} dx0:${dx0.toFixed(3)} dx:${dx.toFixed(3)})`);
+  if (dx == 0 && dy == 0) return;
+  // dx -= dragCtx.xxD;
+  // dy -= dragCtx.yyD;
+  const nA = dragCtx.zone;
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) (x:${x}, y:${y})`);
+  const segA = tr.segments[nA];
+  const seg1 = tr.segments[nA - 1];
+  const seg2 = tr.segments[nA + 1];
+  if (typeof dragCtx.seg1Orig == "undefined") {
+    dragCtx.seg1Orig = { len: seg1.len, dir: seg1.dir };
+    dragCtx.seg2Orig = { len: seg2.len, dir: seg2.dir };
   }
+  const hDir = isHoriz(segA.dir);
+  const dir1 = dragCtx.seg1Orig.dir;
+  const len1 = dragCtx.seg1Orig.len;
+  const dir2 = dragCtx.seg2Orig.dir;
+  const len2 = dragCtx.seg2Orig.len;
+
+  if (hDir) {
+    if (dir1 == "N") {
+      if (dir2 == "N") {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) NN`);
+        // OK
+        seg1.len = len1 - dy;
+        seg2.len = len2 + dy;
+      } else {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) NS`);
+        // OK
+        seg1.len = len1 - dy;
+        seg2.len = len2 - dy;
+      }
+    }
+    else {
+      if (dir2 == "N") {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) SN`);
+        // OK
+        seg1.len = len1 + dy;
+        seg2.len = len2 + dy;
+      } else {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) SS`);
+        // OK
+        seg1.len = len1 + dy;
+        seg2.len = len2 - dy;
+      }
+    }
+  }
+  else {
+    if (dir1 == "W") {
+      if (dir2 == "W") {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) WW`);
+        // OK
+        seg1.len = len1 - dx;
+        seg2.len = len2 + dx;
+      } else {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) WE`);
+        // OK
+        seg1.len = len1 - dx;
+        seg2.len = len2 - dx;
+      }
+    }
+    else {
+      if (dir2 == "W") {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) EW`);
+        // OK
+        seg1.len = len1 + dx;
+        seg2.len = len2 + dx;
+      } else {
+        console.log(`[trUtils.dragNormalSegment] (${tr.id}) EE`);
+        // OK F bad L
+        seg1.len = len1 + dx;
+        seg2.len = len2 - dx;
+      }
+    }
+  }
+
+  seg1.dir = dir1;
+  seg2.dir = dir2;
+  if (seg1.len <= 0) {
+    seg1.len = -seg1.len;
+    seg1.dir = reverseDir(seg1.dir);
+  }
+  if (seg2.len <= 0) {
+    seg2.len = -seg2.len;
+    seg2.dir = reverseDir(seg2.dir);
+  }
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) nbSeg:${tr.segments.length} seg#:${nA} l2:${segA.len}`);
 }
 
 export function dragFirstSegment(tr, dx, dy) {
@@ -245,14 +319,27 @@ export function dragFirstSegment(tr, dx, dy) {
   // console.log(`[trUtils.dragFirstSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
   seg1.len = segA.len * pos;
   seg1.dir = segA.dir;
-  seg2.len = Math.abs(isHoriz(segA.dir) ? dy : dx);
-  if (isHoriz(segA.dir)) seg2.dir = dy >= 0 ? "S" : "N";
-  else seg2.dir = dx >= 0 ? "E" : "W";
+
+
+  if (isHoriz(segB.dir)) seg2.len = (segB.dir == "E" ? dx : -dx); // OK
+  else seg2.len = (segB.dir == "S" ? dy : -dy);
+  seg2.dir = segB.dir;
+  if (seg2.len < 0) {
+    seg2.len = -seg2.len;
+    seg2.dir = reverseDir(seg2.dir);
+  }
+
   seg3.dir = segA.dir;
   seg3.len = segA.len - seg1.len;
+  if (seg3.len < 0) {
+    seg3.len = -seg3.len;
+    seg3.dir = reverseDir(seg3.dir);
+  }
 
-  if (isHoriz(segB.dir)) seg4.len = segB.len - dx;
-  else seg4.len = segB.len - dy;
+  console.log(`[trUtils.dragFirstSegment] segA:${segA.dir} dy:${dy}`);
+  console.log(`[trUtils.dragFirstSegment] segB:${segB.dir} dx:${dx}`);
+  if (isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? -dx : dx);
+  else seg4.len = segB.len + (segB.dir == "N" ? dy : -dy);
   seg4.dir = segB.dir;
   if (seg4.len < 0) {
     seg4.len = -seg4.len;
@@ -264,12 +351,14 @@ export function dragFirstSegment(tr, dx, dy) {
   tr.segments.shift();
   tr.segments.unshift(seg1, seg2, seg3, seg4);
   dragCtx.zone = 2;
-  // console.log(`[trUtils.dragFirstSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
+  patchMouseDown();
+
+  console.log(`[trUtils.dragFirstSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
 }
 
 export function dragLastSegment(tr, dx, dy) {
   if (dx == 0 && dy == 0) return;
-  // console.log(`[trUtils.dragFinalSegment] (${tr.id}) START segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragLastSegment] (${tr.id}) START segments:${JSON.stringify(tr.segments)}`);
   const dragCtx = hCtx.getDragCtx();
   const [x, y] = [dragCtx.xx0 + dx, dragCtx.yy0 + dy];
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) (x:${x}, y:${y})`);
@@ -283,35 +372,49 @@ export function dragLastSegment(tr, dx, dy) {
   const [xs, ys] = anchorToXY(tr.end);
   const [xe, ye] = prevXY(segA, xs, ys);
   const [d, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: xs, y: ys }, { x: xe, y: ye });
-  // console.log(`[trUtils.dragFinalSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
-  seg1.len = segA.len * (pos);
+  // console.log(`[trUtils.dragLastSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
+  seg1.len = segA.len * (pos) + (segA.dir == "E" ? dy : -dy);
   seg1.dir = segA.dir;
-  seg2.len = Math.abs(isHoriz(segA.dir) ? dy : dx);
-  if (isHoriz(segA.dir)) seg2.dir = dy >= 0 ? "N" : "S";
-  else seg2.dir = dx >= 0 ? "W" : "E";
+
+  console.log(`[trUtils.dragLastSegment] segA:${segA.dir} dy:${dy}`);
+  if (isHoriz(segA.dir)) seg2.len = (segA.dir == "E" ? -dy : dy);
+  else seg2.len = (segA.dir == "S" ? -dy : dy);
+  seg2.dir = segB.dir;
+  if (seg2.len < 0) {
+    seg2.len = -seg2.len;
+    seg2.dir = reverseDir(seg2.dir);
+  }
+
   seg3.dir = segA.dir;
   seg3.len = segA.len - seg1.len;
+  if (seg3.len < 0) {
+    seg3.len = -seg3.len;
+    seg3.dir = reverseDir(seg3.dir);
+  }
 
-  if (isHoriz(segB.dir)) seg4.len = segB.len + dx;
-  else seg4.len = segB.len + dy;
+  console.log(`[trUtils.dragLastSegment] segB:${segB.dir} dx:${dx}`);
+  if (isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? dx : -dx);
+  else seg4.len = segB.len + (segB.dir == "S" ? dy : -dy);
   seg4.dir = segB.dir;
   if (seg4.len < 0) {
     seg4.len = -seg4.len;
     seg4.dir = reverseDir(seg4.dir);
   }
 
-  // console.log(`[trUtils.dragFinalSegment] seg4: dir:${seg4.dir} len:${seg4.len}`);
+  // console.log(`[trUtils.dragLastSegment] seg4: dir:${seg4.dir} len:${seg4.len}`);
   tr.segments.pop();
   tr.segments.pop();
   tr.segments.push(seg4, seg3, seg2, seg1);
-  dragCtx.zone = this.segments.length - 3;
-  // console.log(`[trUtils.dragFinalSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
+  dragCtx.zone = tr.segments.length - 3;
+  patchMouseDown();
+  console.log(`[trUtils.dragLastSegment] (${tr.id}) xxD:${dx} yyD:${dy}`);
+  // console.log(`[trUtils.dragLastSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
 }
 
 export function dragEndAnchor(tr, dx, dy) {
   const dragCtx = hCtx.getDragCtx();
   const [theElem, theSide, thePos] = tr.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
-  console.log(`[trUtils.dragEndAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
+  // console.log(`[trUtils.dragEndAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.end.id = theElem.id;
   tr.end.side = theSide;
   tr.end.pos = thePos;
