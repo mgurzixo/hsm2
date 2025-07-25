@@ -240,7 +240,7 @@ function bpIntersect(bpA, bpB) {
     x: bpA.from.x + lambda * dX,
     y: bpA.from.y + lambda * dY
   };
-  console.log(`[segments.segsToBps] lambda:${lambda.toFixed(2)} gamma:${gamma.toFixed(2)} p:(x:${p.x}, y:${p.y})`);
+  // console.log(`[segments.segsToBps] lambda:${lambda.toFixed(2)} gamma:${gamma.toFixed(2)} p:(x:${p.x}, y:${p.y})`);
   return p;
 };
 
@@ -298,7 +298,7 @@ function bpsRemoveLoops(tabBps) {
     for (let ib = ia + 2; ib < nbBps; ib++) {
       const p = bpIntersect(tabBps[ia], tabBps[ib]);
       if (p == null) continue;
-      console.log(`[segments.bpsRemoveLoops] found intersect #${ia} #${ib}`);
+      // console.log(`[segments.bpsRemoveLoops] found intersect #${ia} #${ib}`);
       res.push({ from: bpA.from, to: p });
       res.push({ from: p, to: tabBps[ib].to });
       ia = ib;
@@ -307,8 +307,8 @@ function bpsRemoveLoops(tabBps) {
     }
     if (!found) res.push(bpA);
   }
-  console.log(`[segments.bpsRemoveLoops] tabBps:${JSON.stringify(tabBps)}`);
-  console.log(`[segments.bpsRemoveLoops] res:${JSON.stringify(res)}`);
+  // console.log(`[segments.bpsRemoveLoops] tabBps:${JSON.stringify(tabBps)}`);
+  // console.log(`[segments.bpsRemoveLoops] res:${JSON.stringify(res)}`);
   return res;
 }
 

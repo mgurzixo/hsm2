@@ -354,12 +354,12 @@ export function dragLastSegment(tr, dx, dy) {
   const [xe, ye] = prevXY(segA, xs, ys);
   const [d, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: xs, y: ys }, { x: xe, y: ye });
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
-  seg1.len = segA.len * (pos) + (segA.dir == "E" ? dy : -dy);
+  seg1.len = segA.len * (pos) + (segA.dir == "E" ? -2 * dy : -dy);
   seg1.dir = segA.dir;
 
   console.log(`[trUtils.dragLastSegment] segA:${segA.dir} dy:${dy}`);
   if (isHoriz(segA.dir)) seg2.len = (segA.dir == "E" ? -dy : dy);
-  else seg2.len = (segA.dir == "S" ? -dy : dy);
+  else seg2.len = (segA.dir == "S" ? -dx : dx);
   seg2.dir = segB.dir;
   if (seg2.len < 0) {
     seg2.len = -seg2.len;
