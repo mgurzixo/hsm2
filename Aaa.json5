@@ -15,6 +15,7 @@
     initialTransLength: 2,
     arrowLengthMm: 3,
     arrowWidthMm: 0.75,
+    smallestSegMm: 1,
     styles: {
       silhouetteSelected: "black",
       folioBackground: "white",
@@ -82,12 +83,12 @@
       trs: [
         // {
         //   segments: [],
-        //   start: {
+        //   from: {
         //     id: "S2",
         //     side: "T",
         //     pos: 0.0,
         //   },
-        //   end: {
+        //   to: {
         //     id: "S2",
         //     side: "T",
         //     pos: 0.2,
@@ -96,12 +97,12 @@
         // },
         {
           segments: [],
-          start: {
+          from: {
             id: "S2",
             side: "R",
             pos: 0.2,
           },
-          end: {
+          to: {
             id: "S3",
             side: "T",
             pos: 0.3,
@@ -110,12 +111,12 @@
         },
         {
           segments: [],
-          end: {
+          to: {
             id: "S7",
             side: "B",
             pos: 0.2,
           },
-          start: {
+          from: {
             id: "S3",
             side: "L",
             pos: 0.8,
@@ -124,12 +125,12 @@
         },
         {
           segments: [],
-          start: {
+          from: {
             id: "S8",
             side: "T",
             pos: 0.5,
           },
-          end: {
+          to: {
             id: "S6",
             side: "T",
             pos: 0.5,
@@ -138,12 +139,12 @@
         },
         {
           segments: [],
-          start: {
+          from: {
             id: "S6",
             side: "R",
             pos: 0.5,
           },
-          end: {
+          to: {
             id: "S3",
             side: "L",
             pos: 0.3,

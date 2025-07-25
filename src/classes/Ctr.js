@@ -6,7 +6,7 @@ import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { trStyles } from "src/lib/styles";
-import { pathSegments, removeNullSegments } from "src/lib/segments";
+import { pathSegments, removeNullSegments, segsSimplify } from "src/lib/segments";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -16,8 +16,8 @@ export class Ctr extends CbaseElem {
 
   load(transOptions) {
     this.segments = transOptions.segments;
-    this.start = transOptions.start;
-    this.end = transOptions.end;
+    this.from = transOptions.from;
+    this.to = transOptions.to;
     if (transOptions.color) this.color = transOptions.color;
     else delete (this.color);
   }
@@ -94,8 +94,8 @@ export class Ctr extends CbaseElem {
 
   drag(dx, dy) {
     const dragCtx = hCtx.getDragCtx();
-    if (dragCtx.zone == "START") T.dragStartAnchor(this, dx, dy);
-    else if (dragCtx.zone == "END") T.dragEndAnchor(this, dx, dy);
+    if (dragCtx.zone == "FROM") T.dragStartAnchor(this, dx, dy);
+    else if (dragCtx.zone == "TO") T.dragEndAnchor(this, dx, dy);
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
     else T.dragNormalSegment(this, dx, dy);
@@ -105,6 +105,9 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.dragEnd]`);
     this.drag(dx, dy);
     this.segments = removeNullSegments(this.segments);
+    const [segs, dxs, dys, dxe, dye] = segsSimplify(this.segments);
+    this.segments = segs;
+    console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
     if (hCtx.getErrorId() == this.id) {
       return false;
     }
@@ -115,12 +118,12 @@ export class Ctr extends CbaseElem {
 
   getInitialSegments() {
     let segments = [];
-    const [x0, y0] = T.anchorToXY(this.start);
-    const [x1, y1] = T.anchorToXY(this.end);
-    [this.start.oldX, this.start.oldY] = [x0, y0];
-    [this.end.oldX, this.end.oldY] = [x1, y1];
+    const [x0, y0] = T.anchorToXY(this.from);
+    const [x1, y1] = T.anchorToXY(this.to);
+    [this.from.oldX, this.from.oldY] = [x0, y0];
+    [this.to.oldX, this.to.oldY] = [x1, y1];
     segments = T.createSegments(this);
-    // console.warn(`[Ctr.getInitialSegments] (${this.id}) oldX:${this.start.oldX} oldY:${this.start.oldY}`);
+    // console.warn(`[Ctr.getInitialSegments] (${this.id}) oldX:${this.from.oldX} oldY:${this.from.oldY}`);
     // console.log(`[Ctr.getInitialSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
@@ -185,7 +188,7 @@ export class Ctr extends CbaseElem {
   }
 
   myAdjustXy(dx, dy) {
-    console.log(`[Ctr.myAdjustXy] dx:${dx} dy:${dy}`);
+    // console.log(`[Ctr.myAdjustXy] dx:${dx} dy:${dy}`);
     const r = hsm.settings.stateRadiusMm;
     let [ddx, ddy] = this.adjustXy(dx / 2, dy / 2, r);
     this.segments = this.segments.reverse();
@@ -204,7 +207,7 @@ export class Ctr extends CbaseElem {
   }
 
   isIllLegal() {
-    if (this.start.id == this.end.id) return false;
+    if (this.from.id == this.to.id) return false;
     if (this.segments.length == 0) return false;
     function check(side, dir) {
       if ((side == "T" && dir == "S") ||
@@ -220,8 +223,8 @@ export class Ctr extends CbaseElem {
         (side == "L" && dir == "W")) return false;
       return true;
     }
-    if (!check(this.start.side, this.segments[0].dir)) return true;
-    else if (!check2(this.end.side, this.segments[this.segments.length - 1].dir)) return true;
+    if (!check(this.from.side, this.segments[0].dir)) return true;
+    else if (!check2(this.to.side, this.segments[this.segments.length - 1].dir)) return true;
     return false;
   }
 
@@ -254,48 +257,48 @@ export class Ctr extends CbaseElem {
   }
 
   adjustSegments() {
-    console.log(`[Ctr.adjustSegments] oldX:${this.start.oldX} oldY:${this.start.oldY}`);
+    // console.log(`[Ctr.adjustSegments] oldX:${this.from.oldX} oldY:${this.from.oldY}`);
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
-    if (this.start.oldX == undefined || this.start.oldY == undefined) {
+    if (this.from.oldX == undefined || this.from.oldY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
-      [this.start.oldX, this.start.oldY] = T.anchorToXY(this.start);
-      [this.end.oldX, this.end.oldY] = T.anchorToXY(this.end);
+      [this.from.oldX, this.from.oldY] = T.anchorToXY(this.from);
+      [this.to.oldX, this.to.oldY] = T.anchorToXY(this.to);
       return;
     }
-    const elemStart = hElems.getElemById(this.start.id);
+    const elemStart = hElems.getElemById(this.from.id);
     // [xs,ys] new position from canvas
-    let [xs, ys] = this.getDelta(this.start, elemStart);
+    let [xs, ys] = this.getDelta(this.from, elemStart);
     xs += elemStart.geo.xx0;
     ys += elemStart.geo.yy0;
-    let [dxs, dys] = [xs - this.start.oldX, ys - this.start.oldY];
+    let [dxs, dys] = [xs - this.from.oldX, ys - this.from.oldY];
     if (dxs != 0 || dys != 0) {
       [dxs, dys] = this.myAdjustXy(dxs, dys);
     }
-    [this.start.oldX, this.start.oldY] = [xs, ys];
+    [this.from.oldX, this.from.oldY] = [xs, ys];
 
-    const elemEnd = hElems.getElemById(this.end.id);
-    let [xe, ye] = this.getDelta(this.end, elemEnd);
+    const elemEnd = hElems.getElemById(this.to.id);
+    let [xe, ye] = this.getDelta(this.to, elemEnd);
     xe += elemEnd.geo.xx0;
     ye += elemEnd.geo.yy0;
 
-    let [dxe, dye] = [xe - this.end.oldX, ye - this.end.oldY];
+    let [dxe, dye] = [xe - this.to.oldX, ye - this.to.oldY];
     if (dxe != 0 || dye != 0) {
       [dxe, dye] = this.myAdjustXy(-dxe, -dye);
       if (dxe != 0 || dye != 0) console.error(`[Ctr.adjustSegments] BAD dxe:${dxe} dye:${dye}`);
     }
     // this.segments = this.isLegal(this.segments);
 
-    [this.end.oldX, this.end.oldY] = [xe, ye];
+    [this.to.oldX, this.to.oldY] = [xe, ye];
   }
 
   draw() {
-    if (hCtx.getErrorId() == this.start.id || hCtx.getErrorId() == this.end.id) return;
-    const [x0, y0] = T.anchorToXY(this.start);
+    if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
+    const [x0, y0] = T.anchorToXY(this.from);
     [this.geo.x0, this.geo.y0] = [x0, y0];
     let baseColor = this.color;
-    if (!baseColor) baseColor = hElems.getElemById(this.start.id).color;
-    // console.log(`[Ctr.draw] (${this.id}) startId:${this.start.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
+    if (!baseColor) baseColor = hElems.getElemById(this.from.id).color;
+    // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
     const styles = trStyles(baseColor);
     if (this.isIllLegal()) {
       cCtx.lineWidth = styles.lineErrorWidth;
@@ -309,7 +312,7 @@ export class Ctr extends CbaseElem {
   }
 
   adjustChange(changedId) {
-    // if (changedId == this.start.id || changedId == this.end.id || changedId == this.id) {
+    // if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
     // console.log(`[Ctr.adjustChange](${this.id}) changedId:${changedId}`);
     this.adjustSegments();
     // }
@@ -318,16 +321,16 @@ export class Ctr extends CbaseElem {
   makeIdz(x, y, idz) {
     // [x,y] in mm in this tr frame
     // console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
-    let [x0, y0] = T.anchorToXY(this.start);
+    let [x0, y0] = T.anchorToXY(this.from);
     let bestD2 = Number.MAX_VALUE;
-    let bestZone = "END";
+    let bestZone = "TO";
     let bestType;
     let newIdz;
     const maxAnchorD2 = U.pToMmL(hsm.settings.cursorMarginP);
     if (((x - x0) * (x - x0) + (y - y0) * (y - y0) < maxAnchorD2)) {
       // Force an anchor
       return {
-        id: this.id, zone: "START", type: "A", dist2P: 0, x: x, y: y
+        id: this.id, zone: "FROM", type: "A", dist2P: 0, x: x, y: y
       };
     }
     for (let idx in this.segments) {
@@ -353,7 +356,7 @@ export class Ctr extends CbaseElem {
       [x0, y0] = [x1, y1];
       if ((idx == this.segments.length - 1) && (((x - x1) * (x - x1) + (y - y1) * (y - y1)) < maxAnchorD2)) {
         return {
-          id: this.id, zone: "END", type: "A", dist2P: 0, x: x, y: y
+          id: this.id, zone: "TO", type: "A", dist2P: 0, x: x, y: y
         };
       }
       if (d2 <= bestD2) {

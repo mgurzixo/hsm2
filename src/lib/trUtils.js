@@ -2,7 +2,7 @@
 
 import * as U from "src/lib/utils";
 import { hsm, hElems, hCtx } from "src/classes/Chsm";
-import { reverseDir, isHoriz } from "src/lib/segments";
+import { reverseDir, isHoriz, nextXY } from "src/lib/segments";
 import { patchMouseDown } from "src/lib/canvasListeners";
 
 // All distances in mm from folio origin
@@ -44,12 +44,12 @@ export function anchorToXY(anchor) {
 function createSelfSegments(tr) {
   // console.log(`[Ctr.connectSelf]`);
   let segments = [];
-  const [x0, y0] = anchorToXY(tr.start);
-  const [x1, y1] = anchorToXY(tr.end);
-  if (tr.start.side == tr.end.side) {
+  const [x0, y0] = anchorToXY(tr.from);
+  const [x1, y1] = anchorToXY(tr.to);
+  if (tr.from.side == tr.to.side) {
     const [dx, dy] = [x1 - x0, y1 - y0];
     let radius = hsm.settings.maxTransRadiusMm;
-    const side = tr.start.side;
+    const side = tr.from.side;
     let dir1, dir2;
     switch (side) {
       case "T":
@@ -71,7 +71,7 @@ function createSelfSegments(tr) {
     }
   }
   else {
-    segments = U.connectPoints(x0, y0, tr.start.side, x1, y1, tr.end.side, false);
+    segments = U.connectPoints(x0, y0, tr.from.side, x1, y1, tr.to.side, false);
   }
   // console.log(`[Ctr.connectSelf] Segments:${JSON.stringify(segments)}`);
   return segments;
@@ -79,13 +79,13 @@ function createSelfSegments(tr) {
 
 export function createSegments(tr) {
   // TODO avoid making internal transitions
-  if (tr.start.id == tr.end.id) return createSelfSegments(tr);
+  if (tr.from.id == tr.to.id) return createSelfSegments(tr);
   const r = hsm.settings.maxTransRadiusMm * 1.5;
   let segments = [];
-  const [x0, y0] = anchorToXY(tr.start);
-  const [x1, y1] = anchorToXY(tr.end);
-  const side0 = tr.start.side;
-  const side1 = tr.end.side;
+  const [x0, y0] = anchorToXY(tr.from);
+  const [x1, y1] = anchorToXY(tr.to);
+  const side0 = tr.from.side;
+  const side1 = tr.to.side;
   const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
   if (x1 == x0) {
     if (y1 == y0) return segments;
@@ -155,9 +155,9 @@ export function createSegments(tr) {
 }
 
 export function reverseTr(tr) {
-  const temp = tr.start;
-  tr.start = tr.end;
-  tr.end = temp;
+  const temp = tr.from;
+  tr.from = tr.to;
+  tr.to = temp;
   tr.segments = tr.segments.reverse();
   for (const segment of tr.segments) {
     if (segment.dir == "W") segment.dir = "E";
@@ -167,25 +167,6 @@ export function reverseTr(tr) {
     else console.warn(`[trUtils.reverseTr] Unknown dir:${segment.dir}`);
   }
 }
-
-function nextXY(segment, x, y) {
-  switch (segment.dir) {
-    case "N":
-      y -= segment.len;
-      break;
-    case "S":
-      y += segment.len;
-      break;
-    case "W":
-      x -= segment.len;
-      break;
-    case "E":
-      x += segment.len;
-      break;
-  }
-  return [x, y];
-}
-
 
 function prevXY(segment, x, y) {
   switch (segment.dir) {
@@ -208,7 +189,7 @@ function prevXY(segment, x, y) {
 
 
 export function dragNormalSegment(tr, dx, dy) {
-  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) START segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) FROM segments:${JSON.stringify(tr.segments)}`);
   // console.log(`[trUtils.dragNormalSegment] ------------------------------------------`);
   const dragCtx = hCtx.getDragCtx();
   // console.log(`[trUtils.dragNormalSegment] (${tr.id})  xxD:${dragCtx.xxD.toFixed(3)} dx0:${dx0.toFixed(3)} dx:${dx.toFixed(3)})`);
@@ -297,13 +278,13 @@ export function dragNormalSegment(tr, dx, dy) {
     seg2.len = -seg2.len;
     seg2.dir = reverseDir(seg2.dir);
   }
-  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragNormalSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) nbSeg:${tr.segments.length} seg#:${nA} l2:${segA.len}`);
 }
 
 export function dragFirstSegment(tr, dx, dy) {
   if (dx == 0 && dy == 0) return;
-  // console.log(`[trUtils.dragFirstSegment] (${tr.id}) START segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragFirstSegment] (${tr.id}) FROM segments:${JSON.stringify(tr.segments)}`);
   const dragCtx = hCtx.getDragCtx();
   const [x, y] = [dragCtx.xx0 + dx, dragCtx.yy0 + dy];
   // console.log(`[trUtils.dragFirstSegment] (${tr.id}) (x:${x}, y:${y})`);
@@ -313,7 +294,7 @@ export function dragFirstSegment(tr, dx, dy) {
   const seg2 = {};
   const seg3 = {};
   const seg4 = {};
-  const [xs, ys] = anchorToXY(tr.start);
+  const [xs, ys] = anchorToXY(tr.from);
   const [xe, ye] = nextXY(segA, xs, ys);
   const [d, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: xs, y: ys }, { x: xe, y: ye });
   // console.log(`[trUtils.dragFirstSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
@@ -353,12 +334,12 @@ export function dragFirstSegment(tr, dx, dy) {
   dragCtx.zone = 2;
   patchMouseDown();
 
-  console.log(`[trUtils.dragFirstSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
+  console.log(`[trUtils.dragFirstSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
 }
 
 export function dragLastSegment(tr, dx, dy) {
   if (dx == 0 && dy == 0) return;
-  // console.log(`[trUtils.dragLastSegment] (${tr.id}) START segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragLastSegment] (${tr.id}) FROM segments:${JSON.stringify(tr.segments)}`);
   const dragCtx = hCtx.getDragCtx();
   const [x, y] = [dragCtx.xx0 + dx, dragCtx.yy0 + dy];
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) (x:${x}, y:${y})`);
@@ -369,7 +350,7 @@ export function dragLastSegment(tr, dx, dy) {
   const seg2 = {};
   const seg3 = {};
   const seg4 = {};
-  const [xs, ys] = anchorToXY(tr.end);
+  const [xs, ys] = anchorToXY(tr.to);
   const [xe, ye] = prevXY(segA, xs, ys);
   const [d, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: xs, y: ys }, { x: xe, y: ye });
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
@@ -408,16 +389,16 @@ export function dragLastSegment(tr, dx, dy) {
   dragCtx.zone = tr.segments.length - 3;
   patchMouseDown();
   console.log(`[trUtils.dragLastSegment] (${tr.id}) xxD:${dx} yyD:${dy}`);
-  // console.log(`[trUtils.dragLastSegment] (${tr.id}) END segments:${JSON.stringify(tr.segments)}`);
+  // console.log(`[trUtils.dragLastSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
 }
 
 export function dragEndAnchor(tr, dx, dy) {
   const dragCtx = hCtx.getDragCtx();
   const [theElem, theSide, thePos] = tr.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
   // console.log(`[trUtils.dragEndAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
-  tr.end.id = theElem.id;
-  tr.end.side = theSide;
-  tr.end.pos = thePos;
+  tr.to.id = theElem.id;
+  tr.to.side = theSide;
+  tr.to.pos = thePos;
   tr.segments = tr.getInitialSegments();
 }
 
@@ -426,8 +407,8 @@ export function dragStartAnchor(tr, dx, dy) {
   const dragCtx = hCtx.getDragCtx();
   const [theElem, theSide, thePos] = tr.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
   // console.log(`[trUtils.dragStartAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
-  tr.start.id = theElem.id;
-  tr.start.side = theSide;
-  tr.start.pos = thePos;
+  tr.from.id = theElem.id;
+  tr.from.side = theSide;
+  tr.from.pos = thePos;
   tr.segments = tr.getInitialSegments();
 }

@@ -187,8 +187,8 @@ export class CbaseElem {
       else cursor = "row-resize";
     }
     else switch (idz.zone) {
-      case "START":
-      case "END":
+      case "FROM":
+      case "TO":
         cursor = "url(/assets/anchor16x16.png) 8 8,default";
         break;
       case "M":

@@ -158,12 +158,12 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.insertTr] (x:${(x - this.geo.x0).toFixed(1)} y:${(y - this.geo.y0).toFixed(1)})`);
     const trOptions = {
       segments: [],
-      start: {
+      from: {
         id: this.id,
         side: idz.zone,
         pos: pos1,
       },
-      end: {
+      to: {
         id: this.id,
         side: idz.zone,
         pos: pos2,
@@ -179,7 +179,7 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.insertTr] (${this.id}) xx0:${xx0.toFixed()} yy0:${yy0.toFixed()}`);
     const dragCtx = {
       id: myTr.id,
-      zone: "END",
+      zone: "TO",
       type: "A",
       xx0: xx0 + x,
       yy0: yy0 + y,
@@ -192,7 +192,7 @@ export class Cstate extends CbaseState {
     // const newIdz = myTr.makeIdz(x, y, this.idz());
     const newIdz = {
       id: myTr.id,
-      zone: "END", x: x, y: y
+      zone: "TO", x: x, y: y
     };
     hCtx.setIdz(newIdz);
     modeRef.value = "";

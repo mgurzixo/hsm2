@@ -184,3 +184,137 @@ export function pathSegments(segments, x0, y0) {
   cCtx.stroke();
   if (curDir) drawArrow(cCtx, x, y, curDir);
 }
+
+export function nextXY(segment, x, y) {
+  switch (segment.dir) {
+    case "N":
+      y -= segment.len;
+      break;
+    case "S":
+      y += segment.len;
+      break;
+    case "W":
+      x -= segment.len;
+      break;
+    case "E":
+      x += segment.len;
+      break;
+  }
+  return [x, y];
+}
+
+function nearlyEqual(x, y) {
+  if (Math.abs(x - y) < hsm.settings.smallestSegMm) return true;
+  return false;
+}
+
+// Cf. https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
+function bpIntersect(bpA, bpB) {
+  const dX = bpA.to.x - bpA.from.x;
+  const dY = bpA.to.y - bpA.from.y;
+  const determinant = dX * (bpB.to.y - bpB.from.y) - (bpB.to.x - bpB.from.x) * dY;
+  if (determinant === 0) {
+    // parallel lines
+    if ((bpA.from.x != bpB.from.x) || (bpA.from.y != bpB.to.y)) return null;
+    // Aligned
+    if (bpA.from.x == bpB.to.x) {
+      // Vertical
+      if (Math.max(bpA.from.y, bpA.to.y) < Math.max(bpA.from.y, bpA.to.y)) return null;
+      if (Math.min(bpA.from.y, bpA.to.y) > Math.min(bpA.from.y, bpA.to.y)) return null;
+      return bpB.to;
+    }
+    else {
+      // Horizontal
+      if (Math.max(bpA.from.x, bpA.to.x) < Math.max(bpA.from.x, bpA.to.x)) return null;
+      if (Math.min(bpA.from.x, bpA.to.x) > Math.min(bpA.from.x, bpA.to.x)) return null;
+      return bpB.to;
+    }
+  }
+  const lambda = ((bpB.to.y - bpB.from.y) * (bpB.to.x - bpA.from.x) + (bpB.from.x - bpB.to.x) * (bpB.to.y - bpA.from.y)) / determinant;
+
+  const gamma = ((bpA.from.y - bpA.to.y) * (bpB.to.x - bpA.from.x) + dX * (bpB.to.y - bpA.from.y)) / determinant;
+
+  // check if there is an intersection
+  if (!(0 <= lambda && lambda <= 1) || !(0 <= gamma && gamma <= 1)) return null;
+  let p = {
+    x: bpA.from.x + lambda * dX,
+    y: bpA.from.y + lambda * dY
+  };
+  console.log(`[segments.segsToBps] lambda:${lambda.toFixed(2)} gamma:${gamma.toFixed(2)} p:(x:${p.x}, y:${p.y})`);
+  return p;
+};
+
+function segsToBps(segments, x = 0, y = 0) {
+  const tabBps = [];
+  let [x0, y0] = [x, y];
+  let x1, y1 = [0, 0];
+  for (let seg of segments) {
+    if (seg.len == 0) continue; // Remove empty segments
+    [x1, y1] = nextXY(seg, x0, y0);
+    tabBps.push({ from: { x: x0, y: y0 }, to: { x: x1, y: y1 } });
+    [x0, y0] = [x1, y1];
+  }
+  // console.log(`[segments.segsToBps] tabBps:${JSON.stringify(tabBps)}`);
+  return tabBps;
+}
+
+function bpsToSegs(tabBps) {
+  const segments = [];
+  for (let bp of tabBps) {
+    let dir, len;
+    if (bp.from.y == bp.to.y) {
+      // Horizontal
+      if (bp.to.x > bp.from.x) {
+        dir = "E";
+        len = bp.to.x - bp.from.x;
+      }
+      else {
+        dir = "W";
+        len = bp.from.x - bp.to.x;
+      }
+    }
+    else {
+      if (bp.to.y > bp.from.y) {
+        dir = "S";
+        len = bp.to.y - bp.from.y;
+      }
+      else {
+        dir = "N";
+        len = bp.from.y - bp.to.y;
+      }
+    }
+    segments.push({ len: len, dir: dir });
+  }
+  // console.log(`[segments.bpsToSegs] segments:${JSON.stringify(segments)}`);
+  return segments;
+}
+
+function bpsRemoveLoops(tabBps) {
+  const nbBps = tabBps.length;
+  const res = [];
+  for (let ia = 0; ia < nbBps; ia++) {
+    const bpA = tabBps[ia];
+    let found = false;
+    for (let ib = ia + 2; ib < nbBps; ib++) {
+      const p = bpIntersect(tabBps[ia], tabBps[ib]);
+      if (p == null) continue;
+      console.log(`[segments.bpsRemoveLoops] found intersect #${ia} #${ib}`);
+      res.push({ from: bpA.from, to: p });
+      res.push({ from: p, to: tabBps[ib].to });
+      ia = ib;
+      found = true;
+      break;
+    }
+    if (!found) res.push(bpA);
+  }
+  console.log(`[segments.bpsRemoveLoops] tabBps:${JSON.stringify(tabBps)}`);
+  console.log(`[segments.bpsRemoveLoops] res:${JSON.stringify(res)}`);
+  return res;
+}
+
+export function segsSimplify(segments) {
+  const tabBps = segsToBps(segments);
+  const tabBps1 = bpsRemoveLoops(tabBps);
+  const segs1 = bpsToSegs(tabBps1);
+  return [segs1, 0, 0, 0, 0];
+}
