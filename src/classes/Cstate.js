@@ -12,7 +12,7 @@ class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
     this.isBaseState = true;
-    console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
+    // console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
   }
 
 

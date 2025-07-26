@@ -48,26 +48,17 @@ function createSelfSegments(tr) {
   const [x1, y1] = anchorToXY(tr.to);
   if (tr.from.side == tr.to.side) {
     const [dx, dy] = [x1 - x0, y1 - y0];
-    let radius = hsm.settings.maxTransRadiusMm;
+    const radius = hsm.settings.maxTransRadiusMm;
+    const dsl = hsm.settings.defaultSegmentLengthMm;
     const side = tr.from.side;
-    let dir1, dir2;
-    switch (side) {
-      case "T":
-      case "B":
-        dir1 = side == "T" ? "N" : "S";
-        dir2 = side == "T" ? "S" : "N";
-        segments.push({ dir: dir1, len: radius * 1.5 });
-        segments.push({ dir: dx > 0 ? "E" : "W", len: Math.abs(dx) });
-        segments.push({ dir: dir2, len: radius * 1.5 });
-        break;
-      case "R":
-      case "L":
-        dir1 = side == "R" ? "E" : "W";
-        dir2 = side == "R" ? "W" : "E";
-        segments.push({ dir: dir1, len: radius * 1.5 });
-        segments.push({ dir: dy > 0 ? "S" : "N", len: Math.abs(dy) });
-        segments.push({ dir: dir2, len: radius * 1.5 });
-        break;
+    if (U.isHoriz(side)) {
+      segments.push({ dir: side == "T" ? "N" : "S", len: dsl });
+      segments.push({ dir: dx > 0 ? "E" : "W", len: Math.abs(dx) });
+      segments.push({ dir: side == "T" ? "S" : "N", len: dsl });
+    } else {
+      segments.push({ dir: side == "R" ? "E" : "W", len: dsl });
+      segments.push({ dir: dy > 0 ? "S" : "N", len: Math.abs(dy) });
+      segments.push({ dir: side == "R" ? "W" : "E", len: dsl });
     }
   }
   else {
@@ -80,7 +71,8 @@ function createSelfSegments(tr) {
 export function createSegments(tr) {
   // TODO avoid making internal transitions
   if (tr.from.id == tr.to.id) return createSelfSegments(tr);
-  const r = hsm.settings.maxTransRadiusMm * 1.5;
+  // const r = hsm.settings.maxTransRadiusMm * 1.5;
+  const dsl = hsm.settings.defaultSegmentLengthMm;
   let segments = [];
   const [x0, y0] = anchorToXY(tr.from);
   const [x1, y1] = anchorToXY(tr.to);
@@ -90,64 +82,45 @@ export function createSegments(tr) {
   if (x1 == x0) {
     if (y1 == y0) return segments;
   }
-  switch (side0) {
-    case "B":
-    case "T": {
-      switch (side1) {
-        case "B":
-        case "T": {
-          if (side0 == side1) {
-            if (side0 == "T") segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? r + dy : r });
-            else segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? r : r + dy });
-            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-            if (side0 == "T") segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? r : r + dy });
-            else segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? r + dy : r });
-          } else {
-            segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
-            segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-            segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
-          }
-        }
-          break;
-        case "R":
-        case "L": {
-          segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-        }
-          break;
+  if (U.isHoriz(side0)) {
+    if (U.isHoriz(side1)) {
+      if (side0 == side1) {
+        if (side0 == "T") segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? dsl + dy : dsl });
+        else segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? dsl : dsl + dy });
+        segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+        if (side0 == "T") segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? dsl : dsl + dy });
+        else segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? dsl + dy : dsl });
+      } else {
+        segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
+        segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+        segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
       }
-      break;
     }
-    case "R":
-    case "L": {
-      switch (side1) {
-        case "B":
-        case "T": {
-          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-          if (y1 != y0) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+    else {
+      segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+      segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+    }
+  }
+  else {
+    if (U.isHoriz(side1)) {
+      segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+      if (y1 != y0) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+    } else {
+      // console.log(`[trUtils.connectPoints] side0:${side0} side1:${side1}`);
+      if (side0 == side1) {
+        if (side0 == "R") segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? dsl : dsl + dx });
+        else segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? dsl + dx : dsl });
+        segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+        if (side0 == "R") segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? dsl + dx : dsl });
+        else segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? dsl : dsl + dx });
+      } else {
+        if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+        else {
+          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
+          segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
         }
-          break;
-        case "R":
-        case "L": {
-          // console.log(`[trUtils.connectPoints] side0:${side0} side1:${side1}`);
-          if (side0 == side1) {
-            if (side0 == "R") segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? r : r + dx });
-            else segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? r + dx : r });
-            segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-            if (side0 == "R") segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? r + dx : r });
-            else segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? r : r + dx });
-          } else {
-            if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-            else {
-              segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
-              segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-              segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
-            }
-          }
-        }
-          break;
       }
-      break;
     }
   }
   // console.log(`[trUtils.connectPoints] Segments:${JSON.stringify(segments)}`);

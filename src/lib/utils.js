@@ -64,32 +64,6 @@ export function myClamp(dx, x0, len0, x1, len1) {
   return dx;
 }
 
-// export function drawLineWithArrows(x0, y0, x1, y1, aWidth, aLength, arrowStart, arrowEnd) {
-//   var dx = x1 - x0;
-//   var dy = y1 - y0;
-//   var angle = Math.atan2(dy, dx);
-//   var length = Math.sqrt(dx * dx + dy * dy);
-//   //
-//   cCtx.translate(x0, y0);
-//   cCtx.rotate(angle);
-//   cCtx.beginPath();
-//   cCtx.moveTo(0, 0);
-//   cCtx.lineTo(length, 0);
-//   if (arrowStart) {
-//     cCtx.moveTo(aLength, -aWidth);
-//     cCtx.lineTo(0, 0);
-//     cCtx.lineTo(aLength, aWidth);
-//   }
-//   if (arrowEnd) {
-//     cCtx.moveTo(length - aLength, -aWidth);
-//     cCtx.lineTo(length, 0);
-//     cCtx.lineTo(length - aLength, aWidth);
-//   }
-//   //
-//   cCtx.stroke();
-//   cCtx.setTransform(1, 0, 0, 1, 0, 0);
-// }
-
 export async function nextTick() {
   return new Promise((res) => {
     V.nextTick(() => res(true));
@@ -241,9 +215,20 @@ export function goesToOutside(side, dir) {
   return dir == (side == "L" ? "W" : "E");
 }
 
+
+export function goesToInside(side, dir) {
+  if (isHoriz(side)) return dir == (side == "T" ? "S" : "N");
+  return dir == (side == "L" ? "E" : "W");
+}
+
 export function comesFromOutside(side, dir) {
   if (isHoriz(side)) return dir == (side == "T" ? "S" : "N");
   return dir == (side == "L" ? "E" : "W");
+}
+
+export function comesFromInside(side, dir) {
+  if (isHoriz(side)) return dir == (side == "T" ? "N" : "S");
+  return dir == (side == "L" ? "W" : "E");
 }
 
 export function mmToPL(lMm) {

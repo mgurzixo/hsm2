@@ -13,6 +13,7 @@
     cursorMarginP: 9,
     maxTransRadiusMm: 4,
     initialTransLength: 2,
+    defaultSegmentLengthMm: 6,
     arrowLengthMm: 3,
     arrowWidthMm: 0.75,
     smallestSegMm: 1,
@@ -81,20 +82,20 @@
         scale: 1,
       },
       trs: [
-        // {
-        //   segments: [],
-        //   from: {
-        //     id: "S2",
-        //     side: "T",
-        //     pos: 0.0,
-        //   },
-        //   to: {
-        //     id: "S2",
-        //     side: "T",
-        //     pos: 0.2,
-        //   },
-        //   isInternal: false,
-        // },
+        {
+          segments: [],
+          from: {
+            id: "S2",
+            side: "T",
+            pos: 0.6,
+          },
+          to: {
+            id: "S2",
+            side: "T",
+            pos: 0.8,
+          },
+          isInternal: false,
+        },
         {
           segments: [],
           from: {

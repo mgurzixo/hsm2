@@ -7,6 +7,7 @@ import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { trStyles } from "src/lib/styles";
 import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
+import { DevToolsTarget } from "puppeteer";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -218,13 +219,30 @@ export class Ctr extends CbaseElem {
 
   isLegal() {
     if (this.segments.length == 0) return true;
-    if (this.from.id == this.to.id) return true;
+    const fromState = hElems.getElemById(this.from.id);
+    const goesToOutside = U.goesToOutside(this.from.side, this.segments[0].dir);
+    const goesToInside = U.goesToInside(this.from.side, this.segments[0].dir);
     const lastSeg = this.segments[this.segments.length - 1];
     const comesFromOutside = U.comesFromOutside(this.to.side, lastSeg.dir);
-    const goesToOutside = U.goesToOutside(this.from.side, this.segments[0].dir);
-    if (comesFromOutside && goesToOutside) return true;
-    const fromState = hElems.getElemById(this.from.id);
-    if (fromState.isSuperstate(this.to.id) && comesFromOutside) return true;
+    const comesFromInside = U.comesFromInside(this.to.side, lastSeg.dir);
+    if (this.isInternal) {
+      if (!comesFromInside) return false;
+      if (this.from.id == this.to.id) {
+        if (goesToInside) return true;
+        return false;
+      }
+      if (fromState.isSubstate(this.to.id)) {
+        if (goesToOutside) return true;
+        return false;
+      }
+      if (fromState.isSuperstate(this.to.id)) {
+        if (comesFromOutside) return true;
+        return false;
+      }
+    }
+    else {
+      //
+    }
     return false;
   }
 
@@ -369,6 +387,4 @@ export class Ctr extends CbaseElem {
     } newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
     return newIdz;
   }
-
-
 }
