@@ -12,27 +12,22 @@ class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
     this.isBaseState = true;
+    console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
   }
 
 
   isSubstate(superstateId) {
-    for (let state = this; state; state = state.parent) {
-      if (parent.id == superstateId) return true;
+    for (let state = this; state.parent; state = state.parent) {
+      if (state.parent.id == superstateId) return true;
     }
     return false;
   }
 
   isSuperstate(substateId) {
-    for (let state = hElems.getElemById(substateId); state; state = state.parent) {
-      if (parent == this) return true;
+    for (let state = hElems.getElemById(substateId); state.parent; state = state.parent) {
+      if (state.parent.id == this.id) return true;
     }
     return false;
-  }
-
-  goesOutside(side, dir) {
-    if (U.isHoriz(side)) {
-      if (dir)
-    }
   }
 }
 
@@ -88,7 +83,7 @@ export class Cstate extends CbaseState {
   }
 
   insertState(x, y) {
-    // console.log(`[Cstate.dragStartP] Inserting state x:${x.toFixed()}`);
+    // console.log(`[Cstate.insertState] Inserting state x:${x.toFixed()}`);
     if (!this.children[0]) {
       const rid = "R" + hsm.newSernum();
       const regionOptions = {
@@ -120,7 +115,7 @@ export class Cstate extends CbaseState {
       },
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
-    // console.log(`[Cstate.dragStartP] New state id:${myState?.id}`);
+    // console.log(`[Cstate.insertState] New state id:${myState?.id} parent:${myState.parent}`);
     hsm.hElems.insertElem(myState);
 
     this.children[0].children.push(myState);

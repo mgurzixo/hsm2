@@ -99,6 +99,20 @@
           segments: [],
           from: {
             id: "S2",
+            side: "T",
+            pos: 0.1,
+          },
+          to: {
+            id: "S6",
+            side: "T",
+            pos: 0.3,
+          },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          from: {
+            id: "S2",
             side: "R",
             pos: 0.2,
           },

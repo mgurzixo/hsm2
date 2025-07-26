@@ -2,7 +2,7 @@
 
 import * as U from "src/lib/utils";
 import { hsm, hElems, hCtx } from "src/classes/Chsm";
-import { reverseDir, isHoriz, nextXY } from "src/lib/segments";
+import { reverseDir, nextXY } from "src/lib/segments";
 import { patchMouseDown } from "src/lib/canvasListeners";
 
 // All distances in mm from folio origin
@@ -205,7 +205,7 @@ export function dragNormalSegment(tr, dx, dy) {
     dragCtx.seg1Orig = { len: seg1.len, dir: seg1.dir };
     dragCtx.seg2Orig = { len: seg2.len, dir: seg2.dir };
   }
-  const hDir = isHoriz(segA.dir);
+  const hDir = U.isHoriz(segA.dir);
   const dir1 = dragCtx.seg1Orig.dir;
   const len1 = dragCtx.seg1Orig.len;
   const dir2 = dragCtx.seg2Orig.dir;
@@ -302,7 +302,7 @@ export function dragFirstSegment(tr, dx, dy) {
   seg1.dir = segA.dir;
 
 
-  if (isHoriz(segB.dir)) seg2.len = (segB.dir == "E" ? dx : -dx); // OK
+  if (U.isHoriz(segB.dir)) seg2.len = (segB.dir == "E" ? dx : -dx); // OK
   else seg2.len = (segB.dir == "S" ? dy : -dy);
   seg2.dir = segB.dir;
   if (seg2.len < 0) {
@@ -319,7 +319,7 @@ export function dragFirstSegment(tr, dx, dy) {
 
   console.log(`[trUtils.dragFirstSegment] segA:${segA.dir} dy:${dy}`);
   console.log(`[trUtils.dragFirstSegment] segB:${segB.dir} dx:${dx}`);
-  if (isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? -dx : dx);
+  if (U.isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? -dx : dx);
   else seg4.len = segB.len + (segB.dir == "N" ? dy : -dy);
   seg4.dir = segB.dir;
   if (seg4.len < 0) {
@@ -358,7 +358,7 @@ export function dragLastSegment(tr, dx, dy) {
   seg1.dir = segA.dir;
 
   console.log(`[trUtils.dragLastSegment] segA:${segA.dir} dy:${dy}`);
-  if (isHoriz(segA.dir)) seg2.len = (segA.dir == "E" ? -dy : dy);
+  if (U.isHoriz(segA.dir)) seg2.len = (segA.dir == "E" ? -dy : dy);
   else seg2.len = (segA.dir == "S" ? -dx : dx);
   seg2.dir = segB.dir;
   if (seg2.len < 0) {
@@ -374,7 +374,7 @@ export function dragLastSegment(tr, dx, dy) {
   }
 
   console.log(`[trUtils.dragLastSegment] segB:${segB.dir} dx:${dx}`);
-  if (isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? dx : -dx);
+  if (U.isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? dx : -dx);
   else seg4.len = segB.len + (segB.dir == "S" ? dy : -dy);
   seg4.dir = segB.dir;
   if (seg4.len < 0) {

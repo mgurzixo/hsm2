@@ -235,6 +235,17 @@ export function isHoriz(dir) {
   console.error(`[utils.isHoriz] Unknown dir:${dir}`);
 }
 
+
+export function goesToOutside(side, dir) {
+  if (isHoriz(side)) return dir == (side == "T" ? "N" : "S");
+  return dir == (side == "L" ? "W" : "E");
+}
+
+export function comesFromOutside(side, dir) {
+  if (isHoriz(side)) return dir == (side == "T" ? "S" : "N");
+  return dir == (side == "L" ? "E" : "W");
+}
+
 export function mmToPL(lMm) {
   return Math.round(lMm * hsm.scalePhy());
 }

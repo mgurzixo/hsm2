@@ -217,28 +217,15 @@ export class Ctr extends CbaseElem {
   }
 
   isLegal() {
-    if (this.from.id == this.to.id) return true;
-    const fromState = hElems.getElemById(this.from.id);
-    const toState = hElems.getElemById(this.to.id);
-    if (fromState.isSuperstate(toState.id)) return true;
     if (this.segments.length == 0) return true;
-    function check(side, dir) {
-      if ((side == "T" && dir == "S") ||
-        (side == "R" && dir == "W") ||
-        (side == "B" && dir == "N") ||
-        (side == "L" && dir == "E")) return true;
-      return false;
-    }
-    function check1(side, dir) {
-      if ((side == "T" && dir == "N") ||
-        (side == "R" && dir == "E") ||
-        (side == "B" && dir == "S") ||
-        (side == "L" && dir == "W")) return true;
-      return false;
-    }
-    if (!check(this.from.side, this.segments[0].dir)) return false;
-    else if (!check1(this.to.side, this.segments[this.segments.length - 1].dir)) return false;
-    return true;
+    if (this.from.id == this.to.id) return true;
+    const lastSeg = this.segments[this.segments.length - 1];
+    const comesFromOutside = U.comesFromOutside(this.to.side, lastSeg.dir);
+    const goesToOutside = U.goesToOutside(this.from.side, this.segments[0].dir);
+    if (comesFromOutside && goesToOutside) return true;
+    const fromState = hElems.getElemById(this.from.id);
+    if (fromState.isSuperstate(this.to.id) && comesFromOutside) return true;
+    return false;
   }
 
   // Get delta to add to [xx0,yy0]
