@@ -11,6 +11,28 @@ import { stateStyles } from "src/lib/styles";
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
+    this.isBaseState = true;
+  }
+
+
+  isSubstate(superstateId) {
+    for (let state = this; state; state = state.parent) {
+      if (parent.id == superstateId) return true;
+    }
+    return false;
+  }
+
+  isSuperstate(substateId) {
+    for (let state = hElems.getElemById(substateId); state; state = state.parent) {
+      if (parent == this) return true;
+    }
+    return false;
+  }
+
+  goesOutside(side, dir) {
+    if (U.isHoriz(side)) {
+      if (dir)
+    }
   }
 }
 
@@ -395,7 +417,7 @@ export class Cstate extends CbaseState {
     const styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
     // Draw state background
     cCtx.fillStyle = styles.bg;
-    this.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
+    U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.fill();
     // Draw state title background
     // console.log(`[Cstate.draw] titleBgs[0]:${styles.titleBgs[0]} titleBgs[1]:${styles.titleBgs[1]}`);
@@ -415,7 +437,7 @@ export class Cstate extends CbaseState {
       cCtx.strokeStyle = hsm.settings.styles.silhouetteSelected;
     }
     // cCtx.rect(x0P, y0P, widthP, heightP);
-    this.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
+    U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.stroke();
     // Draw title line
     cCtx.lineWidth = styles.titleLineWidth;

@@ -16,18 +16,6 @@ export function reverseDir(dir) {
   }
 }
 
-export function isHoriz(dir) {
-  switch (dir) {
-    case "N":
-    case "S":
-      return false;
-    case "W":
-    case "E":
-      return true;
-  }
-  console.error(`[trUtils.isHoriz] Unknown dir:${dir}`);
-}
-
 export function drawArrow(cCtx, x, y, dir) {
   // console.log(`[utils.drawArrow] dir ${dir}`);
   function C(val) {
@@ -312,7 +300,13 @@ function bpsRemoveLoops(tabBps) {
   return res;
 }
 
-export function segsSimplify(segments) {
+function segsManageStartSegment(tr) {
+  const segments = tr.segments;
+  if (U.isHoriz(tr.from.side) != U.isHoriz(tr.seg[0])) return this.segments;
+
+}
+
+export function segsNormalise(segments) {
   const tabBps = segsToBps(segments);
   const tabBps1 = bpsRemoveLoops(tabBps);
   const segs1 = bpsToSegs(tabBps1);

@@ -60,18 +60,19 @@ export class CbaseElem {
     console.warn(`[CbaseElem.load] this:${this.id}`);
   }
 
-  pathRoundedRectP(px, py, pwidth, pheight, pradius) {
-    cCtx.beginPath();
-    cCtx.moveTo(px + pradius, py);
-    cCtx.lineTo(px + pwidth - pradius, py);
-    cCtx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
-    cCtx.lineTo(px + pwidth, py + pheight - pradius);
-    cCtx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
-    cCtx.lineTo(px + pradius, py + pheight);
-    cCtx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
-    cCtx.lineTo(px, py + pradius);
-    cCtx.quadraticCurveTo(px, py, px + pradius, py);
-    cCtx.closePath();
+  onLoaded() {
+    // Called when everything is loaded
+    for (let child of this.children) {
+      child.onLoaded();
+    }
+  }
+
+  isKindOfState() {
+    return this.isBaseState == true;
+  }
+
+  isKindOfTr() {
+    return this.isBaseTr == true;
   }
 
   draw() {
@@ -118,8 +119,6 @@ export class CbaseElem {
   pToMmXY(xP, yP) {
     return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
   }
-
-
 
   raiseChild(childId) {
     const c = [];
@@ -237,10 +236,4 @@ export class CbaseElem {
     return false;
   }
 
-  onLoaded() {
-    // Called when everything is loaded
-    for (let child of this.children) {
-      child.onLoaded();
-    }
-  }
 }

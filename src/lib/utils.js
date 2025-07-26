@@ -200,8 +200,39 @@ export function distToSegmentSquared(p, v, w) {
   return [d2, t];
 }
 
+export function pathRoundedRectP(px, py, pwidth, pheight, pradius) {
+  cCtx.beginPath();
+  cCtx.moveTo(px + pradius, py);
+  cCtx.lineTo(px + pwidth - pradius, py);
+  cCtx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
+  cCtx.lineTo(px + pwidth, py + pheight - pradius);
+  cCtx.quadraticCurveTo(px + pwidth, py + pheight, px + pwidth - pradius, py + pheight);
+  cCtx.lineTo(px + pradius, py + pheight);
+  cCtx.quadraticCurveTo(px, py + pheight, px, py + pheight - pradius);
+  cCtx.lineTo(px, py + pradius);
+  cCtx.quadraticCurveTo(px, py, px + pradius, py);
+  cCtx.closePath();
+}
+
 export function distToSegment(p, v, w) {
   return Math.sqrt(distToSegmentSquared(p, v, w));
+}
+
+export function isHoriz(dir) {
+  // Dir can be a side or a dir
+  switch (dir) {
+    case "N":
+    case "S":
+    case "L":
+    case "R":
+      return false;
+    case "W":
+    case "E":
+    case "T":
+    case "B":
+      return true;
+  }
+  console.error(`[utils.isHoriz] Unknown dir:${dir}`);
 }
 
 export function mmToPL(lMm) {

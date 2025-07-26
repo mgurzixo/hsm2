@@ -6,12 +6,13 @@ import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { trStyles } from "src/lib/styles";
-import { pathSegments, removeNullSegments, segsSimplify } from "src/lib/segments";
+import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
     this.lineWidth = 1.5;
+    this.isBaseTr = true;
   }
 
   load(transOptions) {
@@ -84,8 +85,13 @@ export class Ctr extends CbaseElem {
         type: idz.type,
         xx0: idz.x,
         yy0: idz.y,
+        tr0: {
+          from: structuredClone(this.from),
+          to: structuredClone(this.to),
+          segments: structuredClone(this.segments)
+        }
       };
-      // console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
+      console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
       hCtx.setDragCtx(dragCtx);
     }
     window.windump = true;
@@ -105,8 +111,12 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.dragEnd]`);
     this.drag(dx, dy);
     this.segments = removeNullSegments(this.segments);
-    const [segs, dxs, dys, dxe, dye] = segsSimplify(this.segments);
+    const [segs, dxs, dys, dxe, dye] = segsNormalise(this.segments);
     this.segments = segs;
+    delete this.from.prevX;
+    delete this.from.prevY;
+    delete this.to.prevX;
+    delete this.to.prevY;
     console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
     if (hCtx.getErrorId() == this.id) {
       return false;
@@ -120,10 +130,10 @@ export class Ctr extends CbaseElem {
     let segments = [];
     const [x0, y0] = T.anchorToXY(this.from);
     const [x1, y1] = T.anchorToXY(this.to);
-    [this.from.oldX, this.from.oldY] = [x0, y0];
-    [this.to.oldX, this.to.oldY] = [x1, y1];
+    [this.from.prevX, this.from.prevY] = [x0, y0];
+    [this.to.prevX, this.to.prevY] = [x1, y1];
     segments = T.createSegments(this);
-    // console.warn(`[Ctr.getInitialSegments] (${this.id}) oldX:${this.from.oldX} oldY:${this.from.oldY}`);
+    // console.warn(`[Ctr.getInitialSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
     // console.log(`[Ctr.getInitialSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
@@ -206,26 +216,29 @@ export class Ctr extends CbaseElem {
     return [0, 0];
   }
 
-  isIllLegal() {
-    if (this.from.id == this.to.id) return false;
-    if (this.segments.length == 0) return false;
+  isLegal() {
+    if (this.from.id == this.to.id) return true;
+    const fromState = hElems.getElemById(this.from.id);
+    const toState = hElems.getElemById(this.to.id);
+    if (fromState.isSuperstate(toState.id)) return true;
+    if (this.segments.length == 0) return true;
     function check(side, dir) {
       if ((side == "T" && dir == "S") ||
         (side == "R" && dir == "W") ||
         (side == "B" && dir == "N") ||
-        (side == "L" && dir == "E")) return false;
-      return true;
+        (side == "L" && dir == "E")) return true;
+      return false;
     }
-    function check2(side, dir) {
+    function check1(side, dir) {
       if ((side == "T" && dir == "N") ||
         (side == "R" && dir == "E") ||
         (side == "B" && dir == "S") ||
-        (side == "L" && dir == "W")) return false;
-      return true;
+        (side == "L" && dir == "W")) return true;
+      return false;
     }
-    if (!check(this.from.side, this.segments[0].dir)) return true;
-    else if (!check2(this.to.side, this.segments[this.segments.length - 1].dir)) return true;
-    return false;
+    if (!check(this.from.side, this.segments[0].dir)) return false;
+    else if (!check1(this.to.side, this.segments[this.segments.length - 1].dir)) return false;
+    return true;
   }
 
   // Get delta to add to [xx0,yy0]
@@ -257,13 +270,13 @@ export class Ctr extends CbaseElem {
   }
 
   adjustSegments() {
-    // console.log(`[Ctr.adjustSegments] oldX:${this.from.oldX} oldY:${this.from.oldY}`);
+    // console.log(`[Ctr.adjustSegments] prevX:${this.from.prevX} prevY:${this.from.prevY}`);
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
-    if (this.from.oldX == undefined || this.from.oldY == undefined) {
+    if (this.from.prevX == undefined || this.from.prevY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
-      [this.from.oldX, this.from.oldY] = T.anchorToXY(this.from);
-      [this.to.oldX, this.to.oldY] = T.anchorToXY(this.to);
+      [this.from.prevX, this.from.prevY] = T.anchorToXY(this.from);
+      [this.to.prevX, this.to.prevY] = T.anchorToXY(this.to);
       return;
     }
     const elemStart = hElems.getElemById(this.from.id);
@@ -271,25 +284,23 @@ export class Ctr extends CbaseElem {
     let [xs, ys] = this.getDelta(this.from, elemStart);
     xs += elemStart.geo.xx0;
     ys += elemStart.geo.yy0;
-    let [dxs, dys] = [xs - this.from.oldX, ys - this.from.oldY];
+    let [dxs, dys] = [xs - this.from.prevX, ys - this.from.prevY];
     if (dxs != 0 || dys != 0) {
       [dxs, dys] = this.myAdjustXy(dxs, dys);
     }
-    [this.from.oldX, this.from.oldY] = [xs, ys];
+    [this.from.prevX, this.from.prevY] = [xs, ys];
 
     const elemEnd = hElems.getElemById(this.to.id);
     let [xe, ye] = this.getDelta(this.to, elemEnd);
     xe += elemEnd.geo.xx0;
     ye += elemEnd.geo.yy0;
 
-    let [dxe, dye] = [xe - this.to.oldX, ye - this.to.oldY];
+    let [dxe, dye] = [xe - this.to.prevX, ye - this.to.prevY];
     if (dxe != 0 || dye != 0) {
       [dxe, dye] = this.myAdjustXy(-dxe, -dye);
       if (dxe != 0 || dye != 0) console.error(`[Ctr.adjustSegments] BAD dxe:${dxe} dye:${dye}`);
     }
-    // this.segments = this.isLegal(this.segments);
-
-    [this.to.oldX, this.to.oldY] = [xe, ye];
+    [this.to.prevX, this.to.prevY] = [xe, ye];
   }
 
   draw() {
@@ -300,7 +311,7 @@ export class Ctr extends CbaseElem {
     if (!baseColor) baseColor = hElems.getElemById(this.from.id).color;
     // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
     const styles = trStyles(baseColor);
-    if (this.isIllLegal()) {
+    if (!this.isLegal()) {
       cCtx.lineWidth = styles.lineErrorWidth;
       cCtx.strokeStyle = styles.lineError;
     }
