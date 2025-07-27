@@ -2,7 +2,7 @@
 
 import * as U from "src/lib/utils";
 import { hsm, hElems, hCtx } from "src/classes/Chsm";
-import { reverseDir, nextXY } from "src/lib/segments";
+import { nextXY } from "src/lib/segments";
 import { patchMouseDown } from "src/lib/canvasListeners";
 
 // All distances in mm from folio origin
@@ -44,82 +44,104 @@ export function anchorToXY(anchor) {
 function createSelfSegments(tr) {
   // console.log(`[Ctr.connectSelf]`);
   let segments = [];
+  const dsl = hsm.settings.defaultSegmentLengthMm;
   const [x0, y0] = anchorToXY(tr.from);
-  const [x1, y1] = anchorToXY(tr.to);
-  if (tr.from.side == tr.to.side) {
-    const [dx, dy] = [x1 - x0, y1 - y0];
-    const radius = hsm.settings.maxTransRadiusMm;
-    const dsl = hsm.settings.defaultSegmentLengthMm;
-    const side = tr.from.side;
-    if (U.isHoriz(side)) {
-      segments.push({ dir: side == "T" ? "N" : "S", len: dsl });
-      segments.push({ dir: dx > 0 ? "E" : "W", len: Math.abs(dx) });
-      segments.push({ dir: side == "T" ? "S" : "N", len: dsl });
+  let [x1, y1] = anchorToXY(tr.to);
+  if (x0 == x1) x1 += 0.1;
+  if (y0 == y1) y1 += 0.1;
+  const [dx, dy] = [x1 - x0, y1 - y0];
+  const [dxa, dya] = [Math.abs(dx), Math.abs(dy)];
+  const side0 = tr.from.side;
+  const side1 = tr.to.side;
+  const dirV = dy > 0 ? "S" : "N";
+  const dirH = dx > 0 ? "E" : "W";
+
+  if (U.isHoriz(side0)) {
+    if (U.isHoriz(side1)) {
+      if (side0 == side1) {
+        if (tr.isInternal) {
+          segments.push({ dir: U.reverseDir(dirV), len: dsl });
+          segments.push({ dir: dirH, len: dxa });
+          segments.push({ dir: dirV, len: dsl });
+        }
+        else {
+          segments.push({ dir: dirV, len: dsl });
+          segments.push({ dir: dirH, len: dxa });
+          segments.push({ dir: U.reverseDir(dirV), len: dsl });
+        }
+      } else {
+        segments.push({ dir: dirV, len: dya / 2 });
+        segments.push({ dir: dirH, len: dxa });
+        segments.push({ dir: dirV, len: dya - dya / 2 });
+      }
     } else {
-      segments.push({ dir: side == "R" ? "E" : "W", len: dsl });
-      segments.push({ dir: dy > 0 ? "S" : "N", len: Math.abs(dy) });
-      segments.push({ dir: side == "R" ? "W" : "E", len: dsl });
+      segments.push({ dir: dirV, len: dya });
+      segments.push({ dir: dirH, len: dxa });
+    }
+  } else {
+    // Side0 vertical
+    if (U.isHoriz(side1)) {
+      segments.push({ dir: dirH, len: dxa });
+      segments.push({ dir: dirV, len: dya });
+    } else {
+      console.log(`[Ctr.connectSelf] ICI side1:${side1}`);
+      if (tr.isInternal) {
+        segments.push({ dir: dirH, len: dsl });
+        segments.push({ dir: dirV, len: dya });
+        segments.push({ dir: U.reverseDir(dirH), len: dsl });
+      }
+      else {
+        segments.push({ dir: dirH, len: dsl });
+        segments.push({ dir: dirV, len: dya });
+        segments.push({ dir: U.reverseDir(dirH), len: dsl });
+      }
     }
   }
-  else {
-    segments = U.connectPoints(x0, y0, tr.from.side, x1, y1, tr.to.side, false);
-  }
-  // console.log(`[Ctr.connectSelf] Segments:${JSON.stringify(segments)}`);
   return segments;
 }
 
 export function createSegments(tr) {
-  // TODO avoid making internal transitions
   if (tr.from.id == tr.to.id) return createSelfSegments(tr);
-  // const r = hsm.settings.maxTransRadiusMm * 1.5;
-  const dsl = hsm.settings.defaultSegmentLengthMm;
   let segments = [];
+  const dsl = hsm.settings.defaultSegmentLengthMm;
   const [x0, y0] = anchorToXY(tr.from);
   const [x1, y1] = anchorToXY(tr.to);
+  const [dx, dy] = [x1 - x0, y1 - y0];
+  const [dxa, dya] = [Math.abs(dx), Math.abs(dy)];
   const side0 = tr.from.side;
   const side1 = tr.to.side;
-  const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
-  if (x1 == x0) {
-    if (y1 == y0) return segments;
-  }
+  const dirV = dy > 0 ? "S" : "N";
+  const dirH = dx > 0 ? "E" : "W";
   if (U.isHoriz(side0)) {
     if (U.isHoriz(side1)) {
-      if (side0 == side1) {
-        if (side0 == "T") segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? dsl + dy : dsl });
-        else segments.push({ dir: side0 == "T" ? "N" : "S", len: y0 > y1 ? dsl : dsl + dy });
-        segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-        if (side0 == "T") segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? dsl : dsl + dy });
-        else segments.push({ dir: side0 == "T" ? "S" : "N", len: y0 > y1 ? dsl + dy : dsl });
+      if (dxa != 0) {
+        segments.push({ dir: dirV, len: dsl });
+        segments.push({ dir: dirH, len: dxa });
+        segments.push({ dir: dirV, len: dya - dsl });
       } else {
-        segments.push({ dir: y1 > y0 ? "S" : "N", len: dy / 2 });
-        segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-        segments.push({ dir: y1 > y0 ? "S" : "N", len: dy - dy / 2 });
+        segments.push({ dir: dirV, len: dya });
       }
     }
     else {
-      segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-      segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
+      segments.push({ dir: dirV, len: dya });
+      segments.push({ dir: dirH, len: dxa });
     }
   }
   else {
+    // Side0 vertical
     if (U.isHoriz(side1)) {
-      segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-      if (y1 != y0) segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
+      // Side1 horizontal
+      segments.push({ dir: dirH, len: dxa });
+      segments.push({ dir: dirV, len: dya });
+
     } else {
-      // console.log(`[trUtils.connectPoints] side0:${side0} side1:${side1}`);
-      if (side0 == side1) {
-        if (side0 == "R") segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? dsl : dsl + dx });
-        else segments.push({ dir: side0 == "L" ? "W" : "E", len: x0 > x1 ? dsl + dx : dsl });
-        segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-        if (side0 == "R") segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? dsl + dx : dsl });
-        else segments.push({ dir: side0 == "L" ? "E" : "W", len: x0 > x1 ? dsl : dsl + dx });
+      // Side1 vertical
+      if (dya != 0) {
+        segments.push({ dir: dirH, len: dsl });
+        segments.push({ dir: dirV, len: dya });
+        segments.push({ dir: dirH, len: dxa - dsl });
       } else {
-        if (y1 == y0) segments.push({ dir: x1 > x0 ? "E" : "W", len: dx });
-        else {
-          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx / 2 });
-          segments.push({ dir: y1 > y0 ? "S" : "N", len: dy });
-          segments.push({ dir: x1 > x0 ? "E" : "W", len: dx - dx / 2 });
-        }
+        segments.push({ dir: dirH, len: dxa });
       }
     }
   }
@@ -245,11 +267,11 @@ export function dragNormalSegment(tr, dx, dy) {
   seg2.dir = dir2;
   if (seg1.len <= 0) {
     seg1.len = -seg1.len;
-    seg1.dir = reverseDir(seg1.dir);
+    seg1.dir = U.reverseDir(seg1.dir);
   }
   if (seg2.len <= 0) {
     seg2.len = -seg2.len;
-    seg2.dir = reverseDir(seg2.dir);
+    seg2.dir = U.reverseDir(seg2.dir);
   }
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) nbSeg:${tr.segments.length} seg#:${nA} l2:${segA.len}`);
@@ -280,14 +302,14 @@ export function dragFirstSegment(tr, dx, dy) {
   seg2.dir = segB.dir;
   if (seg2.len < 0) {
     seg2.len = -seg2.len;
-    seg2.dir = reverseDir(seg2.dir);
+    seg2.dir = U.reverseDir(seg2.dir);
   }
 
   seg3.dir = segA.dir;
   seg3.len = segA.len - seg1.len;
   if (seg3.len < 0) {
     seg3.len = -seg3.len;
-    seg3.dir = reverseDir(seg3.dir);
+    seg3.dir = U.reverseDir(seg3.dir);
   }
 
   console.log(`[trUtils.dragFirstSegment] segA:${segA.dir} dy:${dy}`);
@@ -297,7 +319,7 @@ export function dragFirstSegment(tr, dx, dy) {
   seg4.dir = segB.dir;
   if (seg4.len < 0) {
     seg4.len = -seg4.len;
-    seg4.dir = reverseDir(seg4.dir);
+    seg4.dir = U.reverseDir(seg4.dir);
   }
 
   // console.log(`[trUtils.dragFirstSegment] seg4: dir:${seg4.dir} len:${seg4.len}`);
@@ -336,14 +358,14 @@ export function dragLastSegment(tr, dx, dy) {
   seg2.dir = segB.dir;
   if (seg2.len < 0) {
     seg2.len = -seg2.len;
-    seg2.dir = reverseDir(seg2.dir);
+    seg2.dir = U.reverseDir(seg2.dir);
   }
 
   seg3.dir = segA.dir;
   seg3.len = segA.len - seg1.len;
   if (seg3.len < 0) {
     seg3.len = -seg3.len;
-    seg3.dir = reverseDir(seg3.dir);
+    seg3.dir = U.reverseDir(seg3.dir);
   }
 
   console.log(`[trUtils.dragLastSegment] segB:${segB.dir} dx:${dx}`);
@@ -352,7 +374,7 @@ export function dragLastSegment(tr, dx, dy) {
   seg4.dir = segB.dir;
   if (seg4.len < 0) {
     seg4.len = -seg4.len;
-    seg4.dir = reverseDir(seg4.dir);
+    seg4.dir = U.reverseDir(seg4.dir);
   }
 
   // console.log(`[trUtils.dragLastSegment] seg4: dir:${seg4.dir} len:${seg4.len}`);

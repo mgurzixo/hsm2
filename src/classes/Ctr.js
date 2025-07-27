@@ -2,12 +2,10 @@
 
 import * as U from "src/lib/utils";
 import * as T from "src/lib/trUtils";
-import { R, RR } from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { trStyles } from "src/lib/styles";
 import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
-import { DevToolsTarget } from "puppeteer";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -20,6 +18,7 @@ export class Ctr extends CbaseElem {
     this.segments = transOptions.segments;
     this.from = transOptions.from;
     this.to = transOptions.to;
+    this.isInternal = transOptions.isInternal || false;
     if (transOptions.color) this.color = transOptions.color;
     else delete (this.color);
   }
@@ -220,30 +219,24 @@ export class Ctr extends CbaseElem {
   isLegal() {
     if (this.segments.length == 0) return true;
     const fromState = hElems.getElemById(this.from.id);
+    if ((this.from.id == this.to.id) && (this.from.side == this.to.side) && (this.from.pos == this.to.pos)) return false;
     const goesToOutside = U.goesToOutside(this.from.side, this.segments[0].dir);
     const goesToInside = U.goesToInside(this.from.side, this.segments[0].dir);
     const lastSeg = this.segments[this.segments.length - 1];
     const comesFromOutside = U.comesFromOutside(this.to.side, lastSeg.dir);
     const comesFromInside = U.comesFromInside(this.to.side, lastSeg.dir);
     if (this.isInternal) {
-      if (!comesFromInside) return false;
+      if (!goesToInside) return false;
       if (this.from.id == this.to.id) {
-        if (goesToInside) return true;
+        if (comesFromInside) return true;
         return false;
       }
-      if (fromState.isSubstate(this.to.id)) {
-        if (goesToOutside) return true;
-        return false;
-      }
-      if (fromState.isSuperstate(this.to.id)) {
-        if (comesFromOutside) return true;
-        return false;
-      }
+      if (comesFromOutside) return true;
+      return false;
     }
-    else {
-      //
-    }
-    return false;
+    if (!goesToOutside) return false;
+    if (!comesFromOutside) return false;
+    return true;
   }
 
   // Get delta to add to [xx0,yy0]

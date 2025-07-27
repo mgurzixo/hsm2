@@ -82,90 +82,90 @@
         scale: 1,
       },
       trs: [
+        // {
+        //   segments: [],
+        //   from: {
+        //     id: "S2",
+        //     side: "T",
+        //     pos: 0.6,
+        //   },
+        //   to: {
+        //     id: "S2",
+        //     side: "T",
+        //     pos: 0.8,
+        //   },
+        //   isInternal: true,
+        // },
+        // {
+        //   segments: [],
+        //   from: {
+        //     id: "S2",
+        //     side: "L",
+        //     pos: 0.6,
+        //   },
+        //   to: {
+        //     id: "S6",
+        //     side: "L",
+        //     pos: 0.3,
+        //   },
+        //   isInternal: true,
+        // },
+        // {
+        //   segments: [],
+        //   from: {
+        //     id: "S2",
+        //     side: "R",
+        //     pos: 0.2,
+        //   },
+        //   to: {
+        //     id: "S3",
+        //     side: "T",
+        //     pos: 0.3,
+        //   },
+        //   isInternal: false,
+        // },
         {
           segments: [],
           from: {
-            id: "S2",
-            side: "T",
-            pos: 0.6,
+            id: "S3",
+            side: "L",
+            pos: 1,
           },
           to: {
             id: "S2",
-            side: "T",
-            pos: 0.8,
+            side: "B",
+            pos: 1,
           },
           isInternal: false,
         },
-        {
-          segments: [],
-          from: {
-            id: "S2",
-            side: "T",
-            pos: 0.1,
-          },
-          to: {
-            id: "S6",
-            side: "T",
-            pos: 0.3,
-          },
-          isInternal: true,
-        },
-        {
-          segments: [],
-          from: {
-            id: "S2",
-            side: "R",
-            pos: 0.2,
-          },
-          to: {
-            id: "S3",
-            side: "T",
-            pos: 0.3,
-          },
-          isInternal: true,
-        },
-        {
-          segments: [],
-          to: {
-            id: "S7",
-            side: "B",
-            pos: 0.2,
-          },
-          from: {
-            id: "S3",
-            side: "L",
-            pos: 0.8,
-          },
-          isInternal: true,
-        },
-        {
-          segments: [],
-          from: {
-            id: "S8",
-            side: "T",
-            pos: 0.5,
-          },
-          to: {
-            id: "S6",
-            side: "T",
-            pos: 0.5,
-          },
-          isInternal: true,
-        },
-        {
-          segments: [],
-          from: {
-            id: "S6",
-            side: "R",
-            pos: 0.5,
-          },
-          to: {
-            id: "S3",
-            side: "L",
-            pos: 0.3,
-          },
-          isInternal: true,
-        },
+        // {
+        //   segments: [],
+        //   from: {
+        //     id: "S8",
+        //     side: "T",
+        //     pos: 0.5,
+        //   },
+        //   to: {
+        //     id: "S6",
+        //     side: "T",
+        //     pos: 0.5,
+        //   },
+        //   isInternal: false,
+        // },
+        // {
+        //   segments: [],
+        //   from: {
+        //     id: "S6",
+        //     side: "R",
+        //     pos: 0.5,
+        //   },
+        //   to: {
+        //     id: "S3",
+        //     side: "L",
+        //     pos: 0.3,
+        //   },
+        //   isInternal: false,
+        // },
       ],
       states: [
         {
@@ -174,7 +174,7 @@
           color: "blue",
           geo: {
             x0: 10,
-            y0: 50,
+            y0: 30,
             width: 100,
             height: 80,
           },

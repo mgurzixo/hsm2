@@ -3,18 +3,6 @@
 import * as U from "src/lib/utils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 
-export function reverseDir(dir) {
-  switch (dir) {
-    case "N":
-      return "S";
-    case "S":
-      return "N";
-    case "W":
-      return "E";
-    case "E":
-      return "W";
-  }
-}
 
 export function drawArrow(cCtx, x, y, dir) {
   // console.log(`[utils.drawArrow] dir ${dir}`);
@@ -73,7 +61,7 @@ export function removeNullSegments(segs) {
       if (len == 0) continue;
       if (len < 0) {
         len = -len;
-        dir = reverseDir(dir);
+        dir = U.reverseDir(dir);
       }
       res.push({ len: len, dir: dir });
       // console.warn(`[segments.removeNullSegments] i:${i} res#:${res.length - 1} dir:${dir} len:${len}`);

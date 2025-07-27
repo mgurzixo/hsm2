@@ -192,9 +192,9 @@ export function distToSegment(p, v, w) {
   return Math.sqrt(distToSegmentSquared(p, v, w));
 }
 
-export function isHoriz(dir) {
-  // Dir can be a side or a dir
-  switch (dir) {
+export function isHoriz(val) {
+  // val can be a side or a dir
+  switch (val) {
     case "N":
     case "S":
     case "L":
@@ -206,7 +206,35 @@ export function isHoriz(dir) {
     case "B":
       return true;
   }
-  console.error(`[utils.isHoriz] Unknown dir:${dir}`);
+  console.error(`[utils.isHoriz] Unknown dir:${val}`);
+}
+
+export function reverseDir(dir) {
+  switch (dir) {
+    case "N":
+      return "S";
+    case "S":
+      return "N";
+    case "W":
+      return "E";
+    case "E":
+      return "W";
+    case "L":
+      return "R";
+    case "R":
+      return "L";
+    case "T":
+      return "B";
+    case "TL":
+      return "BR";
+    case "TR":
+      return "BL";
+    case "BR":
+      return "TL";
+    case "BL":
+      return "TR";
+  }
+  console.error(`[utils.reverseDir] Unknown dir:${dir}`);
 }
 
 
