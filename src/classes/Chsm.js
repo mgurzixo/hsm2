@@ -6,6 +6,7 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
+import { setDoubleClickTimeout } from "src/lib/canvasListeners";
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -67,6 +68,7 @@ export class Chsm extends CbaseElem {
     this.serNum = hsmOptions.serNum;
     this.hElems.clearElems();
     this.hElems.insertElem(this);
+    setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
     for (let folioOptions of hsmOptions.folios) {
       this.addFolio(folioOptions);
     }
@@ -112,12 +114,15 @@ export class Chsm extends CbaseElem {
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
-    this.setSelected(false);
-    if (hCtx.getSelectedId() != elem.id) {
+    console.log(`[Chsm.click] elem:${elem?.id}`);
+    if (hCtx.getSelectedId()) {
+      this.setSelected(false);
+      hCtx.setSelectedId(null);
+    } else {
+      this.setSelected(false);
       elem.setSelected(true);
       hCtx.setSelectedId(elem.id);
     }
-    else hCtx.setSelectedId(null);
     for (let tr of hCtx.folio.trs) {
       if (hElems.getElemById(tr.from.id).isSelected && hElems.getElemById(tr.to.id).isSelected) tr.setSelected(true);
       else tr.setSelected(false);
@@ -125,6 +130,28 @@ export class Chsm extends CbaseElem {
     idz = this.makeIdz(xDown, yDown);
     hCtx.folio.draw();
     this.setCursor();
+  }
+
+  handleDoubleClick(xDown, yDown, rawMouseX, rawMouseY) {
+    let idz = this.makeIdz(xDown, yDown);
+    hCtx.setIdz(idz);
+    if (idz.id == this.id) return;
+    const elem = this.hElems.getElemById(idz.id);
+    this.openDialog(elem);
+    // console.log(`[Chsm.doubleClick] elem:${elem?.id}`);
+    // this.setSelected(false);
+    // if (hCtx.getSelectedId() != elem.id) {
+    //   elem.setSelected(true);
+    //   hCtx.setSelectedId(elem.id);
+    // }
+    // else hCtx.setSelectedId(null);
+    // for (let tr of hCtx.folio.trs) {
+    //   if (hElems.getElemById(tr.from.id).isSelected && hElems.getElemById(tr.to.id).isSelected) tr.setSelected(true);
+    //   else tr.setSelected(false);
+    // }
+    // idz = this.makeIdz(xDown, yDown);
+    // hCtx.folio.draw();
+    // this.setCursor();
   }
 
   dragStart(xDown, yDown) {

@@ -10,6 +10,9 @@ let mouseOut = { x: 0, y: 0 };
 let isDragging = false;
 let button1Down = false;
 let button2Down = false;
+let clickTimeoutId = null;
+let inDoubleClick = false;
+let doubleClickTimeout = 250; // ms
 
 // TODO Must throttle all...
 
@@ -38,8 +41,10 @@ export function handleMouseMove(e) {
     //   `[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging} buttons:${e.buttons} d:${d}`,
     // );
     // if (dP > 2 * 2) {
-    if (dP > 256) {
+    if (dP > 2 * 2) {
       isDragging = true;
+      inDoubleClick = false;
+      clearTimeout(clickTimeoutId);
       const [mdx, mdy] = [U.pToMmL(mouseDown.x), U.pToMmL(mouseDown.y)];
       hsm.dragStart(mdx, mdy);
     }
@@ -65,6 +70,12 @@ export function handleMouseDown(e) {
   if (e.buttons & 1) {
     button1Down = true;
     mouseDown = { x: xP, y: yP };
+    if (clickTimeoutId) {
+      clearTimeout(clickTimeoutId);
+      clickTimeoutId = null;
+      inDoubleClick = true;
+      // console.log(`[canvasListeners.handleMouseDown] inDoubleClick:${inDoubleClick}`);
+    }
   }
   if (e.buttons & 2) {
     button2Down = true;
@@ -88,7 +99,22 @@ export function handleMouseUp(e) {
     } else {
       const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
       // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got click`);
-      hsm.click(x, y);
+      // console.log(`[canvasListeners.handleMouseUp] inDoubleClick:${inDoubleClick}`);
+      if (inDoubleClick) {
+        inDoubleClick = false;
+        clearTimeout(clickTimeoutId);
+        clickTimeoutId = null;
+        // console.log(`[canvasListeners.handleMouseUp] doubleClick`);
+        // hsm.doubleClick(x, y);
+        hsm.handleDoubleClick(x, y);
+      }
+      else {
+        clickTimeoutId = setTimeout(() => {
+          clickTimeoutId = null;
+          inDoubleClick = false;
+          hsm.click(x, y);
+        }, doubleClickTimeout);
+      }
     }
     button1Down = false;
   }
@@ -121,6 +147,10 @@ export function handleMouseEnter(e) {
       isDragging = false;
     }
   }
+}
+
+export function setDoubleClickTimeout(val) {
+  doubleClickTimeout = Number(val);
 }
 
 export function setCanvasListeners() {

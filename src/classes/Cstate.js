@@ -448,7 +448,7 @@ export class Cstate extends CbaseState {
       cCtx.strokeStyle = styles.borderError;
       cCtx.lineWidth = styles.borderErrorWidth;
     } else if (this.isSelected) {
-      console.log(`[Cstate.draw] Selected:${this.isSelected}`);
+      // console.log(`[Cstate.draw] Selected:${this.isSelected}`);
       cCtx.lineWidth = styles.borderSelectedWidth;
     }
     // cCtx.rect(x0P, y0P, widthP, heightP);

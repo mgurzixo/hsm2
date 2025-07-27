@@ -2,31 +2,11 @@
   <div class="full-window flex no-wrap">
     <left-buttons class=""></left-buttons>
     <div class="col-grow bg-blue-1 ovh full">
-      <q-tabs
-        v-model="activefolio"
-        class="text-grey bg-amber-1 my-tabs top-border"
-        inline-label
-        outside-arrows
-        align="left"
-        dense
-        active-color="grey-8"
-        active-bg-color="amber-2"
-      >
+      <q-tabs v-model="activefolio" class="text-grey bg-amber-1 my-tabs top-border" inline-label outside-arrows
+        align="left" dense active-color="grey-8" active-bg-color="amber-2">
         <q-tab name="F1" no-caps content-class="folio-name" label="Main" active />
-        <q-tab
-          name="F2"
-          no-caps
-          content-class="folio-name"
-          class=""
-          label="Hsm1 dzfgzdfgdf dffdgdzfzddfg"
-        />
-        <q-tab
-          name="F3"
-          no-caps
-          content-class="folio-name"
-          class=""
-          label="My Hsm2 dfghdfgdfg dfzdfgzdfg dfgdfgzdfg"
-        />
+        <q-tab name="F2" no-caps content-class="folio-name" class="" label="Hsm1 dzfgzdfgdf dffdgdzfzddfg" />
+        <q-tab name="F3" no-caps content-class="folio-name" class="" label="My Hsm2 dfghdfgdfg dfzdfgzdfg dfgdfgzdfg" />
       </q-tabs>
       <hsm-canvas></hsm-canvas>
     </div>

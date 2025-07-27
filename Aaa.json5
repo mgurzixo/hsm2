@@ -1,5 +1,6 @@
 {
   settings: {
+    doubleClickTimeoutMs: 300,
     screenDpi: 94,
     stateRadiusMm: 4,
     stateTitleHeightMm: 6,
