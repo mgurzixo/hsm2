@@ -60,14 +60,14 @@ function createSelfSegments(tr) {
     if (U.isHoriz(side1)) {
       if (side0 == side1) {
         if (tr.isInternal) {
-          segments.push({ dir: U.reverseDir(dirV), len: dsl });
-          segments.push({ dir: dirH, len: dxa });
           segments.push({ dir: dirV, len: dsl });
+          segments.push({ dir: dirH, len: dxa });
+          segments.push({ dir: U.reverseDir(dirV), len: dsl });
         }
         else {
-          segments.push({ dir: dirV, len: dsl });
-          segments.push({ dir: dirH, len: dxa });
           segments.push({ dir: U.reverseDir(dirV), len: dsl });
+          segments.push({ dir: dirH, len: dxa });
+          segments.push({ dir: dirV, len: dsl });
         }
       } else {
         segments.push({ dir: dirV, len: dya / 2 });
@@ -115,9 +115,10 @@ export function createSegments(tr) {
   if (U.isHoriz(side0)) {
     if (U.isHoriz(side1)) {
       if (dxa != 0) {
+        const dir = dya - dsl >= 0 ? dirV : U.reverseDir(dirV);
         segments.push({ dir: dirV, len: dsl });
         segments.push({ dir: dirH, len: dxa });
-        segments.push({ dir: dirV, len: dya - dsl });
+        segments.push({ dir: dir, len: Math.abs(dya - dsl) });
       } else {
         segments.push({ dir: dirV, len: dya });
       }
@@ -137,9 +138,10 @@ export function createSegments(tr) {
     } else {
       // Side1 vertical
       if (dya != 0) {
+        const dir = dxa - dsl >= 0 ? dirH : U.reverseDir(dirH);
         segments.push({ dir: dirH, len: dsl });
         segments.push({ dir: dirV, len: dya });
-        segments.push({ dir: dirH, len: dxa - dsl });
+        segments.push({ dir: dirH, len: Math.abs(dxa - dsl) });
       } else {
         segments.push({ dir: dirH, len: dxa });
       }

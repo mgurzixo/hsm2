@@ -266,3 +266,7 @@ export function mmToPL(lMm) {
 export function pToMmL(lP) {
   return lP / hsm.scalePhy();
 }
+
+export function getElemById(id) {
+  return hsm.hElems.getElemById(id);
+}

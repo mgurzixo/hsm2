@@ -82,48 +82,62 @@
         scale: 1,
       },
       trs: [
-        // {
-        //   segments: [],
-        //   from: {
-        //     id: "S2",
-        //     side: "T",
-        //     pos: 0.6,
-        //   },
-        //   to: {
-        //     id: "S2",
-        //     side: "T",
-        //     pos: 0.8,
-        //   },
-        //   isInternal: true,
-        // },
-        // {
-        //   segments: [],
-        //   from: {
-        //     id: "S2",
-        //     side: "L",
-        //     pos: 0.6,
-        //   },
-        //   to: {
-        //     id: "S6",
-        //     side: "L",
-        //     pos: 0.3,
-        //   },
-        //   isInternal: true,
-        // },
-        // {
-        //   segments: [],
-        //   from: {
-        //     id: "S2",
-        //     side: "R",
-        //     pos: 0.2,
-        //   },
-        //   to: {
-        //     id: "S3",
-        //     side: "T",
-        //     pos: 0.3,
-        //   },
-        //   isInternal: false,
-        // },
+        {
+          segments: [],
+          from: {
+            id: "S2",
+            side: "T",
+            pos: 0.6,
+          },
+          to: {
+            id: "S2",
+            side: "T",
+            pos: 0.7,
+          },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          from: {
+            id: "S6",
+            side: "R",
+            pos: 0.8,
+          },
+          to: {
+            id: "S8",
+            side: "L",
+            pos: 0.5,
+          },
+          isInternal: false,
+        },
+        {
+          segments: [],
+          from: {
+            id: "S2",
+            side: "L",
+            pos: 0.6,
+          },
+          to: {
+            id: "S6",
+            side: "L",
+            pos: 0.3,
+          },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          from: {
+            id: "S2",
+            side: "R",
+            pos: 0.2,
+          },
+          to: {
+            id: "S3",
+            side: "T",
+            pos: 0.3,
+          },
+          isInternal: false,
+        },
         {
           segments: [],
           from: {
@@ -152,20 +166,20 @@
         //   },
         //   isInternal: false,
         // },
-        // {
-        //   segments: [],
-        //   from: {
-        //     id: "S6",
-        //     side: "R",
-        //     pos: 0.5,
-        //   },
-        //   to: {
-        //     id: "S3",
-        //     side: "L",
-        //     pos: 0.3,
-        //   },
-        //   isInternal: false,
-        // },
+        {
+          segments: [],
+          from: {
+            id: "S6",
+            side: "R",
+            pos: 0.9,
+          },
+          to: {
+            id: "S3",
+            side: "L",
+            pos: 0.3,
+          },
+          isInternal: false,
+        },
       ],
       states: [
         {

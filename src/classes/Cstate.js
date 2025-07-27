@@ -12,6 +12,7 @@ class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
     this.isBaseState = true;
+    this.isRevertingDrag = false;
     // console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
   }
 
@@ -245,7 +246,14 @@ export class Cstate extends CbaseState {
       y0: this.geo.y0,
       width: this.geo.width,
       height: this.geo.height,
+      segments0: {},
     };
+    for (let tr of hCtx.folio.trs) {
+      if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
+        dragCtx.segments0[tr.id] = structuredClone(tr.segments);
+        // console.log(`[Cstate.dragStart] trId:${tr.id} segments:${dragCtx.segments0[tr.id]}`);
+      }
+    }
     // console.log(`[Cstate.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
     this.parent.raiseChildR(this.id);
@@ -336,25 +344,36 @@ export class Cstate extends CbaseState {
     this.geo.y0 = y0;
     this.geo.height = height;
     this.geo.width = width;
-    if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
-    else hCtx.setErrorId(null);
+    if (!this.isRevertingDrag) {
+      if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
+      else hCtx.setErrorId(null);
+    }
     hsm.adjustChange(this.id);
   }
 
-  resetDrag(deltaX, deltaY) {
+  dragRevert(deltaX, deltaY) {
+    this.isRevertingDrag = true;
+    const dragCtx = hCtx.getDragCtx();
     const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const totalIterations = Math.ceil(dist / hsm.settings.dragResetSpeed);
-    // console.log(`[Cstate.resetDrag] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
+    // console.log(`[Cstate.dragRevert] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
     let currentIteration = 0;
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
+    // Restore original segments
+
 
     function myCb() {
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
-      // console.log(`[Cstate.resetDrag] #${currentIteration} ease:${ease.toFixed(2)}`);
+      // console.log(`[Cstate.dragRevert] #${currentIteration} ease:${ease.toFixed(2)}`);
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       hsm.drag(dx, dy);
-      if (!hCtx.getErrorId() || currentIteration >= totalIterations) {
+      if (currentIteration >= totalIterations) {
+        U.getElemById(hCtx.draggedId).isRevertingDrag = false;
+        for (const trId of Object.keys(dragCtx.segments0)) {
+          const tr = U.getElemById(trId);
+          tr.segments = dragCtx.segments0[trId.toString()];
+        }
         hCtx.setErrorId(null);
         hCtx.dragEnd();
       } else {
@@ -365,14 +384,14 @@ export class Cstate extends CbaseState {
       const idz = hCtx.getIdz(); // This is not defined...
       hsm.setCursor(idz);
     }
-    window.requestIdleCallback(myCb);
+    window.requestAnimationFrame(myCb);
   }
 
   dragEnd(dx, dy) {
     // console.log(`[Cstate.dragEnd]`);
     this.drag(dx, dy);
     if (hCtx.getErrorId() == this.id) {
-      this.resetDrag(dx, dy);
+      this.dragRevert(dx, dy);
       return false;
     }
     return true;

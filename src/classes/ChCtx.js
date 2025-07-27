@@ -30,6 +30,7 @@ export class ChCtx {
   }
 
   setErrorId(id) {
+    // console.warn(`[Chctx.setErrorId] errorId:${id}`);
     this.errorId = id;
   }
 
@@ -63,5 +64,6 @@ export class ChCtx {
 
   dragEnd() {
     this.draggedId = "";
+    this.dragCtx = null;
   }
 }

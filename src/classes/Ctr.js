@@ -217,6 +217,7 @@ export class Ctr extends CbaseElem {
   }
 
   isLegal() {
+    // console.log(`[Ctr.isLegal] id:${this.id} segments:${this.segments}`);
     if (this.segments.length == 0) return true;
     const fromState = hElems.getElemById(this.from.id);
     if ((this.from.id == this.to.id) && (this.from.side == this.to.side) && (this.from.pos == this.to.pos)) return false;
