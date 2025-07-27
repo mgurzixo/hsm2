@@ -13,7 +13,7 @@ export class ChCtx {
     this.idz = { id: "", zone: "", x: 0, y: 0 };
   }
 
-  setSelected(id) {
+  setSelectedId(id) {
     this.selectedId = id;
   }
 

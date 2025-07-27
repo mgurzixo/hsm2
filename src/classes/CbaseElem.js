@@ -27,6 +27,7 @@ export class CbaseElem {
     else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
     else this.color = "grey";
+    this.isSelected = false;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 
@@ -234,6 +235,14 @@ export class CbaseElem {
 
   canInsertTr(idz) {
     return false;
+  }
+
+  setSelected(val) {
+    // console.log(`[CbaseElem.setSelected] (${this.id}) } setSelected:${val}`);
+    this.isSelected = val;
+    for (let child of this.children) {
+      child.setSelected(val);
+    }
   }
 
 }

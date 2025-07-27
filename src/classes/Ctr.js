@@ -235,7 +235,9 @@ export class Ctr extends CbaseElem {
       if (comesFromOutside) return true;
       return false;
     }
+    if (fromState.isSuperstate(this.to.id) && goesToInside) return true;
     if (!goesToOutside) return false;
+    if (fromState.isSubstate(this.to.id) && !comesFromInside) return true;
     if (!comesFromOutside) return false;
     return true;
   }
@@ -315,7 +317,8 @@ export class Ctr extends CbaseElem {
       cCtx.strokeStyle = styles.lineError;
     }
     else {
-      cCtx.lineWidth = styles.lineWidth;
+      if (this.isSelected) cCtx.lineWidth = styles.lineSelectedWidth;
+      else cCtx.lineWidth = styles.lineWidth;
       cCtx.strokeStyle = styles.line;
     }
     pathSegments(this.segments, x0, y0);

@@ -198,4 +198,9 @@ export class Cfolio extends CbaseRegion {
     }
     return true;
   }
+
+  adjustTrsSelection() {
+    // console.log(`[Cfolio.setSelected] (${this.id}) } setSelected:${val}`);
+
+  }
 }

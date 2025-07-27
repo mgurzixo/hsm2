@@ -29,6 +29,7 @@ export function stateStyles(baseColor) {
   return {
     border: border.to("srgb") + "",
     borderWidth: t.border.lineWidth,
+    borderSelectedWidth: t.borderSelected.lineWidth,
     borderError: t.borderError.color,
     borderErrorWidth: t.borderError.lineWidth,
     titleLine: titleLine.to("srgb") + "",
@@ -51,6 +52,7 @@ export function trStyles(baseColor) {
   return {
     line: line.to("srgb") + "",
     lineWidth: t.line.lineWidth,
+    lineSelectedWidth: t.lineSelected.lineWidth,
     lineError: t.lineError.color,
     lineErrorWidth: t.lineError.lineWidth,
   };

@@ -447,8 +447,9 @@ export class Cstate extends CbaseState {
     if (hCtx.getErrorId() == this.id) {
       cCtx.strokeStyle = styles.borderError;
       cCtx.lineWidth = styles.borderErrorWidth;
-    } else if (hCtx.getSelectedId() == this.id) {
-      cCtx.strokeStyle = hsm.settings.styles.silhouetteSelected;
+    } else if (this.isSelected) {
+      console.log(`[Cstate.draw] Selected:${this.isSelected}`);
+      cCtx.lineWidth = styles.borderSelectedWidth;
     }
     // cCtx.rect(x0P, y0P, widthP, heightP);
     U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);

@@ -112,7 +112,16 @@ export class Chsm extends CbaseElem {
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
-    elem.click();
+    this.setSelected(false);
+    if (hCtx.getSelectedId() != elem.id) {
+      elem.setSelected(true);
+      hCtx.setSelectedId(elem.id);
+    }
+    else hCtx.setSelectedId(null);
+    for (let tr of hCtx.folio.trs) {
+      if (hElems.getElemById(tr.from.id).isSelected && hElems.getElemById(tr.to.id).isSelected) tr.setSelected(true);
+      else tr.setSelected(false);
+    }
     idz = this.makeIdz(xDown, yDown);
     hCtx.folio.draw();
     this.setCursor();

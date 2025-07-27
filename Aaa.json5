@@ -30,6 +30,9 @@
           color: "red",
           lineWidth: 2,
         },
+        borderSelected: {
+          lineWidth: 2,
+        },
         titleLine: {
           chroma: 50,
           light: 20,
@@ -59,6 +62,9 @@
         lineError: {
           color: "red",
           lineWidth: 2,
+        },
+        lineSelected: {
+          lineWidth: 2.5,
         },
       },
 
@@ -152,20 +158,20 @@
           },
           isInternal: false,
         },
-        // {
-        //   segments: [],
-        //   from: {
-        //     id: "S8",
-        //     side: "T",
-        //     pos: 0.5,
-        //   },
-        //   to: {
-        //     id: "S6",
-        //     side: "T",
-        //     pos: 0.5,
-        //   },
-        //   isInternal: false,
-        // },
+        {
+          segments: [],
+          from: {
+            id: "S6",
+            side: "R",
+            pos: 0.5,
+          },
+          to: {
+            id: "S7",
+            side: "R",
+            pos: 0.5,
+          },
+          isInternal: false,
+        },
         {
           segments: [],
           from: {
