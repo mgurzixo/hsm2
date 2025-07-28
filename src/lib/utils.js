@@ -270,3 +270,10 @@ export function pToMmL(lP) {
 export function getElemById(id) {
   return hsm.hElems.getElemById(id);
 }
+
+// cf. https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
+export function standardize_color(str) {
+  var ctx = document.createElement("canvas").getContext("2d");
+  ctx.fillStyle = str;
+  return ctx.fillStyle;
+}

@@ -1,10 +1,10 @@
 <template>
   <div class="full-size">
-    <q-dialog v-model="dialogToggle" Xpersistent>
+    <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element"></component>
     </q-dialog>
     <canvas ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
-    <div ref="contextAnchor" class="context-anchor ygreen">
+    <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
     </div>
   </div>
@@ -61,7 +61,7 @@ function handleRightClick(mouseX, mouseY, rawMouseX, rawMouseY) {
 }
 
 V.watch(dialogToggle, (newToggle) => {
-  console.log(`[StateDialog.watch.element] newToggle:${newToggle}`);
+  console.log(`[HsmCanvas.watch.element] newToggle:${newToggle}`);
   if (newToggle == false) {
     hsm.makeIdz();
     hsm.draw();
