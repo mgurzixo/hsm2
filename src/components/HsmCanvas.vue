@@ -1,7 +1,8 @@
 <template>
   <div class="full-size">
-    <state-dialog v-model='stateDialogToggle' :element="element"></state-dialog>
-    <tr-dialog v-model='trDialogToggle' :element="element"></tr-dialog>
+    <q-dialog v-model="dialogToggle" Xpersistent>
+      <component :is="dialogComponent" :element="element"></component>
+    </q-dialog>
     <canvas ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor ygreen">
       <popup-menu :menu="contextMenu"></popup-menu>
@@ -39,9 +40,11 @@ import { loadHsm } from "src/lib/hsmIo";
 
 const canvasRef = V.ref(null);
 const contextAnchor = V.ref(null);
-const stateDialogToggle = V.ref(false);
+const dialogToggle = V.ref(false);
+const dialogComponent = V.shallowRef(null);
 const trDialogToggle = V.ref(false);
 const element = V.ref(null);
+const elementId = V.ref(null);
 
 V.onUnmounted(() => {
   removeCanvasListeners();
@@ -57,12 +60,22 @@ function handleRightClick(mouseX, mouseY, rawMouseX, rawMouseY) {
   contextAnchor.value.dispatchEvent(e);
 }
 
+V.watch(dialogToggle, (newToggle) => {
+  console.log(`[StateDialog.watch.element] newToggle:${newToggle}`);
+  if (newToggle == false) {
+    hsm.makeIdz();
+    hsm.draw();
+    hsm.setCursor();
+  }
+});
+
 function openElementDialog(myElement) {
   element.value = myElement;
-  console.log(`[HsmCanvas.openElementDialog] elemId:${myElement.id} ${myElement.id.startsWith("T")}`);
-
-  if (myElement.id.startsWith("T")) trDialogToggle.value = true;
-  else stateDialogToggle.value = true;
+  elementId.value = myElement.id;
+  console.log(`[HsmCanvas.openElementDialog] elemId:${myElement.id}`);
+  if (myElement.id.startsWith("S")) dialogComponent.value = StateDialog;
+  else dialogComponent.value = TrDialog;
+  dialogToggle.value = true;;
 
   // const e = new Event("click");
   // contextAnchor.value.dispatchEvent(e);

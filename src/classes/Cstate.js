@@ -25,7 +25,7 @@ class CbaseState extends CbaseElem {
   }
 
   isSuperstate(substateId) {
-    for (let state = hElems.getElemById(substateId); state.parent; state = state.parent) {
+    for (let state = U.getElemById(substateId); state.parent; state = state.parent) {
       if (state.parent.id == this.id) return true;
     }
     return false;

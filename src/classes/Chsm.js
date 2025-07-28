@@ -6,7 +6,7 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
-import { setDoubleClickTimeout } from "src/lib/canvasListeners";
+import { setDoubleClickTimeout, mousePos } from "src/lib/canvasListeners";
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -204,7 +204,7 @@ export class Chsm extends CbaseElem {
   }
 
   mouseMove(x, y) {
-    const idz = hsm.makeIdz(x, y);
+    const idz = hsm.makeIdz();
     hCtx.setIdz(idz);
     this.setCursor();
   }
@@ -224,7 +224,7 @@ export class Chsm extends CbaseElem {
     hCtx.folio.wheelP(xP, yP, dyP);
   }
 
-  makeIdz(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+  makeIdz(x = mousePos.value.x, y = mousePos.value.y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
     idz = hCtx.folio?.makeIdz(x, y, idz);
     // console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
