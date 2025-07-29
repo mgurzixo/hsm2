@@ -61,7 +61,7 @@ function handleRightClick(mouseX, mouseY, rawMouseX, rawMouseY) {
 }
 
 V.watch(dialogToggle, (newToggle) => {
-  console.log(`[HsmCanvas.watch.element] newToggle:${newToggle}`);
+  // console.log(`[HsmCanvas.watch.element] newToggle:${newToggle}`);
   if (newToggle == false) {
     hsm.makeIdz();
     hsm.draw();

@@ -114,7 +114,7 @@ export class Chsm extends CbaseElem {
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
-    console.log(`[Chsm.click] elem:${elem?.id}`);
+    // console.log(`[Chsm.click] elem:${elem?.id}`);
     if (hCtx.getSelectedId()) {
       this.setSelected(false);
       hCtx.setSelectedId(null);

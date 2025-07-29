@@ -1,15 +1,22 @@
 <template id="colorSlider">
-  <div class="container">
-    <div class="c-range">
-      <div class="c-range__holder">
-        <input ref="rangeInput" v-model="hue" class="c-range__slider" type="range" min="0" max="360"
-          :style="{ color: hex }" @input="setHue" />
+  <div class=" row no-wrap flex-center">
+    <div class="col-auto min-width3 q-mr-xs">{{ hue }}</div>
+    <div class=" container col-grow">
+      <div class="c-range">
+        <div class="c-range__holder">
+          <input ref="rangeInput" v-model="hue" class="c-range__slider" type="range" min="0" max="360" step="10"
+            :style="{ color: hex }" @input="setHue" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style>
+.min-width3 {
+  min-width: 4em;
+}
+
 /* color range styles */
 .c-range__slider {
   position: relative;
@@ -118,8 +125,6 @@ import * as V from "vue";
 import * as U from "src/lib/utils";
 import { colors } from "quasar";
 
-const emit = defineEmits(["hue"]);
-
 const mycolor = defineModel();
 
 const hue = V.ref(0);
@@ -129,11 +134,11 @@ const rangeInput = V.ref(null);
 
 function setHue() {
   hex.value = hsl2Hex(hue.value, 100, 50);
-  hsl.value = "hsl(" + hue.value + ", 100%, 50%)";
+  // hsl.value = "hsl(" + hue.value + ", 100%, 50%)";
+  hsl.value = "hsl(" + hue.value + ", 10%, 50%)";
   rangeInput.value.style.color = hsl;
   mycolor.value = hex.value;
   // console.log(`[HueSlider.setHue] hue:${hue.value} mycolor:${mycolor.value}`);
-  emit('hue', hue.value);
 }
 
 
@@ -154,22 +159,6 @@ function hsl2Rgb(h, s, l) {
   return rgb.map(function (v) {
     return (255 * (v + m)) | 0;
   });
-}
-
-// cf. https://gist.github.com/vahidk/05184faf3d92a0aa1b46aeaa93b07786
-function rgbToHsl(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  let max = Math.max(r, g, b);
-  let min = Math.min(r, g, b);
-  let d = max - min;
-  let h;
-  if (d === 0) h = 0;
-  else if (max === r) h = (g - b) / d % 6;
-  else if (max === g) h = (b - r) / d + 2;
-  else if (max === b) h = (r - g) / d + 4;
-  let l = (min + max) / 2;
-  let s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-  return [h * 60, s, l];
 }
 
 function rgb2Hex(r, g, b) {

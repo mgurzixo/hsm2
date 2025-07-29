@@ -1,39 +1,100 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <q-layout view="Lhh lpR fff" container class="text-grey-9 bg-amber-1">
-    <q-header class="bg-primary">
-      <q-toolbar class="text-grey-9 bg-amber-2">
-        <!-- <q-btn flat @click="drawer = !drawer" round dense icon="menu" /> -->
-        <q-toolbar-title> Transition: {{ element.id }}</q-toolbar-title>
-        <q-btn flat v-close-popup round dense icon="close" />
-      </q-toolbar>
-    </q-header>
+  <q-card class="my-card-tr text-black bg-color-tr">
+    <q-bar class="text-grey-9 bg-amber-2">
+      <div class=" my-no-overflow">
+        Transition: {{ element.id }}
+      </div>
+      <q-space />
+      <q-btn flat v-close-popup round dense icon="close" />
+    </q-bar>
 
-    <q-page-container>
-      <q-page padding>
-        <p v-for="n in contentSize" :key="n">
-          {{ lorem }}
-        </p>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+    <div class="q-pa-md my-region-tr">
+      <div class="q-pa-sm q-mb-md border-tr">
+        <div class="row no-wrap">
+          <div class="q-pr-sm">
+            <div class=""> From </div>
+            <div> To </div>
+          </div>
+          <div class="">
+            <div class="color-from"> {{ elemFrom.id }}: {{ elemFrom.name }} </div>
+            <div class="color-to"> {{ elemTo.id }}: {{ elemTo.name }} </div>
+          </div>
+        </div>
+        <q-checkbox dense v-if="element.from.id == element.to.id" class="q-pt-xs color-from " v-model="isInternal"
+          label="Internal transition" />
+      </div>
+      <div class="q-py-sm">
+        <q-input dense v-model="element.entry" label="Trigger:" outlined />
+      </div>
+      <div class="q-py-sm">
+        <q-input dense v-model="element.exit" label="Guard:" outlined />
+      </div>
+      <div class="q-py-sm">
+        <q-input dense v-model="element.include" label="Action:" outlined />
+      </div>
+      <div class="q-py-sm">
+        <q-input dense v-model="element.comment" label="Comment:" outlined autogrow />
+      </div>
+    </div>
+  </q-card>
 </template>
 
-<style></style>
+<style>
+.bg-color-tr {
+  background-color: v-bind(bgColor) !important;
+}
+
+color-from {
+  color: v-bind(colorFrom) !important;
+}
+
+.border-tr {
+  border: solid 1px v-bind(colorFrom);
+  border-radius: 4px;
+  ;
+}
+
+.my-region-tr {
+  overflow-y: auto !important;
+  min-height: 350px;
+  max-height: 88vh;
+}
+
+.my-no-overflow {
+  overflow: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+}
+
+.my-card-tr {
+  /* overflow: hidden !important; */
+  background-color: v-bind(bgColor);
+  min-width: 400px;
+  min-width: 50vw;
+}
+
+.color-from {
+  color: v-bind(colorFrom);
+}
+
+.color-to {
+  color: v-bind(colorTo);
+}
+</style>
 
 <script setup>
+import * as U from "src/lib/utils";
 import * as V from "vue";
+import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
+import { stateStyles, trStyles } from "src/lib/styles";
 
-const layout = V.ref(true);
-const drawer = V.ref(false);
-const drawerR = V.ref(false);
-const moreContent = V.ref(false);
-
-const lorem = V.ref('Lorem ipsum dolor sit amet consectetur, adipisicing elit. Natus, ratione eum minus fuga, quasi dicta facilis corporis magnam, suscipit at quo nostrum!');
-
-
-const contentSize = V.computed(() => {
-  return moreContent.value ? 150 : 5;
-});
+const bgColor = V.ref("white");
+const isInternal = V.ref(true);
+const elemFrom = V.ref({});
+const elemTo = V.ref({});
+const colorFrom = V.ref("red");
+const colorTo = V.ref("green");
 
 const props = defineProps({
   element: {
@@ -41,5 +102,16 @@ const props = defineProps({
   },
 });
 
-V.onMounted(() => { });
+V.watch(props.element, (el) => {
+  console.log(`[trDialog.watch.element] id:${el.id}`);
+
+});
+
+V.onMounted(() => {
+  bgColor.value = hsm.settings.styles.folioBackground;
+  elemFrom.value = U.getElemById(props.element.from.id);
+  elemTo.value = U.getElemById(props.element.to.id);
+  colorFrom.value = trStyles(elemFrom.value.color).line;
+  colorTo.value = trStyles(elemTo.value.color).line;
+});
 </script>
