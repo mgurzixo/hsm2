@@ -220,25 +220,31 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.isLegal] id:${this.id} segments:${this.segments}`);
     if (this.segments.length == 0) return true;
     const fromState = hElems.getElemById(this.from.id);
-    if ((this.from.id == this.to.id) && (this.from.side == this.to.side) && (this.from.pos == this.to.pos)) return false;
     const goesToOutside = U.goesToOutside(this.from.side, this.segments[0].dir);
     const goesToInside = U.goesToInside(this.from.side, this.segments[0].dir);
     const lastSeg = this.segments[this.segments.length - 1];
     const comesFromOutside = U.comesFromOutside(this.to.side, lastSeg.dir);
     const comesFromInside = U.comesFromInside(this.to.side, lastSeg.dir);
-    if (this.isInternal) {
-      if (!goesToInside) return false;
-      if (this.from.id == this.to.id) {
-        if (comesFromInside) return true;
-        return false;
+    if (this.from.id == this.to.id) {
+      if (this.from.side != this.to.side) return false;
+      if (this.from.pos == this.to.pos) return false;
+      if (this.isInternal) {
+        if (!comesFromInside || !goesToInside) return false;
       }
-      if (comesFromOutside) return true;
-      return false;
+      else {
+        if (!goesToOutside || !comesFromOutside) return false;
+      }
+      return true;
     }
-    if (fromState.isSuperstate(this.to.id) && goesToInside) return true;
-    if (!goesToOutside) return false;
-    if (fromState.isSubstate(this.to.id) && !comesFromInside) return true;
-    if (!comesFromOutside) return false;
+    if (fromState.isSuperstate(this.to.id)) {
+      if (!goesToInside || !comesFromOutside) return false;
+      return true;
+    }
+    if (fromState.isSubstate(this.to.id)) {
+      if (!goesToOutside || !comesFromInside) return false;
+      return true;
+    }
+    if (!goesToOutside || !comesFromOutside) return false;
     return true;
   }
 
