@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <q-card class="my-card-tr text-black bg-color-tr">
+  <q-card class="my-card-tr text-black bg-blue">
     <q-bar class="text-grey-9 bg-amber-2">
       <div class=" my-no-overflow">
         Transition: {{ element.id }}
@@ -9,7 +9,7 @@
       <q-btn flat v-close-popup round dense icon="close" />
     </q-bar>
 
-    <div class="q-pa-md my-region-tr">
+    <div class="q-pa-md my-region-tr bg-color-tr yblue">
       <div class="q-pa-sm q-mb-md border-tr">
         <div class="row no-wrap">
           <div class="q-pr-sm">
@@ -69,7 +69,6 @@ color-from {
 
 .my-card-tr {
   /* overflow: hidden !important; */
-  background-color: v-bind(bgColor);
   min-width: 400px;
   min-width: 50vw;
 }

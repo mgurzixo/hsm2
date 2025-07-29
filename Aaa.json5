@@ -14,7 +14,7 @@
     cursorMarginP: 9,
     maxTransRadiusMm: 4,
     initialTransLength: 2,
-    defaultSegmentLengthMm: 6,
+    defaultSegmentLengthMm: 10,
     arrowLengthMm: 3,
     arrowWidthMm: 0.75,
     smallestSegMm: 1,

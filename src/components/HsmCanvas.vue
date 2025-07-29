@@ -33,6 +33,7 @@ import * as V from "vue";
 import PopupMenu from "src/components/PopupMenu.vue";
 import StateDialog from "src/components/StateDialog.vue";
 import TrDialog from "src/components/TrDialog.vue";
+import FolioDialog from "src/components/FolioDialog.vue";
 import contextMenu from "src/menus/contextMenu";
 import { setCanvasListeners, removeCanvasListeners } from "src/lib/canvasListeners";
 import { Chsm, hsm, cursor } from "src/classes/Chsm";
@@ -74,6 +75,7 @@ function openElementDialog(myElement) {
   elementId.value = myElement.id;
   console.log(`[HsmCanvas.openElementDialog] elemId:${myElement.id}`);
   if (myElement.id.startsWith("S")) dialogComponent.value = StateDialog;
+  else if (myElement.id.startsWith("F")) dialogComponent.value = FolioDialog;
   else dialogComponent.value = TrDialog;
   dialogToggle.value = true;;
 
