@@ -21,8 +21,8 @@
             <div class="color-to"> {{ elemTo.id }}: {{ elemTo.name }} </div>
           </div>
         </div>
-        <q-checkbox dense v-if="element.from.id == element.to.id" class="q-pt-xs color-from " v-model="isInternal"
-          label="Internal transition" />
+        <q-checkbox dense v-if="element.from.id == element.to.id" class="q-pt-xs color-from "
+          v-model="element.isInternal" label="Internal transition" @click="hsm.draw()" />
       </div>
       <div class="q-py-sm">
         <q-input dense v-model="element.entry" label="Trigger:" outlined />
