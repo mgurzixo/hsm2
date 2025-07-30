@@ -5,13 +5,23 @@ import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
+import { Cnote } from "src/classes/Cnote";
 
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
     super(parent, options, "F");
     this.geo = options.geo;
     this.trs = [];
+    this.notes = [];
     // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
+  }
+
+  addNote(noteOptions) {
+    const myNote = new Cnote(this, noteOptions, "N");
+    hsm.hElems.insertElem(myNote);
+    this.notes.push(myNote);
+    myNote.load(noteOptions);
+    return myNote;
   }
 
   addTr(trOptions) {
@@ -31,6 +41,9 @@ export class Cfolio extends CbaseRegion {
     }
     for (let trOptions of folioOptions.trs) {
       this.addTr(trOptions);
+    }
+    for (let noteOptions of folioOptions.notes) {
+      this.addNote(noteOptions);
     }
   }
 
@@ -62,6 +75,9 @@ export class Cfolio extends CbaseRegion {
     this.geo.xx0 = this.geo.x0;
     this.geo.yy0 = this.geo.y0;
     // console.log(`[Cfolio.draw] Drawing ${this.id} y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
+    for (let note of this.notes) {
+      note.draw(this.geo.xx0, this.geo.yy0);
+    }
     for (let child of this.children) {
       child.draw(this.geo.xx0, this.geo.yy0);
     }

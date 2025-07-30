@@ -57,3 +57,19 @@ export function trStyles(baseColor) {
     lineErrorWidth: t.lineError.lineWidth,
   };
 }
+
+
+export function noteStyles(baseColor) {
+  const t = hsm.settings.styles.note;
+
+  return {
+    bg: t.bg.color,
+    borderColor: t.border.color,
+    borderWidth: t.border.lineWidth,
+    borderSelectedColor: t.borderSelected.color,
+    borderSelectedWidth: t.borderSelected.lineWidth,
+    textColor: t.text.color,
+    textFont: t.text.font,
+    textSizeP: t.text.sizeP
+  };
+}
