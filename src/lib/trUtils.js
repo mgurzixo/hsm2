@@ -138,10 +138,9 @@ export function createSegments(tr) {
     } else {
       // Side1 vertical
       if (dya != 0) {
-        const dir = dxa - dsl >= 0 ? dirH : U.reverseDir(dirH);
-        segments.push({ dir: dirH, len: dsl });
+        segments.push({ dir: dirH, len: dxa / 2 });
         segments.push({ dir: dirV, len: dya });
-        segments.push({ dir: dirH, len: Math.abs(dxa - dsl) });
+        segments.push({ dir: dirH, len: dxa - dxa / 2 });
       } else {
         segments.push({ dir: dirH, len: dxa });
       }
@@ -389,21 +388,27 @@ export function dragLastSegment(tr, dx, dy) {
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
 }
 
-export function dragEndAnchor(tr, dx, dy) {
+export function dragToAnchor(tr, dx, dy) {
   const dragCtx = hCtx.getDragCtx();
-  const [theElem, theSide, thePos] = tr.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
-  // console.log(`[trUtils.dragEndAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
+  const [theElem, theSide, thePos] = tr.findNearestTarget(tr, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+  // console.log(`[trUtils.dragToAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.to.id = theElem.id;
   tr.to.side = theSide;
   tr.to.pos = thePos;
+  if ((U.isHoriz(theSide) && U.isHoriz(tr.from.side)) ||
+    (!U.isHoriz(theSide) && !U.isHoriz(tr.from.side))) {
+    const [xFrom, yFrom] = anchorToXY(tr.from);
+    const [xTo, yTo] = anchorToXY(tr.to);
+  }
+
   tr.segments = tr.getInitialSegments();
 }
 
-export function dragStartAnchor(tr, dx, dy) {
+export function dragFromAnchor(tr, dx, dy) {
   const idz = tr.idz();
   const dragCtx = hCtx.getDragCtx();
-  const [theElem, theSide, thePos] = tr.findNearestTarget(dragCtx.xx0 + dx, dragCtx.yy0 + dy);
-  // console.log(`[trUtils.dragStartAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
+  const [theElem, theSide, thePos] = tr.findNearestTarget(tr, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+  // console.log(`[trUtils.dragFromAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.from.id = theElem.id;
   tr.from.side = theSide;
   tr.from.pos = thePos;

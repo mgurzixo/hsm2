@@ -28,6 +28,7 @@ export class CbaseElem {
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
     else this.color = "grey";
     this.isSelected = false;
+    if (obj.justCreated) this.justCreated = obj.justCreated;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 

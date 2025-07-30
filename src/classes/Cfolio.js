@@ -85,6 +85,7 @@ export class Cfolio extends CbaseRegion {
         width: w,
         height: h,
       },
+      justCreated: true,
     };
     const myState = new Cstate(this, stateOptions, "S");
     // console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);

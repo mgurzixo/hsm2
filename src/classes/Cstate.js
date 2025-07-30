@@ -114,6 +114,7 @@ export class Cstate extends CbaseState {
         width: w,
         height: h,
       },
+      justCreated: true,
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
     // console.log(`[Cstate.insertState] New state id:${myState?.id} parent:${myState.parent}`);
@@ -187,6 +188,7 @@ export class Cstate extends CbaseState {
         pos: pos2,
       },
       isInternal: false,
+      justCreated: true,
     };
     const myTr = hCtx.folio.addTr(trOptions);
     let [xx0, yy0] = [0, 0];
@@ -351,6 +353,15 @@ export class Cstate extends CbaseState {
     hsm.adjustChange(this.id);
   }
 
+  checkOpenDialogAndEndDrag() {
+    console.log(`[Cstate.checkOpenDialogAndEndDrag] (${this.id}) justCreated:${this.justCreated}`);
+    if (this.justCreated == true) {
+      hsm.openDialog(this);
+      delete this.justCreated;
+    }
+    hCtx.dragEnd();
+  }
+
   dragRevert(deltaX, deltaY) {
     this.isRevertingDrag = true;
     const dragCtx = hCtx.getDragCtx();
@@ -360,8 +371,6 @@ export class Cstate extends CbaseState {
     let currentIteration = 0;
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
     // Restore original segments
-
-
     function myCb() {
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
       // console.log(`[Cstate.dragRevert] #${currentIteration} ease:${ease.toFixed(2)}`);
@@ -369,13 +378,14 @@ export class Cstate extends CbaseState {
       const dy = deltaY * (1 - ease);
       hsm.drag(dx, dy);
       if (currentIteration >= totalIterations) {
-        U.getElemById(hCtx.draggedId).isRevertingDrag = false;
+        const elem = U.getElemById(hCtx.draggedId);
+        elem.isRevertingDrag = false;
         for (const trId of Object.keys(dragCtx.segments0)) {
           const tr = U.getElemById(trId);
           tr.segments = dragCtx.segments0[trId.toString()];
         }
         hCtx.setErrorId(null);
-        hCtx.dragEnd();
+        elem.checkOpenDialogAndEndDrag();
       } else {
         currentIteration++;
         window.requestIdleCallback(myCb);
@@ -394,6 +404,7 @@ export class Cstate extends CbaseState {
       this.dragRevert(dx, dy);
       return false;
     }
+    this.checkOpenDialogAndEndDrag();
     return true;
   }
 

@@ -28,8 +28,9 @@ export class Ctr extends CbaseElem {
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
   }
 
-  findNearestTarget(x0, y0) {
+  findNearestTarget(tr, x0, y0) {
     // console.log(`[Ctr.findNearestTarget] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()}`);
+    const r = hsm.settings.maxTransRadiusMm;
     let bestDist = Number.MAX_VALUE;
     let bestElem;
     let bestPos;
@@ -43,16 +44,16 @@ export class Ctr extends CbaseElem {
           switch (mySide) {
             case "T":
             case "B":
-              myX0 = geo.xx0;
-              myX1 = geo.xx0 + geo.width;
-              myY0 = mySide == "T" ? geo.yy0 : geo.yy0 + geo.height;
+              myX0 = geo.xx0 + r;
+              myX1 = geo.xx0 + geo.width - r;
+              myY0 = mySide == "T" ? geo.yy0 + r : geo.yy0 + geo.height - r;
               myY1 = myY0;
               break;
             case "L":
             case "R":
-              myY0 = geo.yy0;
-              myY1 = geo.yy0 + geo.height;
-              myX0 = mySide == "L" ? geo.xx0 : geo.xx0 + geo.width;
+              myY0 = geo.yy0 + r;
+              myY1 = geo.yy0 + geo.height - r;
+              myX0 = mySide == "L" ? geo.xx0 + r : geo.xx0 + geo.width - r;
               myX1 = myX0;
               break;
           }
@@ -100,8 +101,8 @@ export class Ctr extends CbaseElem {
 
   drag(dx, dy) {
     const dragCtx = hCtx.getDragCtx();
-    if (dragCtx.zone == "FROM") T.dragStartAnchor(this, dx, dy);
-    else if (dragCtx.zone == "TO") T.dragEndAnchor(this, dx, dy);
+    if (dragCtx.zone == "FROM") T.dragFromAnchor(this, dx, dy);
+    else if (dragCtx.zone == "TO") T.dragToAnchor(this, dx, dy);
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
     else T.dragNormalSegment(this, dx, dy);
@@ -118,6 +119,10 @@ export class Ctr extends CbaseElem {
     delete this.to.prevX;
     delete this.to.prevY;
     console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
+    if (this.justCreated == true) {
+      hsm.openDialog(this);
+      delete this.justCreated;
+    }
     if (hCtx.getErrorId() == this.id) {
       return false;
     }
@@ -231,9 +236,7 @@ export class Ctr extends CbaseElem {
       if (this.isInternal) {
         if (!comesFromInside || !goesToInside) return false;
       }
-      else {
-        if (!goesToOutside || !comesFromOutside) return false;
-      }
+      else if (!goesToOutside || !comesFromOutside) return false;
       return true;
     }
     if (fromState.isSuperstate(this.to.id)) {
