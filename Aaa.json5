@@ -112,12 +112,12 @@
       notes: [
         {
           geo: {
-            x0: 10,
+            x0: 20,
             y0: 5,
             width: 100,
             height: 20,
-            Text: "hello World!",
           },
+          text: "Hello **World**!",
         },
       ],
       trs: [

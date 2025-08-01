@@ -3,20 +3,26 @@
 import * as U from "src/lib/utils";
 import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
-import { Cregion } from "src/classes/Cregion";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { noteStyles } from "src/lib/styles";
-
 
 export class Cnote extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "N");
     // console.log(`[Cnote] New state id:${this.id} parent:${this.parent.id}`);
+    // console.log(`[Cnote] text:${options.text}`);
+    this.text = options?.text || "";
   }
 
-  load(noteOptions) {
-    // console.log(`[Cnote.load] regions:${noteOptions?.regions}`);
-    this.text = noteOptions?.text || "Coucou!";
+  // load(noteOptions) {
+  //   console.warn(`[Cnote.load] noteOptions:${noteOptions?.regions}`);
+  //   this.text = noteOptions?.text || "";
+  // }
+
+  setSelected(val) {
+    console.log(`[Cnote.setSelected] (${this.id}) } setSelected:${val}`);
+    if (val) hsm.openDialog(this);
+    hCtx.setSelectedId(null);
   }
 
   // dragStart() {
@@ -187,15 +193,15 @@ export class Cnote extends CbaseElem {
   }
 
   draw(xx0, yy0) {
-    console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
+    // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0} ge0.x0:${this.geo.x0}`);
     this.geo.xx0 = xx0 + this.geo.x0;
     this.geo.yy0 = yy0 + this.geo.y0;
-    // console.log(`[Cnote.draw] Drawing ${this.id} yy0:${yy0} geo.y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
     const styles = noteStyles(this.color || hsm.settings.styles.defaultColor);
     const x0P = RR(U.mmToPL(this.geo.xx0), styles.borderWidth);
     const y0P = RR(U.mmToPL(this.geo.yy0));
     const widthP = R(U.mmToPL(this.geo.width));
     const heightP = R(U.mmToPL(this.geo.height));
+    // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} geo.xx0:${this.geo.xx0} X0P:${x0P}`);
     // Draw note background
     cCtx.fillStyle = styles.bg;
     U.pathRoundedRectP(x0P, y0P, widthP, heightP, 1);
@@ -214,11 +220,11 @@ export class Cnote extends CbaseElem {
     cCtx.font = `${styles.textSizeP}px ${styles.textFont}`;
     // console.log(`[Cnote.draw] Selected:${this.isSelected}`);
     cCtx.fillStyle = styles.textColor;
-    cCtx.textBaseline = "middle";
-    cCtx.textAlign = "center";
+    cCtx.textBaseline = "alphabetic";
+    cCtx.textAlign = "left";
     cCtx.fillText(
       this.text,
-      x0P + 40,
+      x0P,
       y0P + styles.textSizeP,
       widthP,
     );
@@ -237,21 +243,18 @@ export class Cnote extends CbaseElem {
     )
       return idz;
     let id = this.id;
-    let zone = "M";
-    if (x <= this.geo.x0 + r) {
-      if (y <= this.geo.y0 + r) zone = "TL";
-      else if (y >= this.geo.y0 + this.geo.height - r) zone = "BL";
-      else if (x <= this.geo.x0 + m) zone = "L";
-    } else if (x >= this.geo.x0 + this.geo.width - r) {
-      if (y <= this.geo.y0 + r) zone = "TR";
-      else if (y >= this.geo.y0 + this.geo.height - r) zone = "BR";
-      else if (x >= this.geo.x0 + this.geo.width - m) zone = "R";
-    } else if (y <= this.geo.y0 + m) zone = "T";
-    else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
+    let zone = "E";
+    // if (x <= this.geo.x0 + r) {
+    //   if (y <= this.geo.y0 + r) zone = "TL";
+    //   else if (y >= this.geo.y0 + this.geo.height - r) zone = "BL";
+    //   else if (x <= this.geo.x0 + m) zone = "L";
+    // } else if (x >= this.geo.x0 + this.geo.width - r) {
+    //   if (y <= this.geo.y0 + r) zone = "TR";
+    //   else if (y >= this.geo.y0 + this.geo.height - r) zone = "BR";
+    //   else if (x >= this.geo.x0 + this.geo.width - m) zone = "R";
+    // } else if (y <= this.geo.y0 + m) zone = "T";
+    // else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
     idz = { id: id, zone: zone, x: x, y: y };
-    for (let child of this.children) {
-      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    }
     // console.log(`[Cnote.makeIdz] (${this.id}) id:${id} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
     return idz;
   }

@@ -49,10 +49,13 @@ export class Chsm extends CbaseElem {
   }
 
   setCursor(idz = this.idz()) {
+    // console.log(`[Chsm.setCursor] idz.id:${idz?.id}`);
     const elem = this.hElems.getElemById(idz.id);
-    let val = elem.defineCursor(idz);
-    // console.log(`[Chsm.setCursor] cursor:${val}`);
-    cursor.value = val;
+    if (elem) {
+      let val = elem.defineCursor(idz);
+      // console.log(`[Chsm.setCursor] cursor:${val}`);
+      cursor.value = val;
+    }
   }
 
   addFolio(folioOptions) {
@@ -114,14 +117,14 @@ export class Chsm extends CbaseElem {
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
-    // console.log(`[Chsm.click] elem:${elem?.id}`);
+    console.log(`[Chsm.click] elem:${elem?.id} SelectedId:${hCtx.getSelectedId()}`);
     if (hCtx.getSelectedId()) {
-      this.setSelected(false);
       hCtx.setSelectedId(null);
+      this.setSelected(false);
     } else {
       this.setSelected(false);
-      elem.setSelected(true);
       hCtx.setSelectedId(elem.id);
+      elem.setSelected(true);
     }
     for (let tr of hCtx.folio.trs) {
       if (hElems.getElemById(tr.from.id).isSelected && hElems.getElemById(tr.to.id).isSelected) tr.setSelected(true);

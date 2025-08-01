@@ -219,6 +219,9 @@ export class CbaseElem {
       case "R":
         cursor = "e-resize";
         break;
+      case "E":
+        cursor = "text";
+        break;
       default:
         cursor = "default";
     }

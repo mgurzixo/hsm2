@@ -17,10 +17,11 @@ export class Cfolio extends CbaseRegion {
   }
 
   addNote(noteOptions) {
+    // console.log(`[Cfolio.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");
     hsm.hElems.insertElem(myNote);
+    // myNote.load(noteOptions);
     this.notes.push(myNote);
-    myNote.load(noteOptions);
     return myNote;
   }
 
@@ -183,6 +184,9 @@ export class Cfolio extends CbaseRegion {
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
+    for (let note of this.notes) {
+      idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+    }
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
