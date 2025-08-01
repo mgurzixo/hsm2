@@ -19,8 +19,8 @@
       </div>
 
       <div class="col row no-wrap">
-        <q-input dense v-model="element.text" label="Markdown Text:" outlined autogrow overflow-auto @cchange="updateMd"
-          class="input-container col-6 q-pr-sm" />
+        <q-input dense v-model="element.text" label="Markdown Text:" outlined autogrow overflow-auto
+          @update:model-value="doSvg" class="input-container col-6 q-pr-sm" />
         <!-- <div class="q-pr-sm"></div> -->
         <div ref="svgContainer" class="svg-container col-6 q-pa-sm overflow-auto">
         </div>
@@ -119,6 +119,9 @@ const props = defineProps({
   element: {
     type: Object,
   },
+  elementId: {
+    type: String,
+  },
 });
 
 
@@ -127,9 +130,6 @@ function adjustSizes() {
   let height = qCardE.offsetHeight - headerE.offsetHeight;
   console.log(`[noteDialog.adjustSizes] height:${height}`);
   payloadE.style.height = height + "px";
-}
-
-function updateMd() {
 }
 
 function debounce(callback, delay) {
@@ -142,44 +142,53 @@ function debounce(callback, delay) {
   };
 }
 
-let newDiv;
+// let newDiv;
 
 async function doSvg() {
-  const text = props.element.text;
-  const mdHtml = md.render(props.element.text);
-  // console.log(`[noteDialog.doSvg] mdHtml:${mdHtml}`);
-  newDiv.innerHTML = mdHtml;
-  newDiv.style.height = "1024px";
-  newDiv.style.width = "724px";
-  const scale = sliderScale.value;
-  domtoimage
-    .toSvg(newDiv, {
-      width: newDiv.clientWidth * scale,
-      height: newDiv.clientHeight * scale,
-      style: {
-        transform: "scale(" + scale + ")",
-        transformOrigin: "top left"
-      }
-    })
-    .then(function (dataUrl) {
-      var img = new Image();
-      img.src = dataUrl;
-      svgContainer.value.replaceChildren(img);
-      newDiv.innerHTML = "";
-      hsm.draw();
-      // console.log(`[noteDialog.doSvg] dataUrl:${dataUrl}`);
-    })
-    .catch(function (error) {
-      console.error(`[noteDialog.doSvg] Error:${error}`);
-    });
+  if (!svgContainer.value) return;
+  const img = await U.mdToSvg(props.element.text, "724px", "1024px", sliderScale.value);
+  svgContainer.value.replaceChildren(img);
+  // eslint-disable-next-line vue/no-mutating-props
+  props.element.svgImage = img;
+  hsm.draw();
+  console.log(`[noteDialog.doSvg]`);
+  // console.log(`[noteDialog.doSvg] dataUrl:${dataUrl}`);
+
+  // const text = props.element.text;
+  // const mdHtml = md.render(props.element.text);
+  // // console.log(`[noteDialog.doSvg] mdHtml:${mdHtml}`);
+  // newDiv.innerHTML = mdHtml;
+  // newDiv.style.height = "1024px";
+  // newDiv.style.width = "724px";
+  // const scale = sliderScale.value;
+  // domtoimage
+  //   .toSvg(newDiv, {
+  //     width: newDiv.clientWidth * scale,
+  //     height: newDiv.clientHeight * scale,
+  //     style: {
+  //       transform: "scale(" + scale + ")",
+  //       transformOrigin: "top left"
+  //     }
+  //   })
+  //   .then(function (dataUrl) {
+  //     var img = new Image();
+  //     img.src = dataUrl;
+  //     svgContainer.value.replaceChildren(img);
+  //     newDiv.innerHTML = "";
+  //     hsm.draw();
+  //     // console.log(`[noteDialog.doSvg] dataUrl:${dataUrl}`);
+  //   })
+  //   .catch(function (error) {
+  //     console.error(`[noteDialog.doSvg] Error:${error}`);
+  //   });
 }
 
 const doSvgDebounced = debounce(doSvg, 100);
 
-V.watch(props.element, async (el) => {
-  console.log(`[noteDialog.watch.element] id:${el.id}`);
-  doSvgDebounced();
-}, { immediate: true });
+// V.watch(props.elementId, async (id) => {
+//   console.log(`[noteDialog.watch.element] id:${id}`);
+//   doSvgDebounced();
+// }, { immediate: true });
 
 V.watch(sliderScale, async (el) => {
   doSvgDebounced();
@@ -192,8 +201,8 @@ V.onUnmounted(() => {
 V.onMounted(async () => {
   console.log(`[noteDialog.onMounted]`);
   bgColor.value = hsm.settings.styles.folioBackground;
-  newDiv = document.createElement("div");
-  document.body.appendChild(newDiv);
+  // newDiv = document.createElement("div");
+  // document.body.appendChild(newDiv);
   await U.nextTick();
   qCardE = document.getElementById("noteCardId");
   headerE = document.getElementById("noteHeaderId");
@@ -201,5 +210,6 @@ V.onMounted(async () => {
   console.log(`[noteDialog.onMounted] qCardE:${qCardE} headerE:${headerE} payloadE:${payloadE}`);
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(qCardE);
+  doSvgDebounced();
 });
 </script>

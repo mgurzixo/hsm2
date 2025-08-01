@@ -58,8 +58,9 @@ export class CbaseElem {
     hsm.hElems.removeElemById(this.id);
   }
 
-  load(options) {
+  async load(options) {
     console.warn(`[CbaseElem.load] this:${this.id}`);
+    return true;
   }
 
   onLoaded() {

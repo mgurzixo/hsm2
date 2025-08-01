@@ -14,7 +14,7 @@ export class Ctr extends CbaseElem {
     this.isBaseTr = true;
   }
 
-  load(transOptions) {
+  async load(transOptions) {
     this.segments = transOptions.segments;
     this.from = transOptions.from;
     this.to = transOptions.to;

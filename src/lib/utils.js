@@ -4,6 +4,9 @@ export const inchInMm = 25.4;
 
 import * as V from "vue";
 import { hsm, hElems, cCtx } from "src/classes/Chsm";
+import domtoimage from 'dom-to-image-more';
+import markdownit from 'markdown-it';
+const md = markdownit();
 
 export function RR(x, lineWidth = 1) {
   if (!lineWidth % 2) return Math.round(x);
@@ -292,4 +295,37 @@ export function rgbToHsl(r, g, b) {
   let l = (min + max) / 2;
   let s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
   return [h * 60, s, l];
+}
+
+let mdToSvgDiv = document.createElement("div");
+
+document.body.appendChild(mdToSvgDiv);
+
+export async function mdToSvg(mdText, width = "724px", height = "1024px", scale = 1) {
+  const mdHtml = md.render(mdText);
+  // console.log(`[utils.mdToSvg] mdHtml:${mdHtml}`);
+  mdToSvgDiv.innerHTML = mdHtml;
+  mdToSvgDiv.style.height = height;
+  mdToSvgDiv.style.width = width;
+  return domtoimage
+    // .toSvg(mdToSvgDiv, {
+    .toSvg(mdToSvgDiv, {
+      width: mdToSvgDiv.clientWidth * scale,
+      height: mdToSvgDiv.clientHeight * scale,
+      style: {
+        transform: "scale(" + scale + ")",
+        transformOrigin: "top left"
+      }
+    })
+    .then(function (dataUrl) {
+      var img = new Image();
+      img.src = dataUrl;
+      // console.log(`[utils.mdToSvg] dataUrl:${dataUrl}`);
+      // console.log(`[utils.mdToSvg] img:${img}`);
+      return img;
+    })
+    .catch(function (error) {
+      console.error(`[utils.mdToSvg] Error:${error}`);
+      return null;
+    });
 }

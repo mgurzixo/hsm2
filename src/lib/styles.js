@@ -70,6 +70,7 @@ export function noteStyles(baseColor) {
     borderSelectedWidth: t.borderSelected.lineWidth,
     textColor: t.text.color,
     textFont: t.text.font,
-    textSizeP: t.text.sizeP
+    textSizeP: t.text.sizeP,
+    cornerP: hsm.settings.noteCornerP
   };
 }

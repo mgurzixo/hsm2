@@ -1,7 +1,7 @@
 <template>
   <div class="full-size">
     <q-dialog v-model="dialogToggle">
-      <component :is="dialogComponent" :element="element"></component>
+      <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
     <canvas ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
@@ -81,7 +81,7 @@ function openElementDialog(myElement) {
   else if (myElement.id.startsWith("T")) dialogComponent.value = TrDialog;
   else if (myElement.id.startsWith("N")) dialogComponent.value = NoteDialog;
   else dialogComponent.value = null;
-  if (dialogComponent.value) dialogToggle.value = true;;
+  if (dialogComponent.value) dialogToggle.value = true;
 
   // const e = new Event("click");
   // contextAnchor.value.dispatchEvent(e);

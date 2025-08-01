@@ -49,16 +49,16 @@ export class Cstate extends CbaseState {
     super(parent, options, "S");
   }
 
-  addRegion(regionOptions) {
+  async addRegion(regionOptions) {
     const myRegion = new Cregion(this, regionOptions);
     hsm.hElems.insertElem(myRegion);
     this.children.push(myRegion);
-    myRegion.load(regionOptions);
+    await myRegion.load(regionOptions);
     myRegion.geo.y0 = hsm.settings.stateTitleHeightMm;
     myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateTitleHeightMm;
   }
 
-  load(stateOptions) {
+  async load(stateOptions) {
     // console.log(`[Cstate.load] regions:${stateOptions?.regions}`);
     if (!stateOptions?.regions) return;
     for (let id of Object.keys(stateOptions.regions)) {

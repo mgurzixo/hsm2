@@ -58,14 +58,14 @@ export class Chsm extends CbaseElem {
     }
   }
 
-  addFolio(folioOptions) {
+  async addFolio(folioOptions) {
     const myFolio = new Cfolio(this, folioOptions);
     this.hElems.insertElem(myFolio);
     this.children.push(myFolio);
-    myFolio.load(folioOptions);
+    await myFolio.load(folioOptions);
   }
 
-  load(hsmOptions) {
+  async load(hsmOptions) {
     this.settings = hsmOptions.settings;
     this.status = hsmOptions.status;
     this.serNum = hsmOptions.serNum;
@@ -73,7 +73,7 @@ export class Chsm extends CbaseElem {
     this.hElems.insertElem(this);
     setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
     for (let folioOptions of hsmOptions.folios) {
-      this.addFolio(folioOptions);
+      await this.addFolio(folioOptions);
     }
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);

@@ -66,11 +66,11 @@ export class Cregion extends CbaseRegion {
     super(parent, options, "R");
   }
 
-  addState(stateOptions) {
+  async addState(stateOptions) {
     const myState = new Cstate(this, stateOptions);
     hsm.hElems.insertElem(myState);
     this.children.push(myState);
-    myState.load(stateOptions);
+    await myState.load(stateOptions);
   }
 
   dragStart() {
@@ -109,13 +109,13 @@ export class Cregion extends CbaseRegion {
     }
   }
 
-  load(regionOptions) {
+  async load(regionOptions) {
     // console.log(`[Cregion.load] states:${regionOptions?.states}`);
     for (let stateOption of regionOptions.states) {
       const myState = new Cstate(this, stateOption);
       hsm.hElems.insertElem(myState);
       this.children.push(myState);
-      myState.load(stateOption);
+      await myState.load(stateOption);
     }
   }
 

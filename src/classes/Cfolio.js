@@ -16,36 +16,37 @@ export class Cfolio extends CbaseRegion {
     // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
   }
 
-  addNote(noteOptions) {
+  async addNote(noteOptions) {
     // console.log(`[Cfolio.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");
     hsm.hElems.insertElem(myNote);
-    // myNote.load(noteOptions);
+    await myNote.load(noteOptions);
     this.notes.push(myNote);
     return myNote;
   }
 
-  addTr(trOptions) {
+  async addTr(trOptions) {
     const myTr = new Ctr(this, trOptions, "T");
     hsm.hElems.insertElem(myTr);
     this.trs.push(myTr);
-    myTr.load(trOptions);
+    await myTr.load(trOptions);
     return myTr;
   }
 
-  load(folioOptions) {
+  async load(folioOptions) {
     for (let stateOption of folioOptions.states) {
       const myState = new Cstate(this, stateOption);
       hsm.hElems.insertElem(myState);
       this.children.push(myState);
-      myState.load(stateOption);
+      await myState.load(stateOption);
     }
     for (let trOptions of folioOptions.trs) {
-      this.addTr(trOptions);
+      await this.addTr(trOptions);
     }
     for (let noteOptions of folioOptions.notes) {
-      this.addNote(noteOptions);
+      await this.addNote(noteOptions);
     }
+    return true;
   }
 
   onLoaded() {
