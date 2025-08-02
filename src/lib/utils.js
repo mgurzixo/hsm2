@@ -4,8 +4,11 @@ export const inchInMm = 25.4;
 
 import * as V from "vue";
 import { hsm, hElems, cCtx } from "src/classes/Chsm";
-import domtoimage from 'dom-to-image-more';
+// import * as htmlToImage from 'html-to-image';
+import html2canvas from 'html2canvas-pro';
+
 import markdownit from 'markdown-it';
+import { mdiAbTesting } from "@quasar/extras/mdi-v4";
 const md = markdownit();
 
 export function RR(x, lineWidth = 1) {
@@ -297,35 +300,40 @@ export function rgbToHsl(r, g, b) {
   return [h * 60, s, l];
 }
 
-let mdToSvgDiv = document.createElement("div");
+let mdDiv = document.createElement("div");
+mdDiv.id = "mdDiv";
+mdDiv.style.position = "fixed";
+mdDiv.style.top = "-2000px";
+mdDiv.style.left = "-2000px";
+mdDiv.classList.add("markdown-body");
 
-document.body.appendChild(mdToSvgDiv);
+document.body.appendChild(mdDiv);
 
-export async function mdToSvg(mdText, width = "724px", height = "1024px", scale = 1) {
+export async function mdToCanvas(mdText, scale = 1) {
   const mdHtml = md.render(mdText);
-  // console.log(`[utils.mdToSvg] mdHtml:${mdHtml}`);
-  mdToSvgDiv.innerHTML = mdHtml;
-  mdToSvgDiv.style.height = height;
-  mdToSvgDiv.style.width = width;
-  return domtoimage
-    // .toSvg(mdToSvgDiv, {
-    .toSvg(mdToSvgDiv, {
-      width: mdToSvgDiv.clientWidth * scale,
-      height: mdToSvgDiv.clientHeight * scale,
-      style: {
-        transform: "scale(" + scale + ")",
-        transformOrigin: "top left"
-      }
-    })
-    .then(function (dataUrl) {
-      var img = new Image();
-      img.src = dataUrl;
-      // console.log(`[utils.mdToSvg] dataUrl:${dataUrl}`);
-      // console.log(`[utils.mdToSvg] img:${img}`);
-      return img;
+  // console.log(`[utils.mdToCanvas] mdHtml:${mdHtml}`);
+  mdDiv.innerHTML = mdHtml;
+  mdDiv.style.transform = "scale(" + scale + ")";
+  mdDiv.style.transformOrigin = "top left";
+  return html2canvas(mdDiv)
+    .then(function (canvas) {
+      // console.log(`[utils.mdToCanvas] dataUrl:${dataUrl}`);
+      // console.log(`[utils.mdToCanvas] canvas:${canvas} w:${canvas.width} h:${canvas.height}`);
+      return canvas;
     })
     .catch(function (error) {
-      console.error(`[utils.mdToSvg] Error:${error}`);
+      console.error(`[utils.mdToCanvas] Error:${error}`);
       return null;
     });
+}
+
+
+export function debounce(callback, delay) {
+  let timer;
+  return function () {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      callback();
+    }, delay);
+  };
 }

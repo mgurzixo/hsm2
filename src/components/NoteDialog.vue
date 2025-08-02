@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <q-card id="noteCardId" class="my-card-note text-black col-auto">
     <q-bar id="noteHeaderId" class="text-grey-9 bg-amber-2">
@@ -19,10 +18,10 @@
       </div>
 
       <div class="col row no-wrap">
-        <q-input dense v-model="element.text" label="Markdown Text:" outlined autogrow overflow-auto
+        <q-input dense v-model="elemNote.text" label="Markdown Text:" outlined autogrow overflow-auto
           @update:model-value="doSvg" class="input-container col-6 q-pr-sm" />
         <!-- <div class="q-pr-sm"></div> -->
-        <div ref="svgContainer" class="svg-container col-6 q-pa-sm overflow-auto">
+        <div ref="canvasContainer" class="svg-container col-6 q-pa-sm overflow-auto">
         </div>
       </div>
     </div>
@@ -88,15 +87,12 @@
 </style>
 
 <script setup>
+// eslint-disable vue/no-mutating-props
+
 import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { stateStyles, trStyles } from "src/lib/styles";
-import NoteRenderer from "src/components/NoteRenderer.vue";
-import markdownit from 'markdown-it';
-import html2canvas from 'html2canvas';
-const md = markdownit();
-import domtoimage from 'dom-to-image-more';
 
 const bgColor = V.ref("white");
 const isInternal = V.ref(true);
@@ -106,8 +102,8 @@ const colorFrom = V.ref("red");
 const mdHtml = V.ref("");
 const myDiv = V.ref(null);
 const canvasContainer = V.ref(null);
-const svgContainer = V.ref(null);
 const sliderScale = V.ref(1);
+const elemNote = V.ref({});
 
 let qCardE;
 let headerE;
@@ -128,62 +124,24 @@ const props = defineProps({
 function adjustSizes() {
   if (!qCardE || !headerE || !payloadE) return;
   let height = qCardE.offsetHeight - headerE.offsetHeight;
-  console.log(`[noteDialog.adjustSizes] height:${height}`);
+  // console.log(`[noteDialog.adjustSizes] height:${height}`);
   payloadE.style.height = height + "px";
 }
 
-function debounce(callback, delay) {
-  let timer;
-  return function () {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      callback();
-    }, delay);
-  };
-}
 
 // let newDiv;
 
 async function doSvg() {
-  if (!svgContainer.value) return;
-  const img = await U.mdToSvg(props.element.text, "724px", "1024px", sliderScale.value);
-  svgContainer.value.replaceChildren(img);
-  // eslint-disable-next-line vue/no-mutating-props
-  props.element.svgImage = img;
+  if (!canvasContainer.value) return;
+  const canvas = await U.mdToCanvas(elemNote.value.text, sliderScale.value * 1.2);
+  canvasContainer.value.replaceChildren(canvas);
+  elemNote.value.scale = sliderScale.value;
+  elemNote.value.makeCanvas();
   hsm.draw();
-  console.log(`[noteDialog.doSvg]`);
-  // console.log(`[noteDialog.doSvg] dataUrl:${dataUrl}`);
-
-  // const text = props.element.text;
-  // const mdHtml = md.render(props.element.text);
-  // // console.log(`[noteDialog.doSvg] mdHtml:${mdHtml}`);
-  // newDiv.innerHTML = mdHtml;
-  // newDiv.style.height = "1024px";
-  // newDiv.style.width = "724px";
-  // const scale = sliderScale.value;
-  // domtoimage
-  //   .toSvg(newDiv, {
-  //     width: newDiv.clientWidth * scale,
-  //     height: newDiv.clientHeight * scale,
-  //     style: {
-  //       transform: "scale(" + scale + ")",
-  //       transformOrigin: "top left"
-  //     }
-  //   })
-  //   .then(function (dataUrl) {
-  //     var img = new Image();
-  //     img.src = dataUrl;
-  //     svgContainer.value.replaceChildren(img);
-  //     newDiv.innerHTML = "";
-  //     hsm.draw();
-  //     // console.log(`[noteDialog.doSvg] dataUrl:${dataUrl}`);
-  //   })
-  //   .catch(function (error) {
-  //     console.error(`[noteDialog.doSvg] Error:${error}`);
-  //   });
+  // console.log(`[noteDialog.doSvg]`);
 }
 
-const doSvgDebounced = debounce(doSvg, 100);
+const doSvgDebounced = U.debounce(doSvg, 100);
 
 // V.watch(props.elementId, async (id) => {
 //   console.log(`[noteDialog.watch.element] id:${id}`);
@@ -195,11 +153,12 @@ V.watch(sliderScale, async (el) => {
 });
 
 V.onUnmounted(() => {
-  console.log(`[noteDialog.onUnmounted]`);
+  // console.log(`[noteDialog.onUnmounted]`);
 });
 
 V.onMounted(async () => {
-  console.log(`[noteDialog.onMounted]`);
+  // console.log(`[noteDialog.onMounted]`);
+  elemNote.value = U.getElemById(props.elementId);
   bgColor.value = hsm.settings.styles.folioBackground;
   // newDiv = document.createElement("div");
   // document.body.appendChild(newDiv);
@@ -207,7 +166,8 @@ V.onMounted(async () => {
   qCardE = document.getElementById("noteCardId");
   headerE = document.getElementById("noteHeaderId");
   payloadE = document.getElementById("notePayloadId");
-  console.log(`[noteDialog.onMounted] qCardE:${qCardE} headerE:${headerE} payloadE:${payloadE}`);
+  sliderScale.value = elemNote.value.scale;
+  // console.log(`[noteDialog.onMounted] qCardE:${qCardE} headerE:${headerE} payloadE:${payloadE}`);
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(qCardE);
   doSvgDebounced();

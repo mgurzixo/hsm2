@@ -7,6 +7,8 @@ import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { noteStyles } from "src/lib/styles";
 import { h } from "vue";
 
+
+
 export class Cnote extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "N");
@@ -15,10 +17,13 @@ export class Cnote extends CbaseElem {
   }
 
   async load(noteOptions) {
-    console.warn(`[Cnote.load] noteOptions:${noteOptions}`);
+    // console.log(`[Cnote.load] noteOptions:${noteOptions}`);
     this.text = noteOptions?.text || "";
     this.scale = noteOptions?.scale || 1;
-    this.svgImage = await U.mdToSvg(this.text, "724px", "1024px", this.scale);
+  }
+
+  async onLoaded() {
+    this.makeCanvas();
   }
 
   setSelected(val) {
@@ -59,7 +64,7 @@ export class Cnote extends CbaseElem {
     let height = dragCtx.height;
     // console.log(`[Cnote.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     if (idz.zone == "M") {
-      console.log(`[Cnote.drag] id:${this.id} idz.zone:${idz.zone}`);
+      // console.log(`[Cnote.drag] id:${this.id} idz.zone:${idz.zone}`);
       dx = U.myClamp(
         dx,
         x0,
@@ -115,7 +120,7 @@ export class Cnote extends CbaseElem {
   }
 
   checkOpenDialogAndEndDrag() {
-    console.log(`[Cnote.checkOpenDialogAndEndDrag] (${this.id}) justCreated:${this.justCreated}`);
+    // console.log(`[Cnote.checkOpenDialogAndEndDrag] (${this.id}) justCreated:${this.justCreated}`);
     if (this.justCreated == true) {
       hsm.openDialog(this);
       delete this.justCreated;
@@ -130,25 +135,20 @@ export class Cnote extends CbaseElem {
     return true;
   }
 
-  pathTitle(px, py, pwidth, pheight, pradius) {
-    cCtx.beginPath();
-    cCtx.moveTo(px + pradius, py);
-    cCtx.lineTo(px + pwidth - pradius, py);
-    cCtx.quadraticCurveTo(px + pwidth, py, px + pwidth, py + pradius);
-    cCtx.lineTo(px + pwidth, py + pheight);
-    cCtx.lineTo(px, py + pheight);
-    cCtx.lineTo(px, py + pradius);
-    cCtx.quadraticCurveTo(px, py, px + pradius, py);
-    cCtx.closePath();
+  async makeCanvas() {
+    // console.log(`[Cnote.makeCanvas] (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
+    this.imageData = await U.mdToCanvas(this.text, this.scale * hCtx.folio.geo.scale);
   }
 
   draw(xx0, yy0) {
     // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0} ge0.x0:${this.geo.x0}`);
-    this.geo.xx0 = xx0 + this.geo.x0;
-    this.geo.yy0 = yy0 + this.geo.y0;
+    if (xx0 != undefined) {
+      this.geo.xx0 = xx0 + this.geo.x0;
+      this.geo.yy0 = yy0 + this.geo.y0;
+    }
     const styles = noteStyles(this.color || hsm.settings.styles.defaultColor);
-    const x0P = RR(U.mmToPL(this.geo.xx0), styles.borderWidth);
-    const y0P = RR(U.mmToPL(this.geo.yy0));
+    const x0P = R(U.mmToPL(this.geo.xx0), styles.borderWidth);
+    const y0P = R(U.mmToPL(this.geo.yy0));
     const widthP = R(U.mmToPL(this.geo.width));
     const heightP = R(U.mmToPL(this.geo.height));
     // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} geo.xx0:${this.geo.xx0} X0P:${x0P}`);
@@ -169,10 +169,10 @@ export class Cnote extends CbaseElem {
     // U.pathRoundedRectP(x0P, y0P, widthP, heightP, 2);
     cCtx.stroke();
     // Draw note text
-    console.log(`[Cnote.draw] svgImage:${this.svgImage}`);
+    // console.log(`[Cnote.draw] imageData:${this.imageData}`);
     cCtx.save();
     cCtx.clip();
-    cCtx.drawImage(this.svgImage, x0P, y0P);
+    if (this.imageData) cCtx.drawImage(this.imageData, x0P, y0P);
     cCtx.restore();
     // cCtx.font = `${styles.textSizeP}px ${styles.textFont}`;
     // // console.log(`[Cnote.draw] Selected:${this.isSelected}`);

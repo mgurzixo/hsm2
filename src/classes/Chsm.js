@@ -78,7 +78,7 @@ export class Chsm extends CbaseElem {
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
     this.makeIdz(this.idz.x, this.idz.y);
-    hCtx.folio.onLoaded();
+    await hCtx.folio.onLoaded();
     this.draw();
   }
 
@@ -180,6 +180,7 @@ export class Chsm extends CbaseElem {
   drag(dx, dy) {
     if (modeRef.value != "") return;
     const dragCtx = hCtx.getDragCtx();
+    if (!dragCtx) return;
     if (dragCtx.id == this.id) return;
     const elem = this.hElems.getElemById(dragCtx.id);
     elem.drag(dx, dy);

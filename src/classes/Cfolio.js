@@ -13,6 +13,7 @@ export class Cfolio extends CbaseRegion {
     this.geo = options.geo;
     this.trs = [];
     this.notes = [];
+    this.myOldScale = 0;
     // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
   }
 
@@ -49,12 +50,15 @@ export class Cfolio extends CbaseRegion {
     return true;
   }
 
-  onLoaded() {
+  async onLoaded() {
     for (let child of this.children) {
-      child.onLoaded();
+      await child.onLoaded();
     }
     for (let tr of this.trs) {
-      tr.onLoaded();
+      await tr.onLoaded();
+    }
+    for (let note of this.notes) {
+      await note.onLoaded();
     }
   }
 
@@ -163,6 +167,18 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
+
+  async updateAllNoteCanvas() {
+    const dScale = Math.abs((hCtx.folio.myOldScale - hCtx.folio.geo.scale) / hCtx.folio.geo.scale);
+    if (dScale < 0.01) return;
+    // console.log(`[Cfolio.updateAllNoteCanvas] dScale:${dScale.toFixed(2)}`);
+    for (let note of hCtx.folio.notes) {
+      await note.makeCanvas();
+    }
+    hCtx.folio.myOldScale = hCtx.folio.geo.scale;
+    hsm.draw();
+  }
+
   wheelP(xP, yP, dyP) {
     const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
@@ -177,6 +193,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     hsm.draw();
+    window.requestAnimationFrame(U.debounce(this.updateAllNoteCanvas.bind(this), 50));
   }
 
   makeIdz(x, y, idz) {
