@@ -18,6 +18,15 @@ export class Cfolio extends CbaseRegion {
     // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
   }
 
+
+  setSelected(val) {
+    // console.log(`[Chsm.setSelected] (${this.id}) } setSelected:${val}`);
+    super.setSelected(val);
+    for (let note of this.notes) {
+      note.setSelected(val);
+    }
+  }
+
   async addNote(noteOptions) {
     // console.log(`[Cfolio.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");

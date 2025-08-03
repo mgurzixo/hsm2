@@ -51,6 +51,17 @@ export class Cstate extends CbaseState {
     this.notes = [];
   }
 
+  setSelected(val) {
+    // console.log(`[Cstate.setSelected] (${this.id}) } setSelected:${val}`);
+    super.setSelected(val);
+    for (let note of this.notes) {
+      note.setSelected(val);
+    }
+    for (let tr of hCtx.folio.trs) {
+      if (tr.from.id == this.id) tr.setSelected(val);
+    }
+  }
+
   async addNote(noteOptions) {
     // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");

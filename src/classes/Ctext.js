@@ -22,14 +22,10 @@ export class Ctext extends CbaseElem {
     this.scale = textOptions?.scale || 1;
   }
 
-  async onLoaded() {
-    this.makeCanvas();
-  }
-
   setSelected(val) {
     console.log(`[Ctext.setSelected] (${this.id}) } setSelected:${val}`);
     if (val) hsm.openDialog(this);
-    hCtx.setSelectedId(null);
+    hCtx.setSelectedId(this.id);
   }
 
   async dragStart() {

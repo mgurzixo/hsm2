@@ -117,22 +117,20 @@ export class Chsm extends CbaseElem {
     let idz = this.makeIdz(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
-    const elem = this.hElems.getElemById(idz.id);
-    console.log(`[Chsm.click] elem:${elem?.id} SelectedId:${hCtx.getSelectedId()}`);
-    if (hCtx.getSelectedId()) {
+    const newElem = this.hElems.getElemById(idz.id);
+    let oldElem = null;
+    if (hCtx.getSelectedId()) oldElem = U.getElemById(hCtx.getSelectedId());
+    console.log(`[Chsm.click] newElem:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
+    if (oldElem) {
       hCtx.setSelectedId(null);
-      this.setSelected(false);
-    } else {
-      this.setSelected(false);
-      hCtx.setSelectedId(elem.id);
-      elem.setSelected(true);
+      oldElem.setSelected(false);
     }
-    for (let tr of hCtx.folio.trs) {
-      if (hElems.getElemById(tr.from.id).isSelected && hElems.getElemById(tr.to.id).isSelected) tr.setSelected(true);
-      else tr.setSelected(false);
+    else {
+      hCtx.setSelectedId(newElem.id);
+      newElem.setSelected(true);
     }
     idz = this.makeIdz(xDown, yDown);
-    hCtx.folio.draw();
+    this.draw();
     this.setCursor();
   }
 

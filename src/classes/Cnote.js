@@ -26,11 +26,6 @@ export class Cnote extends CbaseElem {
     this.makeCanvas();
   }
 
-  setSelected(val) {
-    console.log(`[Cnote.setSelected] (${this.id}) } setSelected:${val}`);
-    if (val) hsm.openDialog(this);
-    hCtx.setSelectedId(null);
-  }
 
   async dragStart() {
     const idz = this.idz();
@@ -156,11 +151,12 @@ export class Cnote extends CbaseElem {
     // U.pathRoundedRectP(x0P, y0P, widthP, heightP, 1);
     // cCtx.fill();
     // Draw border
-    cCtx.lineWidth = styles.borderWidth;
-    cCtx.strokeStyle = styles.borderColor;
     if (this.isSelected) {
-      // console.log(`[Cnote.draw] Selected:${this.isSelected}`);
       cCtx.lineWidth = styles.borderSelectedWidth;
+      cCtx.strokeStyle = styles.borderSelectedColor;
+    } else {
+      cCtx.lineWidth = styles.borderWidth;
+      cCtx.strokeStyle = styles.borderColor;
     }
     cCtx.rect(x0P, y0P, widthP, heightP);
     cCtx.moveTo(x0P + widthP - styles.cornerP, y0P + heightP);
