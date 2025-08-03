@@ -25,10 +25,10 @@
           v-model="element.isInternal" label="Internal transition" @click="hsm.draw()" />
       </div>
       <div class="q-py-sm">
-        <q-input dense v-model="element.entry" label="Trigger:" outlined />
+        <q-input dense v-model="element.trigger" label="Trigger:" outlined />
       </div>
       <div class="q-py-sm">
-        <q-input dense v-model="element.exit" label="Guard:" outlined />
+        <q-input dense v-model="element.guard" label="Guard:" outlined />
       </div>
       <div class="q-py-sm">
         <q-input dense v-model="element.effect" label="Effect:" outlined />

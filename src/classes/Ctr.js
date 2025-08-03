@@ -4,6 +4,7 @@ import * as U from "src/lib/utils";
 import * as T from "src/lib/trUtils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
+import { Ctext } from "src/classes/Ctext";
 import { trStyles } from "src/lib/styles";
 import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
 
@@ -21,11 +22,32 @@ export class Ctr extends CbaseElem {
     this.isInternal = transOptions.isInternal || false;
     if (transOptions.color) this.color = transOptions.color;
     else delete (this.color);
+    this.trigger = transOptions.trigger;
+    this.guard = transOptions.guard;
+    this.effect = transOptions.effect;
+    this.makeTag();
   }
 
   async onLoaded() {
     // console.log(`[Ctr.onLoaded] (${this.id})}`);
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
+  }
+
+  makeTag() {
+    let text = this.trigger;
+    if (this.guard) text += `[${this.guard}]`;
+    if (this.effect) text += `/${this.effect}`;
+    if (!this.tag) this.tag = new Ctext(this, {
+      x0: 5, y0: 5, width: 20, height: 10, text: text
+    });
+    else this.tag.text = text;
+    // if (this.id == "T13") console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
+  }
+
+  setSelected(val) {
+    // console.log(`[Ctr.setSelected] (${this.id}) } setSelected:${val}`);
+    super.setSelected(val);
+    this.tag.setSelected(val);
   }
 
   findNearestLegalTarget(anchor, x0, y0) {
@@ -318,7 +340,9 @@ export class Ctr extends CbaseElem {
     [this.to.prevX, this.to.prevY] = [xe, ye];
   }
 
-  draw() {
+  draw(xx0, yy0) {
+    this.geo.xx0 = xx0 + this.geo.x0;
+    this.geo.yy0 = yy0 + this.geo.y0;
     if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
     const [x0, y0] = T.anchorToXY(this.from);
     [this.geo.x0, this.geo.y0] = [x0, y0];
@@ -329,13 +353,20 @@ export class Ctr extends CbaseElem {
     if (!this.isLegal()) {
       cCtx.lineWidth = styles.lineErrorWidth;
       cCtx.strokeStyle = styles.lineError;
+      this.tag.color = styles.lineError;
+      console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
     }
     else {
       if (this.isSelected) cCtx.lineWidth = styles.lineSelectedWidth;
       else cCtx.lineWidth = styles.lineWidth;
       cCtx.strokeStyle = styles.line;
+      this.tag.color = styles.tag;
     }
     pathSegments(this.segments, x0, y0);
+    if (this.tag) {
+      this.makeTag();
+      this.tag.draw(this.geo.xx0, this.geo.yy0);
+    }
   }
 
   adjustChange(changedId) {
@@ -395,7 +426,13 @@ export class Ctr extends CbaseElem {
         bestD2 = d2;
 
       }
-    } newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
+    }
+    newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
+    this.makeTag();
+    if (this.tag.text) {
+      newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
+    }
+    // if (this.trigger && newIdz.id == this.tag.id) console.warn(`[Ctr.makeIdz] Tag selected. id:${newIdz.id} zone:${newIdz.zone}`);
     return newIdz;
   }
 }

@@ -65,7 +65,6 @@ export class Cstate extends CbaseState {
   async addNote(noteOptions) {
     // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");
-    hsm.hElems.insertElem(myNote);
     await myNote.load(noteOptions);
     this.notes.push(myNote);
     // console.log(`[Cstate.addNote] id:${myNote.id}`);
@@ -74,7 +73,6 @@ export class Cstate extends CbaseState {
 
   async addRegion(regionOptions) {
     const myRegion = new Cregion(this, regionOptions);
-    hsm.hElems.insertElem(myRegion);
     this.children.push(myRegion);
     await myRegion.load(regionOptions);
     myRegion.geo.y0 = hsm.settings.stateTitleHeightMm;
@@ -155,7 +153,6 @@ export class Cstate extends CbaseState {
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
     // console.log(`[Cstate.insertState] New state id:${myState?.id} parent:${myState.parent}`);
-    hsm.hElems.insertElem(myState);
 
     this.children[0].children.push(myState);
     modeRef.value = "";

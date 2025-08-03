@@ -73,7 +73,6 @@
           color: "white",
         },
         text: {
-          sizeP: 14,
           color: "black",
           font: "sans-serif",
         },
@@ -94,7 +93,8 @@
           color: "white",
         },
         text: {
-          sizeP: 14,
+          sizeMm: 3,
+          marginVMm: 1,
           color: "black",
           font: "sans-serif",
         },
@@ -111,6 +111,10 @@
         },
         lineSelected: {
           lineWidth: 2.5,
+        },
+        tag: {
+          chroma: 100,
+          light: 15,
         },
       },
       defaultColor: "darkorange",
@@ -144,6 +148,23 @@
         },
       ],
       trs: [
+        {
+          segments: [],
+          from: {
+            id: "S2",
+            side: "R",
+            pos: 0.2,
+          },
+          to: {
+            id: "S3",
+            side: "T",
+            pos: 0.3,
+          },
+          isInternal: false,
+          trigger: "TRIG1",
+          guard: "Guard1",
+          effect: "effect1",
+        },
         {
           segments: [],
           from: {
@@ -185,20 +206,6 @@
             pos: 0.3,
           },
           isInternal: true,
-        },
-        {
-          segments: [],
-          from: {
-            id: "S2",
-            side: "R",
-            pos: 0.2,
-          },
-          to: {
-            id: "S3",
-            side: "T",
-            pos: 0.3,
-          },
-          isInternal: false,
         },
         {
           segments: [],

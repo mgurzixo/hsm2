@@ -30,7 +30,6 @@ export class Cfolio extends CbaseRegion {
   async addNote(noteOptions) {
     // console.log(`[Cfolio.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");
-    hsm.hElems.insertElem(myNote);
     await myNote.load(noteOptions);
     this.notes.push(myNote);
     // console.log(`[Cfolio.addNote] id:${myNote.id}`);
@@ -39,7 +38,6 @@ export class Cfolio extends CbaseRegion {
 
   async addTr(trOptions) {
     const myTr = new Ctr(this, trOptions, "T");
-    hsm.hElems.insertElem(myTr);
     this.trs.push(myTr);
     await myTr.load(trOptions);
     return myTr;
@@ -48,7 +46,6 @@ export class Cfolio extends CbaseRegion {
   async load(folioOptions) {
     for (let stateOption of folioOptions.states) {
       const myState = new Cstate(this, stateOption);
-      hsm.hElems.insertElem(myState);
       this.children.push(myState);
       await myState.load(stateOption);
     }
@@ -99,7 +96,7 @@ export class Cfolio extends CbaseRegion {
       child.draw(this.geo.xx0, this.geo.yy0);
     }
     for (let tr of this.trs) {
-      tr.draw();
+      tr.draw(0, 0);
     }
   }
 
@@ -122,7 +119,6 @@ export class Cfolio extends CbaseRegion {
     };
     const myState = new Cstate(this, stateOptions, "S");
     // console.log(`[Cfolio.insertState] New state id:${myState?.id}`);
-    hsm.hElems.insertElem(myState);
     this.children.push(myState);
     hsm.draw();
     modeRef.value = "";

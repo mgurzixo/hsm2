@@ -168,6 +168,12 @@ export class Cnote extends CbaseElem {
     cCtx.save();
     cCtx.clip();
     if (this.canvas) cCtx.drawImage(this.canvas, 0, 0, widthP, heightP, x0P, y0P, widthP, heightP);
+    else {
+      // console.log(`[Cnote.draw] No canvas!`);
+      this.makeCanvas().then(() => {
+        hsm.draw();
+      });
+    }
     cCtx.restore();
     // cCtx.font = `${styles.textSizeP}px ${styles.textFont}`;
     // // console.log(`[Cnote.draw] Selected:${this.isSelected}`);

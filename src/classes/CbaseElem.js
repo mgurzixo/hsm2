@@ -18,6 +18,7 @@ export class CbaseElem {
       // console.log(`[CbaseElem.constructor] id:${id}`);
     }
     this.id = id;
+    hsm?.hElems?.insertElem(this);
     this.name = obj?.name || `S${id}`;
     this.parent = parent;
     this.children = [];

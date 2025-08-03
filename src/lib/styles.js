@@ -48,9 +48,14 @@ export function trStyles(baseColor) {
   const line = new Color(baseColor);
   line.lch.c = t.line.chroma;
   line.lch.l = t.line.light;
+  const colLine = line.to("srgb") + "";
+  line.lch.c = t.tag.chroma;
+  line.lch.l = t.tag.light;
+  const colTag = line.to("srgb") + "";
 
   return {
-    line: line.to("srgb") + "",
+    line: colLine,
+    tag: colTag,
     lineWidth: t.line.lineWidth,
     lineSelectedWidth: t.lineSelected.lineWidth,
     lineError: t.lineError.color,
@@ -61,7 +66,6 @@ export function trStyles(baseColor) {
 
 export function noteStyles(baseColor) {
   const t = hsm.settings.styles.note;
-
   return {
     bg: t.bg.color,
     borderColor: t.border.color,
@@ -70,7 +74,21 @@ export function noteStyles(baseColor) {
     borderSelectedWidth: t.borderSelected.lineWidth,
     textColor: t.text.color,
     textFont: t.text.font,
-    textSizeP: t.text.sizeP,
     cornerP: hsm.settings.noteCornerP
+  };
+}
+
+export function textStyles(baseColor) {
+  const t = hsm.settings.styles.text;
+  return {
+    bg: t.bg.color,
+    borderColor: t.border.color,
+    borderWidth: t.border.lineWidth,
+    borderSelectedColor: t.borderSelected.color,
+    borderSelectedWidth: t.borderSelected.lineWidth,
+    textColor: t.text.color,
+    textFont: t.text.font,
+    textSize: t.text.sizeMm,
+    marginV: t.text.marginVMm,
   };
 }

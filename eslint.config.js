@@ -60,6 +60,7 @@ export default [
       // MG
       "no-unused-vars": "off",
       "no-undef": "error",
+      "no-unreachable": process.env.NODE_ENV === "production" ? "error" : "off",
     },
   },
 

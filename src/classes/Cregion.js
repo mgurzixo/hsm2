@@ -68,7 +68,6 @@ export class Cregion extends CbaseRegion {
 
   async addState(stateOptions) {
     const myState = new Cstate(this, stateOptions);
-    hsm.hElems.insertElem(myState);
     this.children.push(myState);
     await myState.load(stateOptions);
   }
@@ -113,7 +112,6 @@ export class Cregion extends CbaseRegion {
     // console.log(`[Cregion.load] states:${regionOptions?.states}`);
     for (let stateOption of regionOptions.states) {
       const myState = new Cstate(this, stateOption);
-      hsm.hElems.insertElem(myState);
       this.children.push(myState);
       await myState.load(stateOption);
     }
