@@ -13,6 +13,11 @@ let button2Down = false;
 let clickTimeoutId = null;
 let inDoubleClick = false;
 let doubleClickTimeout = 250; // ms
+let dragOffset = [0, 0];
+
+export function setDragOffset(myDragOffset) {
+  dragOffset = myDragOffset;
+}
 
 // TODO Must throttle all...
 
@@ -28,7 +33,7 @@ export function getXYFromMouseEvent(e) {
   return [x, y];
 }
 
-export function handleMouseMove(e) {
+export async function handleMouseMove(e) {
   const [xP, yP] = getXYFromMouseEvent(e);
   const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
   mousePos.value = { xP: xP, yP: yP, x: x, y: y, buttons: e.buttons };
@@ -46,13 +51,14 @@ export function handleMouseMove(e) {
       inDoubleClick = false;
       clearTimeout(clickTimeoutId);
       const [mdx, mdy] = [U.pToMmL(mouseDown.x), U.pToMmL(mouseDown.y)];
-      hsm.dragStart(mdx, mdy);
+      dragOffset = [0, 0];
+      await hsm.dragStart(mdx, mdy);
     }
   }
   if (isDragging == true) {
     const [dxP, dyP] = [xP - mouseDown.x, yP - mouseDown.y];
     const [dx, dy] = [U.pToMmL(dxP), U.pToMmL(dyP)];
-    hsm.drag(dx, dy);
+    hsm.drag(dx - dragOffset[0], dy - dragOffset[1]);
   } else {
     hsm.mouseMove(x, y);
     // console.log(`[canvasListeners.handleMouseMove] elem:${elem} ${JSON.stringify(idz)}`);
@@ -94,7 +100,7 @@ export function handleMouseUp(e) {
     // Button 1 released
     if (isDragging) {
       const [dx, dy] = [U.pToMmL(xP - mouseDown.x), U.pToMmL(yP - mouseDown.y)];
-      hsm.dragEnd(dx, dy);
+      hsm.dragEnd(dx - dragOffset[0], dy - dragOffset[1]);
       isDragging = false;
     } else {
       const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
@@ -143,7 +149,7 @@ export function handleMouseEnter(e) {
   if (isDragging) {
     if (!e.buttons & 1) {
       const [dx, dy] = [U.pToMmL(mouseOut.x - mouseDown.x), U.pToMmL(mouseOut.y - mouseDown.y)];
-      hsm.dragEnd(dx, dy);
+      hsm.dragEnd(dx - dragOffset[0], dy - dragOffset[1]);
       isDragging = false;
     }
   }

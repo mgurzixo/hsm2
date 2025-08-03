@@ -6,6 +6,7 @@ import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
+import { setDragOffset } from "src/lib/canvasListeners";
 
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
@@ -23,6 +24,7 @@ export class Cfolio extends CbaseRegion {
     hsm.hElems.insertElem(myNote);
     await myNote.load(noteOptions);
     this.notes.push(myNote);
+    // console.log(`[Cfolio.addNote] id:${myNote.id}`);
     return myNote;
   }
 
@@ -92,8 +94,8 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
-  insertState(x, y) {
-    // console.log(`[Cfolio.dragStartP] Inserting state x:${x.toFixed()}`);
+  async insertState(x, y) {
+    // console.log(`[Cfolio.insertState] Inserting state x:${x.toFixed()}`);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
     const id = "S" + hsm.newSernum();
@@ -110,7 +112,7 @@ export class Cfolio extends CbaseRegion {
       justCreated: true,
     };
     const myState = new Cstate(this, stateOptions, "S");
-    // console.log(`[Cfolio.dragStartP] New state id:${myState?.id}`);
+    // console.log(`[Cfolio.insertState] New state id:${myState?.id}`);
     hsm.hElems.insertElem(myState);
     this.children.push(myState);
     hsm.draw();
@@ -120,16 +122,51 @@ export class Cfolio extends CbaseRegion {
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
     hsm.setCursor(newIdz);
-    myState.dragStart(); // Will create dragCtx
+    await myState.dragStart(); // Will create dragCtx
   }
 
-  dragStart() {
+  async insertNote(x, y) {
+    console.log(`[Cfolio.dragStartP] Inserting note x:${x.toFixed()}`);
+    const id = "N" + hsm.newSernum();
+    const w = hsm.settings.noteMinWidth;
+    const h = hsm.settings.noteMinHeight;
+    const noteOptions = {
+      id: id,
+      name: "Note " + id,
+      color: "blue",
+      geo: {
+        x0: x - this.geo.x0,
+        y0: y - this.geo.y0,
+        width: w,
+        height: h,
+      },
+      text: "Text",
+      justCreated: true,
+    };
+    setDragOffset([w, h]);
+    const myNote = await this.addNote(noteOptions);
+    console.log(`[Cfolio.insertNote] New note id:${myNote?.id}`);
+    await myNote.onLoaded();
+    hsm.draw();
+    modeRef.value = "";
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
+    hCtx.setIdz(newIdz);
+    hsm.setCursor(newIdz);
+    await myNote.dragStart(); // Will create dragCtx
+  }
+
+  async dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
-    // console.log(`[Cfolio.dragStartP] idz:${JSON.stringify(idz)}`);
+    // console.log(`[Cfolio.dragStart] idz:${JSON.stringify(idz)}`);
     switch (modeRef.value) {
       case "inserting-state": {
         this.insertState(x, y);
+        return;
+      }
+      case "inserting-note": {
+        await this.insertNote(x, y);
         return;
       }
       default:
@@ -170,10 +207,14 @@ export class Cfolio extends CbaseRegion {
 
   async updateAllNoteCanvas() {
     const dScale = Math.abs((hCtx.folio.myOldScale - hCtx.folio.geo.scale) / hCtx.folio.geo.scale);
-    if (dScale < 0.01) return;
+    if (dScale < 0.05) return;
     // console.log(`[Cfolio.updateAllNoteCanvas] dScale:${dScale.toFixed(2)}`);
+
     for (let note of hCtx.folio.notes) {
       await note.makeCanvas();
+    }
+    for (let child of hCtx.folio.children) {
+      await child.updateAllNoteCanvas();
     }
     hCtx.folio.myOldScale = hCtx.folio.geo.scale;
     hsm.draw();
@@ -193,7 +234,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     hsm.draw();
-    window.requestAnimationFrame(U.debounce(this.updateAllNoteCanvas.bind(this), 50));
+    window.requestAnimationFrame(U.debounce(this.updateAllNoteCanvas.bind(this), 250));
   }
 
   makeIdz(x, y, idz) {
@@ -240,6 +281,18 @@ export class Cfolio extends CbaseRegion {
 
   adjustTrsSelection() {
     // console.log(`[Cfolio.setSelected] (${this.id}) } setSelected:${val}`);
+  }
 
+  canInsertNote(idz) {
+    if (idz.zone != "M") return false;
+    const m = hsm.settings.minDistanceMm;
+    const h = hsm.settings.noteMinHeight + m;
+    const w = hsm.settings.noteMinWidth + m;
+    const t = hsm.settings.stateTitleHeightMm;
+    // console.log(`[Cfolio.canInsertNote] (${this.id}) idz.y:${idz.y}`);
+    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    if (x0 < m || x0 >= this.geo.width - w - m) return false;
+    if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
+    return true;
   }
 }

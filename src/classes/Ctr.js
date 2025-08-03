@@ -28,17 +28,20 @@ export class Ctr extends CbaseElem {
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
   }
 
-  findNearestTarget(tr, x0, y0) {
+  findNearestLegalTarget(anchor, x0, y0) {
     // console.log(`[Ctr.findNearestTarget] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()}`);
-    const r = hsm.settings.maxTransRadiusMm;
+    const r = hsm.settings.stateRadiusMm;
     let bestDist = Number.MAX_VALUE;
+    let bestSide = "T";
     let bestElem;
     let bestPos;
-    let bestSide = "T";
 
     function visit(myElem) {
       if (myElem.id.startsWith("S")) {
         for (let mySide of ["T", "R", "B", "L"]) {
+          if ((anchor.id == myElem.id) && (anchor.side != mySide)) {
+            continue;
+          }
           const geo = myElem.geo;
           let myX0, myY0, myX1, myY1;
           switch (mySide) {
@@ -46,14 +49,14 @@ export class Ctr extends CbaseElem {
             case "B":
               myX0 = geo.xx0 + r;
               myX1 = geo.xx0 + geo.width - r;
-              myY0 = mySide == "T" ? geo.yy0 + r : geo.yy0 + geo.height - r;
+              myY0 = mySide == "T" ? geo.yy0 : geo.yy0 + geo.height;
               myY1 = myY0;
               break;
             case "L":
             case "R":
               myY0 = geo.yy0 + r;
               myY1 = geo.yy0 + geo.height - r;
-              myX0 = mySide == "L" ? geo.xx0 + r : geo.xx0 + geo.width - r;
+              myX0 = mySide == "L" ? geo.xx0 : geo.xx0 + geo.width;
               myX1 = myX0;
               break;
           }
@@ -76,7 +79,7 @@ export class Ctr extends CbaseElem {
   }
 
 
-  dragStart() {
+  async dragStart() {
     // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
     if (modeRef.value == "") {
@@ -101,8 +104,8 @@ export class Ctr extends CbaseElem {
 
   drag(dx, dy) {
     const dragCtx = hCtx.getDragCtx();
-    if (dragCtx.zone == "FROM") T.dragFromAnchor(this, dx, dy);
-    else if (dragCtx.zone == "TO") T.dragToAnchor(this, dx, dy);
+    if (dragCtx.zone == "FROM") T.dragFromAnchor(dx, dy);
+    else if (dragCtx.zone == "TO") T.dragToAnchor(dx, dy);
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
     else T.dragNormalSegment(this, dx, dy);

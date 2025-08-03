@@ -4,11 +4,8 @@ export const inchInMm = 25.4;
 
 import * as V from "vue";
 import { hsm, hElems, cCtx } from "src/classes/Chsm";
-// import * as htmlToImage from 'html-to-image';
 import html2canvas from 'html2canvas-pro';
-
 import markdownit from 'markdown-it';
-import { mdiAbTesting } from "@quasar/extras/mdi-v4";
 const md = markdownit();
 
 export function RR(x, lineWidth = 1) {
@@ -243,6 +240,17 @@ export function reverseDir(dir) {
   console.error(`[utils.reverseDir] Unknown dir:${dir}`);
 }
 
+export function patchSegment(segment, dl) {
+  let dir = segment.dir;
+  let len = segment.len;
+  if (dir == "S" || dir == "E") len += dl;
+  else len -= dl;
+  if (len < 0) {
+    len = -len;
+    dir = reverseDir(dir);
+  }
+  return { len: len, dir: dir };
+}
 
 export function goesToOutside(side, dir) {
   if (isHoriz(side)) return dir == (side == "T" ? "N" : "S");
@@ -300,11 +308,17 @@ export function rgbToHsl(r, g, b) {
   return [h * 60, s, l];
 }
 
-let mdDiv = document.createElement("div");
+
+let mdDiv = document.getElementById("mdDiv");
+if (mdDiv) mdDiv.remove(); // when hotloading
+mdDiv = document.createElement("div");
 mdDiv.id = "mdDiv";
 mdDiv.style.position = "fixed";
 mdDiv.style.top = "-2000px";
 mdDiv.style.left = "-2000px";
+mdDiv.style.minWidth = "1em";
+mdDiv.style.minHeight = "1em";
+mdDiv.style.backgroundColor = "transparent";
 mdDiv.classList.add("markdown-body");
 
 document.body.appendChild(mdDiv);
@@ -315,10 +329,14 @@ export async function mdToCanvas(mdText, scale = 1) {
   mdDiv.innerHTML = mdHtml;
   mdDiv.style.transform = "scale(" + scale + ")";
   mdDiv.style.transformOrigin = "top left";
-  return html2canvas(mdDiv)
+  return html2canvas(mdDiv,
+    { backgroundColor: null, }
+  )
     .then(function (canvas) {
       // console.log(`[utils.mdToCanvas] dataUrl:${dataUrl}`);
       // console.log(`[utils.mdToCanvas] canvas:${canvas} w:${canvas.width} h:${canvas.height}`);
+      canvas.getContext("2d", { willReadFrequently: true }); // TODO
+      mdDiv.innerHTML = "";
       return canvas;
     })
     .catch(function (error) {

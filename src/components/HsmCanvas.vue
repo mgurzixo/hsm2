@@ -91,7 +91,7 @@ V.onMounted(async () => {
   await U.nextTick();
   const canvas = canvasRef.value;
   new Chsm(null, { name: "Hsm", canvas: canvas });
-  loadHsm(); // For devpt
+  await loadHsm(); // For devpt
   setCanvasListeners();
   hsm.handleRightClick = handleRightClick;
   hsm.openDialog = openElementDialog;

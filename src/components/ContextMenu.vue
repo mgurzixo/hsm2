@@ -113,7 +113,7 @@
 </template>
 
 <style>
-.q-list--dense > .q-item {
+.q-list--dense>.q-item {
   padding: 4px 4px 4px 4px;
 }
 
@@ -141,10 +141,10 @@ function doExit() {
   window.close();
 }
 
-function doLoadHsm() {
-  loadHsm();
+async function doLoadHsm() {
+  await loadHsm();
   drawCanvas();
 }
 
-V.onMounted(() => {});
+V.onMounted(() => { });
 </script>

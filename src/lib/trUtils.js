@@ -84,7 +84,6 @@ function createSelfSegments(tr) {
       segments.push({ dir: dirH, len: dxa });
       segments.push({ dir: dirV, len: dya });
     } else {
-      console.log(`[Ctr.connectSelf] ICI side1:${side1}`);
       if (tr.isInternal) {
         segments.push({ dir: dirH, len: dsl });
         segments.push({ dir: dirV, len: dya });
@@ -388,29 +387,61 @@ export function dragLastSegment(tr, dx, dy) {
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
 }
 
-export function dragToAnchor(tr, dx, dy) {
+export function dragToAnchor(dx, dy) {
   const dragCtx = hCtx.getDragCtx();
-  const [theElem, theSide, thePos] = tr.findNearestTarget(tr, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+  const tr = U.getElemById(dragCtx.id);
+  const [theElem, theSide, thePos] = tr.findNearestLegalTarget(tr.from, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
   // console.log(`[trUtils.dragToAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.to.id = theElem.id;
   tr.to.side = theSide;
   tr.to.pos = thePos;
-  if ((U.isHoriz(theSide) && U.isHoriz(tr.from.side)) ||
-    (!U.isHoriz(theSide) && !U.isHoriz(tr.from.side))) {
-    const [xFrom, yFrom] = anchorToXY(tr.from);
-    const [xTo, yTo] = anchorToXY(tr.to);
+  const tr0 = dragCtx.tr0;
+  if (tr.to.id == tr0.to.id && tr.to.side == tr0.to.side) {
+    // Only pos changed, try to patch penultimate original segment
+    if (tr0.segments.length >= 2) {
+      const to = U.getElemById(tr.to.id);
+      const [x0, y0] = to.makeTrXY(tr0.to.side, tr0.to.pos);
+      const [x1, y1] = to.makeTrXY(tr.to.side, tr.to.pos);
+      const segments = structuredClone(tr0.segments);
+      const idx = segments.length - 2;
+      if (U.isHoriz(tr.to.side) && U.isHoriz(segments[idx].dir)) {
+        segments[idx] = U.patchSegment(segments[idx], x1 - x0);
+        tr.segments = segments;
+      } else if (!U.isHoriz(tr.to.side) && !U.isHoriz(segments[idx].dir)) {
+        segments[idx] = U.patchSegment(segments[idx], y1 - y0);
+        tr.segments = segments;
+      } else tr.segments = tr.getInitialSegments();
+    }
   }
-
-  tr.segments = tr.getInitialSegments();
+  else tr.segments = tr.getInitialSegments();
 }
 
-export function dragFromAnchor(tr, dx, dy) {
-  const idz = tr.idz();
+export function dragFromAnchor(dx, dy) {
   const dragCtx = hCtx.getDragCtx();
-  const [theElem, theSide, thePos] = tr.findNearestTarget(tr, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
+  const tr = U.getElemById(dragCtx.id);
+  // const idz = tr.idz();
+  const [theElem, theSide, thePos] = tr.findNearestLegalTarget(tr.to, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
   // console.log(`[trUtils.dragFromAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.from.id = theElem.id;
   tr.from.side = theSide;
   tr.from.pos = thePos;
-  tr.segments = tr.getInitialSegments();
+  const tr0 = dragCtx.tr0;
+  if (tr.from.id == tr0.from.id && tr.from.side == tr0.from.side) {
+    // Only pos changed, try to patch penultimate original segment
+    if (tr0.segments.length >= 2) {
+      const from = U.getElemById(tr.from.id);
+      const [x0, y0] = from.makeTrXY(tr0.from.side, tr0.from.pos);
+      const [x1, y1] = from.makeTrXY(tr.from.side, tr.from.pos);
+      const segments = structuredClone(tr0.segments);
+      const idx = 1;
+      if (U.isHoriz(tr.from.side) && U.isHoriz(segments[idx].dir)) {
+        segments[idx] = U.patchSegment(segments[idx], x0 - x1);
+        tr.segments = segments;
+      } else if (!U.isHoriz(tr.from.side) && !U.isHoriz(segments[idx].dir)) {
+        segments[idx] = U.patchSegment(segments[idx], y0 - y1);
+        tr.segments = segments;
+      } else tr.segments = tr.getInitialSegments();
+    }
+  }
+  else tr.segments = tr.getInitialSegments();
 }

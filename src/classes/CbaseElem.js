@@ -63,10 +63,10 @@ export class CbaseElem {
     return true;
   }
 
-  onLoaded() {
+  async onLoaded() {
     // Called when everything is loaded
     for (let child of this.children) {
-      child.onLoaded();
+      await child.onLoaded();
     }
   }
 
@@ -89,7 +89,7 @@ export class CbaseElem {
   }
 
   doubleClick(x, y) { }
-  dragStart() { }
+  async dragStart() { }
   drag(dx, dy) { }
 
   adjustChange(changedId) {
@@ -170,7 +170,8 @@ export class CbaseElem {
         else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
       }
       return "url(/assets/no-drop16x16.png),no-drop";
-    } else if (modeRef.value == "inserting-trans") {
+    }
+    else if (modeRef.value == "inserting-trans") {
       // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
       if (this.id.startsWith("S")) {
         if (this.canInsertTr(idz)) return "url(/assets/anchor16x16.png) 8 8,default";
@@ -179,6 +180,16 @@ export class CbaseElem {
       }
       return "url(/assets/no-drop16x16.png) 8 8,no-drop";
     }
+    else if (modeRef.value == "inserting-note") {
+      // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
+      if (this.id.startsWith("F") || this.id.startsWith("S")) {
+        if (this.canInsertNote(idz)) return "url(/assets/note16x16.png) 8 8,default";
+        // if (this.canInsertState(idz)) return "grabbing";
+        else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+      }
+      return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+    }
+
     if (hCtx.getErrorId() == this.id) {
       cursor = "url(/assets/no-drop16x16.png) 8 8,no-drop";
       return cursor;
@@ -242,11 +253,22 @@ export class CbaseElem {
     return false;
   }
 
+  canInsertNote(idz) {
+    console.log(`[CbaseElem.canInsertNote] (${this.id}) }`);
+    return false;
+  }
+
   setSelected(val) {
     // console.log(`[CbaseElem.setSelected] (${this.id}) } setSelected:${val}`);
     this.isSelected = val;
     for (let child of this.children) {
       child.setSelected(val);
+    }
+  }
+
+  async updateAllNoteCanvas() {
+    for (let child of this.children) {
+      child.updateAllNoteCanvas();
     }
   }
 

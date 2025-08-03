@@ -80,6 +80,7 @@ export class Chsm extends CbaseElem {
     this.makeIdz(this.idz.x, this.idz.y);
     await hCtx.folio.onLoaded();
     this.draw();
+    return null;
   }
 
   destroyResizeObserver() {
@@ -141,23 +142,9 @@ export class Chsm extends CbaseElem {
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
     this.openDialog(elem);
-    // console.log(`[Chsm.doubleClick] elem:${elem?.id}`);
-    // this.setSelected(false);
-    // if (hCtx.getSelectedId() != elem.id) {
-    //   elem.setSelected(true);
-    //   hCtx.setSelectedId(elem.id);
-    // }
-    // else hCtx.setSelectedId(null);
-    // for (let tr of hCtx.folio.trs) {
-    //   if (hElems.getElemById(tr.from.id).isSelected && hElems.getElemById(tr.to.id).isSelected) tr.setSelected(true);
-    //   else tr.setSelected(false);
-    // }
-    // idz = this.makeIdz(xDown, yDown);
-    // hCtx.folio.draw();
-    // this.setCursor();
   }
 
-  dragStart(xDown, yDown) {
+  async dragStart(xDown, yDown) {
     const idz = this.makeIdz(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
@@ -166,13 +153,16 @@ export class Chsm extends CbaseElem {
     const mode = modeRef.value;
     switch (mode) {
       case "":
-        elem.dragStart();
+        await elem.dragStart();
         break;
       case "inserting-state":
-        if (elem.canInsertState(idz)) elem.dragStart();
+        if (elem.canInsertState(idz)) await elem.dragStart();
         break;
       case "inserting-trans":
-        if (elem.canInsertTr(idz)) elem.dragStart();
+        if (elem.canInsertTr(idz)) await elem.dragStart();
+        break;
+      case "inserting-note":
+        if (elem.canInsertNote(idz)) await elem.dragStart();
         break;
     }
   }
@@ -181,6 +171,7 @@ export class Chsm extends CbaseElem {
     if (modeRef.value != "") return;
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
+    // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     if (dragCtx.id == this.id) return;
     const elem = this.hElems.getElemById(dragCtx.id);
     elem.drag(dx, dy);

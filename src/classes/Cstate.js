@@ -6,7 +6,8 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { stateStyles } from "src/lib/styles";
-
+import { Cnote } from "src/classes/Cnote";
+import { setDragOffset } from "src/lib/canvasListeners";
 
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
@@ -47,6 +48,17 @@ export class CexitSstate extends CbaseState {
 export class Cstate extends CbaseState {
   constructor(parent, options) {
     super(parent, options, "S");
+    this.notes = [];
+  }
+
+  async addNote(noteOptions) {
+    // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
+    const myNote = new Cnote(this, noteOptions, "N");
+    hsm.hElems.insertElem(myNote);
+    await myNote.load(noteOptions);
+    this.notes.push(myNote);
+    // console.log(`[Cstate.addNote] id:${myNote.id}`);
+    return myNote;
   }
 
   async addRegion(regionOptions) {
@@ -66,6 +78,20 @@ export class Cstate extends CbaseState {
       const regionOptions = stateOptions.regions[id];
       this.addRegion(regionOptions);
     }
+    if (stateOptions.notes) {
+      for (let noteOptions of stateOptions.notes) {
+        await this.addNote(noteOptions);
+      }
+    }
+  }
+
+  async onLoaded() {
+    for (let child of this.children) {
+      await child.onLoaded();
+    }
+    for (let note of this.notes) {
+      await note.onLoaded();
+    }
   }
 
   setGrandchildrenDragOrigin() {
@@ -83,7 +109,7 @@ export class Cstate extends CbaseState {
     return bb;
   }
 
-  insertState(x, y) {
+  async insertState(x, y) {
     // console.log(`[Cstate.insertState] Inserting state x:${x.toFixed()}`);
     if (!this.children[0]) {
       const rid = "R" + hsm.newSernum();
@@ -128,9 +154,41 @@ export class Cstate extends CbaseState {
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz());
     hCtx.setIdz(newIdz);
     hsm.setCursor(newIdz);
-    myState.dragStart();
+    await myState.dragStart();
   }
 
+  async insertNote(x, y) {
+    // console.log(`[Cstate.insertState] Inserting note x:${x.toFixed()}`);
+    const id = "N" + hsm.newSernum();
+    const w = hsm.settings.noteMinWidth;
+    const h = hsm.settings.noteMinHeight;
+    const noteOptions = {
+      id: id,
+      name: "Note " + id,
+      color: "blue",
+      geo: {
+        x0: x - this.geo.x0,
+        y0: y - this.geo.y0,
+        width: w,
+        height: h,
+      },
+      text: "Text",
+      justCreated: true,
+    };
+    setDragOffset([w, h]);
+    const myNote = await this.addNote(noteOptions);
+    console.log(`[Cfolio.insertNote] New note id:${myNote?.id}`);
+    await myNote.onLoaded();
+    hsm.draw();
+    modeRef.value = "";
+    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
+    hCtx.setIdz(newIdz);
+    hsm.setCursor(newIdz);
+    await myNote.dragStart(); // Will create dragCtx
+  }
+
+  // Returns [x,y] of (side,pos)
   makeTrXY(side, pos) {
     const r = hsm.settings.stateRadiusMm;
     let len = this.geo.width - 2 * r;
@@ -145,7 +203,7 @@ export class Cstate extends CbaseState {
       x = r + len * pos;
       if (side == "B") y += this.geo.height;
     }
-    console.log(`[Cstate.makeTrXY] side:${side} pos:${pos.toFixed(2)} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
+    // console.log(`[Cstate.makeTrXY] side:${side} pos:${pos.toFixed(2)} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
     return [x, y];
   }
 
@@ -163,7 +221,7 @@ export class Cstate extends CbaseState {
     return pos;
   }
 
-  insertTr(x, y) {
+  async insertTr(x, y) {
     // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
     // console.log(`[Cstate.insertTr] idz:${JSON.stringify(this.idz())}`);
     const idz = this.idz();
@@ -190,13 +248,13 @@ export class Cstate extends CbaseState {
       isInternal: false,
       justCreated: true,
     };
-    const myTr = hCtx.folio.addTr(trOptions);
+    const myTr = await hCtx.folio.addTr(trOptions);
     let [xx0, yy0] = [0, 0];
     for (let parent = this.parent; parent; parent = parent.parent) {
       xx0 += parent.geo.x0;
       yy0 += parent.geo.y0;
     }
-    // console.log(`[Cstate.insertTr] (${this.id}) xx0:${xx0.toFixed()} yy0:${yy0.toFixed()}`);
+    console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id}`);
     const dragCtx = {
       id: myTr.id,
       zone: "TO",
@@ -204,7 +262,7 @@ export class Cstate extends CbaseState {
       xx0: xx0 + x,
       yy0: yy0 + y,
     };
-    // console.log(`[Cstate.insertTr] dragCtx:${JSON.stringify(dragCtx)}`);
+    console.log(`[Cstate.insertTr] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
 
 
@@ -220,7 +278,7 @@ export class Cstate extends CbaseState {
     hsm.setCursor(newIdz);
   }
 
-  dragStart() {
+  async dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // [x,y] in mm in this.geo.x/y frame
@@ -230,11 +288,15 @@ export class Cstate extends CbaseState {
     // );
     switch (modeRef.value) {
       case "inserting-state": {
-        this.insertState(x, y);
+        await this.insertState(x, y);
         return;
       }
       case "inserting-trans": {
-        this.insertTr(x, y);
+        await this.insertTr(x, y);
+        return;
+      }
+      case "inserting-note": {
+        await this.insertNote(x, y);
         return;
       }
       default:
@@ -483,6 +545,9 @@ export class Cstate extends CbaseState {
       y0P + titleHeightP / 2,
       widthP - 1 * stateRadiusP,
     );
+    for (let note of this.notes) {
+      note.draw(this.geo.xx0, this.geo.yy0);
+    }
     for (let child of this.children) {
       child.draw(this.geo.xx0, this.geo.yy0);
     }
@@ -513,6 +578,9 @@ export class Cstate extends CbaseState {
     } else if (y <= this.geo.y0 + m) zone = "T";
     else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
     idz = { id: id, zone: zone, x: x, y: y };
+    for (let note of this.notes) {
+      idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+    }
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
@@ -545,6 +613,31 @@ export class Cstate extends CbaseState {
     return true;
   }
 
+  canInsertNote(idz) {
+    if (idz.zone != "M") return false;
+    const m = hsm.settings.minDistanceMm;
+    const h = hsm.settings.noteMinHeight + m;
+    const w = hsm.settings.noteMinWidth + m;
+    const t = hsm.settings.stateTitleHeightMm;
+    // console.log(`[Cstate.canInsertNote] (${this.id}) idz.y:${idz.y}`);
+    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    if (x0 < m || x0 >= this.geo.width - w - m) return false;
+    if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
+    for (let child of this.children) {
+      for (let grandChild of child.children) {
+        let geo = {
+          x0: idz.x - this.geo.x0,
+          y0: idz.y - this.geo.y0 - t,
+          width: w,
+          height: h,
+        };
+        console.log(`[Cstate.canInsertNote] (${this.id}) gCId:${child.id}`);
+        if (U.rectsIntersect(grandChild.geo, geo)) return false;
+      }
+    }
+    return true;
+  }
+
   canInsertTr(idz) {
     if (idz.zone != "T" &&
       idz.zone != "R" &&
@@ -564,4 +657,15 @@ export class Cstate extends CbaseState {
     }
     return true;
   }
+
+  async updateAllNoteCanvas() {
+    for (let note of this.notes) {
+      await note.makeCanvas();
+    }
+    for (let child of this.children) {
+      await child.updateAllNoteCanvas();
+    }
+  }
+
+
 }

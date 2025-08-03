@@ -7,8 +7,8 @@ function doExit() {
   window.close();
 }
 
-function doLoadHsm() {
-  loadHsm();
+async function doLoadHsm() {
+  await loadHsm();
   hsm.draw();
 }
 

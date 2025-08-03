@@ -73,7 +73,7 @@ export class Cregion extends CbaseRegion {
     await myState.load(stateOptions);
   }
 
-  dragStart() {
+  async dragStart() {
     console.warn(`[Cregion.dragStart] ${this.id}`);
   }
 

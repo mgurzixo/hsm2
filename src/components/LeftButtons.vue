@@ -55,8 +55,11 @@ import { mousePos } from "src/lib/canvasListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
 
-function doLoadHsm() {
-  loadHsm();
+async function doLoadHsm() {
+  await loadHsm();
+  console.log(`[LeftButtons.doLoadHsm] `);
+  await U.timeout(100);
+  hsm.draw();
 }
 
 V.watch(modeRef, (newMode, oldMode) => {

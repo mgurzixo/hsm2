@@ -32,7 +32,7 @@ export class Cnote extends CbaseElem {
     hCtx.setSelectedId(null);
   }
 
-  dragStart() {
+  async dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // [x,y] in mm in this.geo.x/y frame
@@ -50,7 +50,6 @@ export class Cnote extends CbaseElem {
     // console.log(`[Cnote.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
     // this.parent.raiseChildR(this.id); // TODO
-    // hsm.adjustChange(this.id);
     return this;
   }
 
@@ -83,7 +82,7 @@ export class Cnote extends CbaseElem {
       y0 += dy;
     } else {
       if (idz.zone.includes("T")) {
-        if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
+        if (height - dy < hsm.settings.noteMinHeight) dy = height - hsm.settings.noteMinHeight;
         if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
         // console.log(
         //   `[Cnote.drag] id:${this.id} y0:${y0} dy:${dy} BB.y0:${this.grandchildrenBB.y0}`,
@@ -91,18 +90,18 @@ export class Cnote extends CbaseElem {
         y0 += dy;
         height -= dy;
       } else if (idz.zone.includes("B")) {
-        if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
+        if (height + dy < hsm.settings.noteMinHeight) dy = hsm.settings.noteMinHeight - height;
         if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
           dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
         height += dy;
       }
       if (idz.zone.includes("L")) {
-        if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
+        if (width - dx < hsm.settings.noteMinWidth) dx = width - hsm.settings.noteMinWidth;
         if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
         x0 += dx;
         width -= dx;
       } else if (idz.zone.includes("R")) {
-        if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
+        if (width + dx < hsm.settings.noteMinWidth) dx = hsm.settings.noteMinWidth - width;
         if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
           dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
         width += dx;
@@ -137,7 +136,7 @@ export class Cnote extends CbaseElem {
 
   async makeCanvas() {
     // console.log(`[Cnote.makeCanvas] (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
-    this.imageData = await U.mdToCanvas(this.text, this.scale * hCtx.folio.geo.scale);
+    this.canvas = await U.mdToCanvas(this.text, this.scale * hCtx.folio.geo.scale);
   }
 
   draw(xx0, yy0) {
@@ -153,9 +152,9 @@ export class Cnote extends CbaseElem {
     const heightP = R(U.mmToPL(this.geo.height));
     // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} geo.xx0:${this.geo.xx0} X0P:${x0P}`);
     // Draw note background
-    cCtx.fillStyle = styles.bg;
-    U.pathRoundedRectP(x0P, y0P, widthP, heightP, 1);
-    cCtx.fill();
+    // cCtx.fillStyle = styles.bg;
+    // U.pathRoundedRectP(x0P, y0P, widthP, heightP, 1);
+    // cCtx.fill();
     // Draw border
     cCtx.lineWidth = styles.borderWidth;
     cCtx.strokeStyle = styles.borderColor;
@@ -169,10 +168,10 @@ export class Cnote extends CbaseElem {
     // U.pathRoundedRectP(x0P, y0P, widthP, heightP, 2);
     cCtx.stroke();
     // Draw note text
-    // console.log(`[Cnote.draw] imageData:${this.imageData}`);
+    // console.log(`[Cnote.draw] canvas:${this.canvas}`);
     cCtx.save();
     cCtx.clip();
-    if (this.imageData) cCtx.drawImage(this.imageData, x0P, y0P);
+    if (this.canvas) cCtx.drawImage(this.canvas, 0, 0, widthP, heightP, x0P, y0P, widthP, heightP);
     cCtx.restore();
     // cCtx.font = `${styles.textSizeP}px ${styles.textFont}`;
     // // console.log(`[Cnote.draw] Selected:${this.isSelected}`);
@@ -201,7 +200,8 @@ export class Cnote extends CbaseElem {
       return idz;
     let id = this.id;
     let zone = "M";
-    if (x <= this.geo.x0 + m) {
+    if (this.justCreated) zone = ("BR");
+    else if (x <= this.geo.x0 + m) {
       if (y <= this.geo.y0 + m) zone = "TL";
       else if (y >= this.geo.y0 + this.geo.height - m) zone = "BL";
       else if (x <= this.geo.x0 + m) zone = "L";

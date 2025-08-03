@@ -1,11 +1,11 @@
 {
   settings: {
     doubleClickTimeoutMs: 300,
-    screenDpi: 94,
+    screenDpi: 96,
     stateRadiusMm: 4,
     stateTitleHeightMm: 6,
-    stateMinHeight: 10,
     stateMinWidth: 10,
+    stateMinHeight: 10,
     deltaMouseWheel: 120,
     deltaScale: 0.1,
     deltaScale2: 0.2,
@@ -18,10 +18,12 @@
     arrowLengthMm: 3,
     arrowWidthMm: 0.75,
     smallestSegMm: 1,
+    noteMinHeight: 7,
+    noteMinWidth: 10,
     noteCornerP: 10,
     styles: {
       silhouetteSelected: "black",
-      folioBackground: "white",
+      folioBackground: "seaShell",
       state: {
         border: {
           chroma: 50,
@@ -90,7 +92,6 @@
           lineWidth: 2.5,
         },
       },
-
       defaultColor: "darkorange",
     },
   },
@@ -232,6 +233,18 @@
             width: 100,
             height: 80,
           },
+          notes: [
+            {
+              geo: {
+                x0: 20,
+                y0: 10,
+                width: 20,
+                height: 7,
+              },
+              scale: 0.7,
+              text: "Hello **World**!",
+            },
+          ],
           regions: [
             {
               id: "R4",
