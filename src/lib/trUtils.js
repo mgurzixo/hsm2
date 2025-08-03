@@ -209,12 +209,12 @@ export function dragNormalSegment(tr, dx, dy) {
   if (hDir) {
     if (dir1 == "N") {
       if (dir2 == "N") {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) NN`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) NN`);
         // OK
         seg1.len = len1 - dy;
         seg2.len = len2 + dy;
       } else {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) NS`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) NS`);
         // OK
         seg1.len = len1 - dy;
         seg2.len = len2 - dy;
@@ -222,12 +222,12 @@ export function dragNormalSegment(tr, dx, dy) {
     }
     else {
       if (dir2 == "N") {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) SN`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) SN`);
         // OK
         seg1.len = len1 + dy;
         seg2.len = len2 + dy;
       } else {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) SS`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) SS`);
         // OK
         seg1.len = len1 + dy;
         seg2.len = len2 - dy;
@@ -237,12 +237,12 @@ export function dragNormalSegment(tr, dx, dy) {
   else {
     if (dir1 == "W") {
       if (dir2 == "W") {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) WW`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) WW`);
         // OK
         seg1.len = len1 - dx;
         seg2.len = len2 + dx;
       } else {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) WE`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) WE`);
         // OK
         seg1.len = len1 - dx;
         seg2.len = len2 - dx;
@@ -250,12 +250,12 @@ export function dragNormalSegment(tr, dx, dy) {
     }
     else {
       if (dir2 == "W") {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) EW`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) EW`);
         // OK
         seg1.len = len1 + dx;
         seg2.len = len2 + dx;
       } else {
-        console.log(`[trUtils.dragNormalSegment] (${tr.id}) EE`);
+        // console.log(`[trUtils.dragNormalSegment] (${tr.id}) EE`);
         // OK F bad L
         seg1.len = len1 + dx;
         seg2.len = len2 - dx;
@@ -412,8 +412,11 @@ export function dragToAnchor(dx, dy) {
         tr.segments = segments;
       } else tr.segments = tr.getInitialSegments();
     }
+    else tr.segments = tr.getInitialSegments();
   }
   else tr.segments = tr.getInitialSegments();
+  // console.log(`[trUtils.dragToAnchor] (${tr.id}) Segments len:${tr.segments.length}`);
+
 }
 
 export function dragFromAnchor(dx, dy) {
@@ -442,6 +445,7 @@ export function dragFromAnchor(dx, dy) {
         tr.segments = segments;
       } else tr.segments = tr.getInitialSegments();
     }
+    else tr.segments = tr.getInitialSegments();
   }
   else tr.segments = tr.getInitialSegments();
 }

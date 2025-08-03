@@ -78,6 +78,27 @@
           font: "sans-serif",
         },
       },
+      text: {
+        border: {
+          color: "#DFDFDF",
+          lineWidth: 1,
+        },
+        borderSelected: {
+          color: "grey",
+          lineWidth: 2,
+        },
+        bg: {
+          color: "#FFFFFFFF",
+        },
+        bgSelected: {
+          color: "white",
+        },
+        text: {
+          sizeP: 14,
+          color: "black",
+          font: "sans-serif",
+        },
+      },
       tr: {
         line: {
           chroma: 100,

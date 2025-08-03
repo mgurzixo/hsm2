@@ -255,15 +255,20 @@ export class Cstate extends CbaseState {
       yy0 += parent.geo.y0;
     }
     console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id}`);
-    const dragCtx = {
+    const trDragCtx = {
       id: myTr.id,
       zone: "TO",
       type: "A",
       xx0: xx0 + x,
       yy0: yy0 + y,
+      tr0: {
+        from: structuredClone(myTr.from),
+        to: structuredClone(myTr.to),
+        segments: structuredClone(myTr.segments)
+      }
     };
-    console.log(`[Cstate.insertTr] dragCtx:${JSON.stringify(dragCtx)}`);
-    hCtx.setDragCtx(dragCtx);
+    console.log(`[Cstate.insertTr] trDragCtx:${JSON.stringify(trDragCtx)}`);
+    hCtx.setDragCtx(trDragCtx);
 
 
     // const m = U.pToMmL(hsm.settings.cursorMarginP);

@@ -61,6 +61,8 @@ export class Ctr extends CbaseElem {
               break;
           }
           const [d, pos] = U.distToSegmentSquared({ x: x0, y: y0 }, { x: myX0, y: myY0 }, { x: myX1, y: myY1 });
+          // if (anchor.id == myElem.id) console.log(`[Ctr.findNearestTarget] anchor.side:${anchor.side} mySide:${mySide} bestDist:${bestDist.toFixed()} dist:${d}`);
+
           if (d < bestDist) {
             bestDist = d;
             bestElem = myElem;
@@ -83,7 +85,7 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
     if (modeRef.value == "") {
-      const dragCtx = {
+      const trDragCtx = {
         id: this.id,
         zone: idz.zone,
         type: idz.type,
@@ -95,8 +97,8 @@ export class Ctr extends CbaseElem {
           segments: structuredClone(this.segments)
         }
       };
-      console.log(`[Ctr.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
-      hCtx.setDragCtx(dragCtx);
+      console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
+      hCtx.setDragCtx(trDragCtx);
     }
     window.windump = true;
     return this;
