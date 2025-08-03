@@ -31,7 +31,10 @@
         <q-input dense v-model="element.exit" label="Guard:" outlined />
       </div>
       <div class="q-py-sm">
-        <q-input dense v-model="element.include" label="Action:" outlined />
+        <q-input dense v-model="element.effect" label="Effect:" outlined />
+      </div>
+      <div class="q-pa-sm">
+        <q-input dense v-model="element.include" label="Include:" outlined autogrow />
       </div>
       <div class="q-py-sm">
         <q-input dense v-model="element.comment" label="Comment:" outlined autogrow />
