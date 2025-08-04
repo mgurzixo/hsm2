@@ -62,6 +62,11 @@ export class Cstate extends CbaseState {
     }
   }
 
+  setStyles() {
+    // console.log(`[Cstate.setStyles] id:${this.id}`);
+    this.styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
+  }
+
   async addNote(noteOptions) {
     // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");
@@ -81,6 +86,7 @@ export class Cstate extends CbaseState {
 
   async load(stateOptions) {
     // console.log(`[Cstate.load] regions:${stateOptions?.regions}`);
+    this.setStyles();
     if (!stateOptions?.regions) return;
     for (let id of Object.keys(stateOptions.regions)) {
       // console.log(`[Cstate.load] RegionId:${id}`);
@@ -501,11 +507,11 @@ export class Cstate extends CbaseState {
     this.geo.xx0 = xx0 + this.geo.x0;
     this.geo.yy0 = yy0 + this.geo.y0;
     // console.log(`[Cstate.draw] Drawing ${this.id} yy0:${yy0} geo.y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
-    let silhouetteWidth = hsm.settings.styles.stateSilhouetteWidth;
-    if (hCtx.getErrorId() == this.id) {
-      silhouetteWidth = hsm.settings.styles.silhouetteErrorWidth;
-    }
-    const x0P = RR(U.mmToPL(this.geo.xx0), silhouetteWidth);
+    const s = this.styles;
+    let borderWidth = s.borderWidth;
+    if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
+    else if (this.isSelected) borderWidth = s.borderSelectedWidth;
+    const x0P = RR(U.mmToPL(this.geo.xx0), borderWidth);
     const y0P = RR(U.mmToPL(this.geo.yy0));
     const widthP = R(U.mmToPL(this.geo.width));
     const heightP = R(U.mmToPL(this.geo.height));
@@ -514,42 +520,34 @@ export class Cstate extends CbaseState {
     let titleHeightP = R(U.mmToPL(th));
     const stateRadiusP = R(U.mmToPL(hsm.settings.stateRadiusMm));
     if (titleHeightP < hsm.settings.stateRadiusMm) titleHeightP = hsm.settings.stateRadiusMm;
-    const styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
     // Draw state background
-    cCtx.fillStyle = styles.bg;
+    cCtx.fillStyle = s.bg;
     U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.fill();
     // Draw state title background
-    // console.log(`[Cstate.draw] titleBgs[0]:${styles.titleBgs[0]} titleBgs[1]:${styles.titleBgs[1]}`);
+    // console.log(`[Cstate.draw] titleBgs[0]:${s.titleBgs[0]} titleBgs[1]:${s.titleBgs[1]}`);
     const titleGradient = cCtx.createLinearGradient(x0P, y0P, x0P, y0P + titleHeightP);
-    titleGradient.addColorStop(1, styles.titleBgs[0]);
-    titleGradient.addColorStop(0, styles.titleBgs[1]);
+    titleGradient.addColorStop(1, s.titleBgs[0]);
+    titleGradient.addColorStop(0, s.titleBgs[1]);
     cCtx.fillStyle = titleGradient;
     this.pathTitle(x0P, y0P, widthP, titleHeightP, stateRadiusP);
     cCtx.fill();
     // Draw border
-    cCtx.lineWidth = styles.borderWidth;
-    cCtx.strokeStyle = styles.border;
-    if (hCtx.getErrorId() == this.id) {
-      cCtx.strokeStyle = styles.borderError;
-      cCtx.lineWidth = styles.borderErrorWidth;
-    } else if (this.isSelected) {
-      // console.log(`[Cstate.draw] Selected:${this.isSelected}`);
-      cCtx.lineWidth = styles.borderSelectedWidth;
-    }
-    // cCtx.rect(x0P, y0P, widthP, heightP);
+    cCtx.lineWidth = borderWidth;
+    cCtx.strokeStyle = s.border;
+    if (hCtx.getErrorId() == this.id) cCtx.strokeStyle = s.borderError;
     U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.stroke();
     // Draw title line
-    cCtx.lineWidth = styles.titleLineWidth;
-    cCtx.strokeStyle = styles.titleLine;
+    cCtx.lineWidth = s.titleLineWidth;
+    cCtx.strokeStyle = s.titleLine;
     cCtx.beginPath();
     cCtx.moveTo(x0P, y0P + titleHeightP);
     cCtx.lineTo(x0P + widthP, y0P + titleHeightP);
     cCtx.stroke();
     // Draw title text
-    cCtx.font = `${Math.round((styles.titleTextSizePc / 100) * titleHeightP)}px ${styles.titleTextFont}`;
-    cCtx.fillStyle = styles.titleText;
+    cCtx.font = `${Math.round((s.titleTextSizePc / 100) * titleHeightP)}px ${s.titleTextFont}`;
+    cCtx.fillStyle = s.titleText;
     cCtx.textBaseline = "middle";
     cCtx.textAlign = "center";
     cCtx.fillText(

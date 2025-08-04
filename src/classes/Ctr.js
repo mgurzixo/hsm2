@@ -5,7 +5,6 @@ import * as T from "src/lib/trUtils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Ctext } from "src/classes/Ctext";
-import { trStyles } from "src/lib/styles";
 import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
 
 export class Ctr extends CbaseElem {
@@ -349,27 +348,22 @@ export class Ctr extends CbaseElem {
     [this.geo.x0, this.geo.y0] = [x0, y0];
     this.geo.xx0 = xx0 + this.geo.x0;
     this.geo.yy0 = yy0 + this.geo.y0;
-    let baseColor = this.color;
-    if (!baseColor) baseColor = hElems.getElemById(this.from.id).color;
+    const s = hElems.getElemById(this.from.id).styles;
     // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
-    const styles = trStyles(baseColor);
     if (!this.isLegal()) {
-      cCtx.lineWidth = styles.lineErrorWidth;
-      cCtx.strokeStyle = styles.lineError;
-      this.tag.color = styles.lineError;
-      console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
+      cCtx.lineWidth = s.trLineErrorWidth;
+      cCtx.strokeStyle = s.trLineError;
+      this.tag.color = s.trLineError;
+      // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
     }
     else {
-      if (this.isSelected) cCtx.lineWidth = styles.lineSelectedWidth;
-      else cCtx.lineWidth = styles.lineWidth;
-      cCtx.strokeStyle = styles.line;
-      this.tag.color = styles.tag;
+      if (this.isSelected) cCtx.lineWidth = s.trLineSelectedWidth;
+      else cCtx.lineWidth = s.trLineWidth;
+      cCtx.strokeStyle = s.trLine;
+      this.tag.color = s.trTag;
     }
     pathSegments(this.segments, x0, y0);
-    if (this.tag) {
-      this.makeTag();
-      this.tag.draw(this.geo.xx0, this.geo.yy0);
-    }
+    if (this.tag) this.tag.draw(this.geo.xx0, this.geo.yy0);
   }
 
   adjustChange(changedId) {

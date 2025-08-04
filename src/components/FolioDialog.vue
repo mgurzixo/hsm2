@@ -58,7 +58,6 @@
 import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
-import { stateStyles, trStyles } from "src/lib/styles";
 
 const bgColor = V.ref("white");
 const isInternal = V.ref(true);

@@ -89,7 +89,6 @@ color-from {
 import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
-import { stateStyles, trStyles } from "src/lib/styles";
 
 const bgColor = V.ref("white");
 const isInternal = V.ref(true);
@@ -113,7 +112,7 @@ V.onMounted(() => {
   bgColor.value = hsm.settings.styles.folioBackground;
   elemFrom.value = U.getElemById(props.element.from.id);
   elemTo.value = U.getElemById(props.element.to.id);
-  colorFrom.value = trStyles(elemFrom.value.color).line;
-  colorTo.value = trStyles(elemTo.value.color).line;
+  colorFrom.value = elemFrom.value.styles.border;
+  colorTo.value = elemTo.value.styles.border;
 });
 </script>

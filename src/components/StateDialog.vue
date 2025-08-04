@@ -124,6 +124,7 @@ V.watch(stateHue, (baseColor) => {
   msBg.value = styles.bg;
   // eslint-disable-next-line vue/no-mutating-props
   props.element.color = baseColor;
+  props.element.setStyles();
   hsm.draw();
   // console.log(`[StateDialog.watch.stateColor] msBg:${msBg.value}`);
 });

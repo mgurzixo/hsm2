@@ -39,7 +39,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   async updateNotes() {
-    console.log(`[Cfolio.updateNotes] `);
+    // console.log(`[Cfolio.updateNotes] `);
     for (let note of hCtx.folio.notes) {
       await note.makeCanvas();
     }

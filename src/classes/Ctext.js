@@ -26,7 +26,7 @@ export class Ctext extends CbaseElem {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // [x,y] in mm in this.geo.x/y frame
-    console.log(`[Ctext.dragStart] (${this.id}) x:${x?.toFixed()}`);
+    // console.log(`[Ctext.dragStart] (${this.id}) x:${x?.toFixed()}`);
     // console.log(
     //   `[Ctext.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
     // );

@@ -7,62 +7,59 @@ import Color from "colorjs.io";
 export function stateStyles(baseColor) {
   // Background
   let bg = new Color(baseColor);
-  const t = hsm.settings.styles.state;
-  bg.lch.c = t.bg.chroma;
-  bg.lch.l = t.bg.light;
+  const s = hsm.settings.styles.state;
+  bg.lch.c = s.bg.chroma;
+  bg.lch.l = s.bg.light;
   // Title backgrounds
   const titleBgs = [new Color(baseColor), new Color(baseColor)];
-  [titleBgs[0].lch.l, titleBgs[1].lch.l] = [t.titleBg.lights[0], t.titleBg.lights[1]];
-  [titleBgs[0].lch.c, titleBgs[1].lch.c] = [t.titleBg.chroma, t.titleBg.chroma];
+  [titleBgs[0].lch.l, titleBgs[1].lch.l] = [s.titleBg.lights[0], s.titleBg.lights[1]];
+  [titleBgs[0].lch.c, titleBgs[1].lch.c] = [s.titleBg.chroma, s.titleBg.chroma];
   // Border
   const border = new Color(baseColor);
-  border.lch.c = t.border.chroma;
-  border.lch.l = t.border.light;
+  border.lch.c = s.border.chroma;
+  border.lch.l = s.border.light;
   // Title text
   let titleText = new Color(baseColor);
-  titleText.lch.c = t.titleText.chroma;
-  titleText.lch.l = t.titleText.light;
+  titleText.lch.c = s.titleText.chroma;
+  titleText.lch.l = s.titleText.light;
   // TitleLine
   const titleLine = new Color(baseColor);
-  titleLine.lch.c = t.titleLine.chroma;
-  titleLine.lch.l = t.titleLine.light;
-  return {
-    border: border.to("srgb") + "",
-    borderWidth: t.border.lineWidth,
-    borderSelectedWidth: t.borderSelected.lineWidth,
-    borderError: t.borderError.color,
-    borderErrorWidth: t.borderError.lineWidth,
-    titleLine: titleLine.to("srgb") + "",
-    titleLineWidth: t.titleLine.lineWidth,
-    bg: bg.to("srgb") + "",
-    titleBgs: [titleBgs[0].to("srgb") + "", titleBgs[1].to("srgb") + ""],
-    titleText: titleText.to("srgb") + "",
-    titleTextFont: t.titleText.font,
-    titleTextSizePc: t.titleText.sizePc,
-  };
-}
+  titleLine.lch.c = s.titleLine.chroma;
+  titleLine.lch.l = s.titleLine.light;
 
-export function trStyles(baseColor) {
   const t = hsm.settings.styles.tr;
   // Line
-  const line = new Color(baseColor);
-  line.lch.c = t.line.chroma;
-  line.lch.l = t.line.light;
-  const colLine = line.to("srgb") + "";
-  line.lch.c = t.tag.chroma;
-  line.lch.l = t.tag.light;
-  const colTag = line.to("srgb") + "";
+  const trLine = new Color(baseColor);
+  trLine.lch.c = t.line.chroma;
+  trLine.lch.l = t.line.light;
+  const colLine = trLine.to("srgb") + "";
+  trLine.lch.c = t.tag.chroma;
+  trLine.lch.l = t.tag.light;
+  const colTag = trLine.to("srgb") + "";
+
 
   return {
-    line: colLine,
-    tag: colTag,
-    lineWidth: t.line.lineWidth,
-    lineSelectedWidth: t.lineSelected.lineWidth,
-    lineError: t.lineError.color,
-    lineErrorWidth: t.lineError.lineWidth,
+    bg: bg.to("srgb") + "",
+    border: border.to("srgb") + "",
+    borderWidth: s.border.lineWidth,
+    borderSelectedWidth: s.borderSelected.lineWidth,
+    borderError: s.borderError.color,
+    borderErrorWidth: s.borderError.lineWidth,
+    titleLine: titleLine.to("srgb") + "",
+    titleLineWidth: s.titleLine.lineWidth,
+    titleBgs: [titleBgs[0].to("srgb") + "", titleBgs[1].to("srgb") + ""],
+    titleText: titleText.to("srgb") + "",
+    titleTextFont: s.titleText.font,
+    titleTextSizePc: s.titleText.sizePc,
+
+    trLine: colLine,
+    trLineWidth: t.line.lineWidth,
+    trLineSelectedWidth: t.lineSelected.lineWidth,
+    trLineError: t.lineError.color,
+    trLineErrorWidth: t.lineError.lineWidth,
+    trTag: colTag,
   };
 }
-
 
 export function noteStyles(baseColor) {
   const t = hsm.settings.styles.note;
