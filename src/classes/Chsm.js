@@ -144,7 +144,7 @@ export class Chsm extends CbaseElem {
   async dragStart(xDown, yDown) {
     // console.log(`[Chsm.dragStart] Making idz`);
     const idz = this.makeIdz(xDown, yDown);
-    console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
+    // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);

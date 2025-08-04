@@ -8,6 +8,17 @@ import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/canvasListeners";
 
+let noteTo;
+
+function deferredNotesUpdate() {
+  if (noteTo) clearTimeout(noteTo);
+  noteTo = setTimeout(async () => {
+    await hCtx.folio.updateNotes();
+    hsm.draw();
+  }, 100);
+}
+
+
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
     super(parent, options, "F");
@@ -25,6 +36,17 @@ export class Cfolio extends CbaseRegion {
     for (let note of this.notes) {
       note.setSelected(val);
     }
+  }
+
+  async updateNotes() {
+    console.log(`[Cfolio.updateNotes] `);
+    for (let note of hCtx.folio.notes) {
+      await note.makeCanvas();
+    }
+    for (let child of hCtx.folio.children) {
+      await child.updateNotes();
+    }
+    hsm.draw();
   }
 
   async addNote(noteOptions) {
@@ -209,22 +231,6 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
-
-  async updateAllNoteCanvas() {
-    const dScale = Math.abs((hCtx.folio.myOldScale - hCtx.folio.geo.scale) / hCtx.folio.geo.scale);
-    if (dScale < 0.05) return;
-    // console.log(`[Cfolio.updateAllNoteCanvas] dScale:${dScale.toFixed(2)}`);
-
-    for (let note of hCtx.folio.notes) {
-      await note.makeCanvas();
-    }
-    for (let child of hCtx.folio.children) {
-      await child.updateAllNoteCanvas();
-    }
-    hCtx.folio.myOldScale = hCtx.folio.geo.scale;
-    hsm.draw();
-  }
-
   wheelP(xP, yP, dyP) {
     const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
@@ -239,7 +245,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     hsm.draw();
-    window.requestAnimationFrame(U.debounce(this.updateAllNoteCanvas.bind(this), 250));
+    deferredNotesUpdate();
   }
 
   makeIdz(x, y, idz) {

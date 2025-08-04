@@ -671,12 +671,12 @@ export class Cstate extends CbaseState {
     return true;
   }
 
-  async updateAllNoteCanvas() {
+  async updateNotes() {
     for (let note of this.notes) {
       await note.makeCanvas();
     }
     for (let child of this.children) {
-      await child.updateAllNoteCanvas();
+      await child.updateNotes();
     }
   }
 

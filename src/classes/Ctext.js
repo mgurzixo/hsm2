@@ -15,7 +15,7 @@ export class Ctext extends CbaseElem {
     this.scale = options?.scale || 1;
     this.geo.width = options?.width || 20;
     this.geo.height = hsm.settings.styles.text.text.sizeMm + 2 * (hsm.settings.styles.text.text.marginVMm);
-    console.log(`[Ctext.load] this.geo.height:${this.geo.height}`);
+    // console.log(`[Ctext.load] this.geo.height:${this.geo.height}`);
   }
 
   async load(textOptions) {
@@ -34,6 +34,8 @@ export class Ctext extends CbaseElem {
       id: this.id,
       x0: this.geo.x0,
       y0: this.geo.y0,
+      xx0: this.geo.xx0,
+      yy0: this.geo.yy0,
       width: this.geo.width,
       height: this.geo.height,
     };
@@ -49,57 +51,34 @@ export class Ctext extends CbaseElem {
     const dragCtx = hCtx.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
+    const xx0 = dragCtx.xx0;
+    const yy0 = dragCtx.yy0;
     let width = dragCtx.width;
     let height = dragCtx.height;
+    const m = hsm.settings.minDistanceMm;
+    const t = hsm.settings.textMinHeight;
+    const f = hCtx.folio.geo;
     // console.log(`[Ctext.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     if (idz.zone == "M") {
       // console.log(`[Ctext.drag] id:${this.id} idz.zone:${idz.zone}`);
       if (this.parent.geo.width && this.parent.geo.height) {
-        dx = U.myClamp(
-          dx,
-          x0,
-          this.geo.width + hsm.settings.minDistanceMm,
-          hsm.settings.minDistanceMm,
-          this.parent.geo.width - hsm.settings.minDistanceMm,
-        );
-        dy = U.myClamp(
-          dy,
-          y0,
-          this.geo.height + hsm.settings.minDistanceMm,
-          hsm.settings.minDistanceMm,
-          this.parent.geo.height - hsm.settings.minDistanceMm,
-        );
+        dx = U.myClamp(dx, x0, this.geo.width + m, m, this.parent.geo.width - m,);
+        dy = U.myClamp(dy, y0, this.geo.height + m, m, this.parent.geo.height - m,);
       }
+      if (xx0 + dx < f.x0 + m) dx = f.x0 + m - xx0;
+      if (xx0 + width + dx > f.x0 + f.width - m) dx = f.x0 + f.width - m - xx0 - width;
+      if (yy0 + dy < f.y0 + m) dy = f.y0 + m - yy0;
+      if (yy0 + height + dy > f.y0 + f.height - m) dy = f.y0 + f.height - m - yy0 - height;
       x0 += dx;
       y0 += dy;
     } else {
-      if (idz.zone.includes("T")) {
-        if (height - dy < hsm.settings.textMinHeight) dy = height - hsm.settings.textMinHeight;
-        if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
-        // console.log(
-        //   `[Ctext.drag] id:${this.id} y0:${y0} dy:${dy} BB.y0:${this.grandchildrenBB.y0}`,
-        // );
-        y0 += dy;
-        height -= dy;
-      } else if (idz.zone.includes("B")) {
-        if (height + dy < hsm.settings.textMinHeight) dy = hsm.settings.textMinHeight - height;
-        if (this.parent.geo.height) {
-          if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
-            dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
-        }
-        height += dy;
-      }
-      if (idz.zone.includes("L")) {
-        if (width - dx < hsm.settings.textMinWidth) dx = width - hsm.settings.textMinWidth;
-        if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
-        x0 += dx;
-        width -= dx;
-      } else if (idz.zone.includes("R")) {
+      if (idz.zone.includes("R")) {
         if (width + dx < hsm.settings.textMinWidth) dx = hsm.settings.textMinWidth - width;
         if (this.parent.geo.width) {
-          if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
-            dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
+          if (x0 + width + dx > this.parent.geo.width - m) dx = this.parent.geo.width - width - x0 - m;
         }
+        if (xx0 + width + dx > f.x0 + f.width - m) dx = f.x0 + f.width - m - xx0 - width;
+
         width += dx;
       }
     }

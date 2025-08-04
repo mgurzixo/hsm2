@@ -25,6 +25,8 @@ export class Ctr extends CbaseElem {
     this.trigger = transOptions.trigger;
     this.guard = transOptions.guard;
     this.effect = transOptions.effect;
+    this.include = transOptions.include;
+    this.comment = transOptions.comment;
     this.makeTag();
   }
 
@@ -38,7 +40,8 @@ export class Ctr extends CbaseElem {
     if (this.guard) text += `[${this.guard}]`;
     if (this.effect) text += `/${this.effect}`;
     if (!this.tag) this.tag = new Ctext(this, {
-      x0: 5, y0: 5, width: 20, height: 10, text: text
+      geo: { x0: 10, y0: 10, width: 20, height: 10 },
+      text: text
     });
     else this.tag.text = text;
     // if (this.id == "T13") console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
@@ -119,7 +122,7 @@ export class Ctr extends CbaseElem {
           segments: structuredClone(this.segments)
         }
       };
-      console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
+      // console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
       hCtx.setDragCtx(trDragCtx);
     }
     window.windump = true;
@@ -341,11 +344,11 @@ export class Ctr extends CbaseElem {
   }
 
   draw(xx0, yy0) {
-    this.geo.xx0 = xx0 + this.geo.x0;
-    this.geo.yy0 = yy0 + this.geo.y0;
     if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
     const [x0, y0] = T.anchorToXY(this.from);
     [this.geo.x0, this.geo.y0] = [x0, y0];
+    this.geo.xx0 = xx0 + this.geo.x0;
+    this.geo.yy0 = yy0 + this.geo.y0;
     let baseColor = this.color;
     if (!baseColor) baseColor = hElems.getElemById(this.from.id).color;
     // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);

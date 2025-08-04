@@ -267,9 +267,9 @@ export class CbaseElem {
     }
   }
 
-  async updateAllNoteCanvas() {
+  async updateNotes() {
     for (let child of this.children) {
-      child.updateAllNoteCanvas();
+      child.updateNotes();
     }
   }
 

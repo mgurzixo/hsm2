@@ -57,7 +57,7 @@ import { Ctr } from "src/classes/Ctr";
 
 async function doLoadHsm() {
   await loadHsm();
-  console.log(`[LeftButtons.doLoadHsm] `);
+  // console.log(`[LeftButtons.doLoadHsm] `);
   await U.timeout(100);
   hsm.draw();
 }
