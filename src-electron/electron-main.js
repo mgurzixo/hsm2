@@ -9,14 +9,14 @@ import { fileURLToPath } from "node:url";
 app.commandLine.appendSwitch("gtk-version", "3");
 
 // cf. https://quasar.dev/quasar-cli-vite/developing-electron-apps/electron-accessing-files/
-// initialize();
+initialize();
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
 
 const currentDir = fileURLToPath(new URL(".", import.meta.url));
 
-let mainWindow;
+export let mainWindow;
 
 async function createWindow() {
   /**
@@ -43,6 +43,7 @@ async function createWindow() {
       ),
     },
   });
+  enable(mainWindow.webContents);
 
   if (process.env.DEV) {
     await mainWindow.loadURL(process.env.APP_URL);
@@ -79,3 +80,5 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+

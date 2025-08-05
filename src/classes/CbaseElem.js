@@ -5,6 +5,7 @@ import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
 
+
 export class CbaseElem {
   constructor(parent, obj, type) {
     // console.log(`[CbaseElem.constructor] type:${type}`);
@@ -157,6 +158,10 @@ export class CbaseElem {
     return idz;
   }
 
+  assets(icon, defVal) {
+    return `url(../assets/${icon}) 8 8, ${defVal}`;
+  }
+
   defineCursor(idz) {
     let cursor;
     // console.log(`[CbaseElem.defineCursor] (${this.id}) mode:'${modeRef.value}' zone:${idz.zone}`);
@@ -164,35 +169,34 @@ export class CbaseElem {
 
     if (modeRef.value == "inserting-state") {
       // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
-      //   cursor: url(http://cursor.in/assets/copy.svg), auto;
       if (this.id.startsWith("F") || this.id.startsWith("S")) {
-        if (this.canInsertState(idz)) return "url(/assets/state16x16.png) 8 8,default";
+        if (this.canInsertState(idz)) return this.assets("state16x16.png", "default");
         // if (this.canInsertState(idz)) return "grabbing";
-        else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+        else return this.assets("no-drop16x16.png", "no-drop");
       }
-      return "url(/assets/no-drop16x16.png),no-drop";
+      return this.assets("no-drop16x16.png", "no-drop");
     }
     else if (modeRef.value == "inserting-trans") {
       // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
       if (this.id.startsWith("S")) {
-        if (this.canInsertTr(idz)) return "url(/assets/anchor16x16.png) 8 8,default";
+        if (this.canInsertTr(idz)) return this.assets("anchor16x16.png", "default");
         // if (this.canInsertState(idz)) return "grabbing";
-        else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+        else return this.assets("no-drop16x16.png", "no-drop");
       }
-      return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+      return this.assets("no-drop16x16.png", "no-drop");
     }
     else if (modeRef.value == "inserting-note") {
       // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
       if (this.id.startsWith("F") || this.id.startsWith("S")) {
-        if (this.canInsertNote(idz)) return "url(/assets/note16x16.png) 8 8,default";
+        if (this.canInsertNote(idz)) return this.assets("note16x16.png", "default");
         // if (this.canInsertState(idz)) return "grabbing";
-        else return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+        else return this.assets("no-drop16x16.png", "no-drop");
       }
-      return "url(/assets/no-drop16x16.png) 8 8,no-drop";
+      return this.assets("no-drop16x16.png", "no-drop");
     }
 
     if (hCtx.getErrorId() == this.id) {
-      cursor = "url(/assets/no-drop16x16.png) 8 8,no-drop";
+      cursor = this.assets("no-drop16x16.png", "no-drop");
       return cursor;
     }
     // console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone} type:${idz.type}`);
@@ -203,7 +207,7 @@ export class CbaseElem {
     else switch (idz.zone) {
       case "FROM":
       case "TO":
-        cursor = "url(/assets/anchor16x16.png) 8 8,default";
+        cursor = this.assets("anchor16x16.png", "default");
         break;
       case "M":
         cursor = "move";

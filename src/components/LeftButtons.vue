@@ -54,6 +54,7 @@ import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/canvasListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
+import { md } from "src/lib/md";
 
 async function doLoadHsm() {
   await loadHsm();
@@ -83,7 +84,7 @@ V.watch(modeRef, (newMode, oldMode) => {
 });
 
 function doTest() {
-
+  md(" __Hello ~~Wo<r>ld ~~__!");
 }
 
 V.onMounted(async () => {

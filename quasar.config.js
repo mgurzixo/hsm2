@@ -3,6 +3,7 @@
 
 import { defineConfig } from "#q-app/wrappers";
 import jsoncLoader from "./vite-jsonc-loader";
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig((/* ctx */) => {
   return {
@@ -59,6 +60,7 @@ export default defineConfig((/* ctx */) => {
 
       vitePlugins: [
         [
+          nodePolyfills(),
           "vite-plugin-checker",
           {
             eslint: {

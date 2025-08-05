@@ -28,8 +28,10 @@
  * }
  */
 const { contextBridge } = require("electron");
+import { app, BrowserWindow, Menu } from "electron";
 const fs = require("fs");
 const os = require("os");
+// import { mainWindow } from "./electron-main.js";
 
 // Expose API methods to the renderer process
 contextBridge.exposeInMainWorld("hsm2Api", {
@@ -55,5 +57,21 @@ contextBridge.exposeInMainWorld("hsm2Api", {
   fsRead: (filePath, encoding) => {
     // console.log(`[electron-preload.fsRead] filePath:${filePath}`);
     return fs.readFileSync(filePath, encoding);
+  },
+
+  pdf: () => {
+    let win = BrowserWindow
+      .getFocusedWindow();
+    var options = {
+      marginsType: 0,
+      pageSize: 'A4',
+      printBackground: true,
+      printSelectionOnly: false,
+      landscape: false
+    };
+    win.webContents.printToPDF(options).then(data => {
+      fs.writeFileSync("out.pdf", data);
+    });
+    return true;
   },
 });

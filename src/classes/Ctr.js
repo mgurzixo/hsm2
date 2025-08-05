@@ -147,7 +147,7 @@ export class Ctr extends CbaseElem {
     delete this.from.prevY;
     delete this.to.prevX;
     delete this.to.prevY;
-    console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
+    // console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
     if (this.justCreated == true) {
       hsm.openDialog(this);
       delete this.justCreated;

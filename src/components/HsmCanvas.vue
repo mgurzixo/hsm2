@@ -3,7 +3,7 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <canvas ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
+    <canvas id="myCanvas" ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
     </div>
