@@ -84,7 +84,7 @@ V.watch(modeRef, (newMode, oldMode) => {
 });
 
 function doTest() {
-  md(" __Hello ~~Wo<r>ld ~~__!");
+  md("Hel__lox__ **World**!");
 }
 
 V.onMounted(async () => {

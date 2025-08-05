@@ -24,98 +24,43 @@
     styles: {
       silhouetteSelected: "black",
       folioBackground: "seaShell",
+      note1: {
+        h9: { heightMm: 3, font: "sans-serif" },
+        h1: { heightMm: 10, font: "sans-serif" },
+        h2: { heightMm: 8, font: "sans-serif" },
+        h3: { heightMm: 6, font: "sans-serif" },
+        h4: { heightMm: 4, font: "sans-serif" },
+        h5: { heightMm: 2, font: "sans-serif" },
+        thin: "thin",
+      },
       state: {
-        border: {
-          chroma: 50,
-          light: 30,
-          lineWidth: 1,
-        },
-        borderError: {
-          color: "red",
-          lineWidth: 2,
-        },
-        borderSelected: {
-          lineWidth: 2,
-        },
-        titleLine: {
-          chroma: 50,
-          light: 20,
-          lineWidth: 1,
-        },
-        bg: {
-          chroma: 30,
-          light: 98,
-        },
-        titleBg: {
-          chroma: 50,
-          lights: [80, 95],
-        },
-        titleText: {
-          chroma: 100,
-          light: 5,
-          font: "sans-serif",
-          sizePc: 70,
-        },
+        border: { chroma: 50, light: 30, lineWidth: 1 },
+        borderError: { color: "red", lineWidth: 2 },
+        borderSelected: { lineWidth: 2 },
+        titleLine: { chroma: 50, light: 20, lineWidth: 1 },
+        bg: { chroma: 30, light: 98 },
+        titleBg: { chroma: 50, lights: [80, 95] },
+        titleText: { chroma: 100, light: 5, font: "sans-serif", sizePc: 70 },
       },
       note: {
-        border: {
-          color: "#DFDFDF",
-          lineWidth: 1,
-        },
-        borderSelected: {
-          color: "grey",
-          lineWidth: 2,
-        },
-        bg: {
-          color: "#FFFFFFFF",
-        },
-        bgSelected: {
-          color: "white",
-        },
-        text: {
-          color: "black",
-          font: "sans-serif",
-        },
+        border: { color: "#DFDFDF", lineWidth: 1 },
+        borderSelected: { color: "grey", lineWidth: 2 },
+        bg: { color: "#FFFFFFFF" },
+        bgSelected: { color: "white" },
+        text: { color: "black", font: "sans-serif" },
       },
       text: {
-        border: {
-          color: "#DFDFDF",
-          lineWidth: 1,
-        },
-        borderSelected: {
-          color: "grey",
-          lineWidth: 2,
-        },
-        bg: {
-          color: "#FFFFFFFF",
-        },
-        bgSelected: {
-          color: "white",
-        },
-        text: {
-          sizeMm: 3,
-          marginVMm: 1,
-          color: "black",
-          font: "sans-serif",
-        },
+        border: { color: "#DFDFDF", lineWidth: 1 },
+        borderSelected: { color: "grey", lineWidth: 2 },
+        bg: { color: "#FFFFFFFF" },
+        bgSelected: { color: "white" },
+        text: { sizeMm: 3, marginVMm: 1, color: "black", font: "sans-serif" },
       },
       tr: {
-        line: {
-          chroma: 100,
-          light: 30,
-          lineWidth: 1.5,
-        },
-        lineError: {
-          color: "red",
-          lineWidth: 2,
-        },
-        lineSelected: {
-          lineWidth: 2.5,
-        },
-        tag: {
-          chroma: 100,
-          light: 15,
-        },
+        line: { chroma: 100, light: 30, lineWidth: 1.5 },
+        lineError: { color: "red", lineWidth: 2 },
+        lineSelected: { lineWidth: 2.5 },
+        tag: { chroma: 100, light: 15 },
       },
       defaultColor: "darkorange",
     },
@@ -129,37 +74,18 @@
     {
       id: "F1",
       name: "Main Folio",
-      geo: {
-        x0: 0,
-        y0: 0,
-        width: 210,
-        height: 297,
-        scale: 1,
-      },
+      geo: { x0: 0, y0: 0, width: 210, height: 297, scale: 1 },
       notes: [
         {
-          geo: {
-            x0: 20,
-            y0: 5,
-            width: 100,
-            height: 20,
-          },
+          geo: { x0: 20, y0: 5, width: 100, height: 20 },
           text: "Hello **World**! This is a very very very very very very very very very very very long note",
         },
       ],
       trs: [
         {
           segments: [],
-          from: {
-            id: "S2",
-            side: "R",
-            pos: 0.2,
-          },
-          to: {
-            id: "S3",
-            side: "T",
-            pos: 0.3,
-          },
+          from: { id: "S2", side: "R", pos: 0.2 },
+          to: { id: "S3", side: "T", pos: 0.3 },
           isInternal: false,
           trigger: "TRIG1",
           guard: "Guard1",
@@ -167,86 +93,38 @@
         },
         {
           segments: [],
-          from: {
-            id: "S2",
-            side: "T",
-            pos: 0.6,
-          },
-          to: {
-            id: "S2",
-            side: "T",
-            pos: 0.7,
-          },
+          from: { id: "S2", side: "T", pos: 0.6 },
+          to: { id: "S2", side: "T", pos: 0.7 },
           isInternal: true,
         },
         {
           segments: [],
-          from: {
-            id: "S6",
-            side: "R",
-            pos: 0.8,
-          },
-          to: {
-            id: "S8",
-            side: "L",
-            pos: 0.5,
-          },
+          from: { id: "S6", side: "R", pos: 0.8 },
+          to: { id: "S8", side: "L", pos: 0.5 },
           isInternal: false,
         },
         {
           segments: [],
-          from: {
-            id: "S2",
-            side: "L",
-            pos: 0.6,
-          },
-          to: {
-            id: "S6",
-            side: "L",
-            pos: 0.3,
-          },
+          from: { id: "S2", side: "L", pos: 0.6 },
+          to: { id: "S6", side: "L", pos: 0.3 },
           isInternal: true,
         },
         {
           segments: [],
-          from: {
-            id: "S3",
-            side: "L",
-            pos: 1,
-          },
-          to: {
-            id: "S2",
-            side: "B",
-            pos: 1,
-          },
+          from: { id: "S3", side: "L", pos: 1 },
+          to: { id: "S2", side: "B", pos: 1 },
           isInternal: false,
         },
         {
           segments: [],
-          from: {
-            id: "S6",
-            side: "R",
-            pos: 0.5,
-          },
-          to: {
-            id: "S7",
-            side: "R",
-            pos: 0.5,
-          },
+          from: { id: "S6", side: "R", pos: 0.5 },
+          to: { id: "S7", side: "R", pos: 0.5 },
           isInternal: false,
         },
         {
           segments: [],
-          from: {
-            id: "S6",
-            side: "R",
-            pos: 0.9,
-          },
-          to: {
-            id: "S3",
-            side: "L",
-            pos: 0.3,
-          },
+          from: { id: "S6", side: "R", pos: 0.9 },
+          to: { id: "S3", side: "L", pos: 0.3 },
           isInternal: false,
         },
       ],
@@ -255,20 +133,10 @@
           id: "S2",
           name: "First state",
           color: "blue",
-          geo: {
-            x0: 10,
-            y0: 40,
-            width: 100,
-            height: 80,
-          },
+          geo: { x0: 10, y0: 40, width: 100, height: 80 },
           notes: [
             {
-              geo: {
-                x0: 20,
-                y0: 10,
-                width: 20,
-                height: 7,
-              },
+              geo: { x0: 20, y0: 10, width: 20, height: 7 },
               scale: 0.7,
               text: "Hello **World**!",
             },
@@ -277,44 +145,24 @@
             {
               id: "R4",
               name: "My region",
-              geo: {
-                x0: 0,
-                y0: 150,
-                width: 80,
-                height: 10,
-              },
+              geo: { x0: 0, y0: 150, width: 80, height: 10 },
               states: [
                 {
                   id: "S6",
                   name: "Third state",
                   color: "yellow",
-                  geo: {
-                    x0: 10,
-                    y0: 20,
-                    width: 40,
-                    height: 50,
-                  },
+                  geo: { x0: 10, y0: 20, width: 40, height: 50 },
                   regions: [
                     {
                       id: "R5",
                       name: "My region",
-                      geo: {
-                        x0: 0,
-                        y0: 150,
-                        width: 80,
-                        height: 10,
-                      },
+                      geo: { x0: 0, y0: 150, width: 80, height: 10 },
                       states: [
                         {
                           id: "S7",
                           name: "5th state",
                           color: "green",
-                          geo: {
-                            x0: 10,
-                            y0: 10,
-                            width: 20,
-                            height: 30,
-                          },
+                          geo: { x0: 10, y0: 10, width: 20, height: 30 },
                         },
                       ],
                     },
@@ -324,12 +172,7 @@
                   id: "S8",
                   name: "4th state with a very long name",
                   color: "purple",
-                  geo: {
-                    x0: 60,
-                    y0: 10,
-                    width: 30,
-                    height: 20,
-                  },
+                  geo: { x0: 60, y0: 10, width: 30, height: 20 },
                 },
               ],
             },
@@ -339,12 +182,7 @@
           id: "S3",
           name: "Second state",
           color: "gold",
-          geo: {
-            x0: 140,
-            y0: 130,
-            width: 50,
-            height: 30,
-          },
+          geo: { x0: 140, y0: 130, width: 50, height: 30 },
         },
       ],
     },

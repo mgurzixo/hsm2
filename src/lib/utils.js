@@ -287,9 +287,12 @@ export function getElemById(id) {
 
 // cf. https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
 export function standardize_color(str) {
-  var ctx = document.createElement("canvas").getContext("2d");
+  let elem = document.createElement("canvas");
+  var ctx = elem.getContext("2d");
   ctx.fillStyle = str;
-  return ctx.fillStyle;
+  const colName = ctx.fillStyle;
+  elem.remove();
+  return colName;
 }
 
 // cf. https://gist.github.com/vahidk/05184faf3d92a0aa1b46aeaa93b07786
