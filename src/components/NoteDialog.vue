@@ -20,11 +20,8 @@
       <q-input dense v-model="elemNote.text" label="Markdown Text:" outlined overflow-auto
         @update:model-value="doCanvas" class="input-container col-auto q-pb-md" />
 
-      <div ref="canvasContainer" class="canvas-container col-auto q-pa-sm overflow-auto">
-        <canvas class="xblue" width="200" height="50">
-
-        </canvas>
-      </div>
+      <div ref="canvasContainer" class="canvas-container col-auto overflow-auto"></div>
+      <div class="col-grow"></div>
     </div>
   </q-card>
 </template>
@@ -32,9 +29,9 @@
 <style>
 .canvas-container {
   border: solid 1px;
-  min-width: 600px;
-  /* max-width: fit-content !important; */
-  overflow: auto !important;
+  /* min-width: 600px; */
+  max-width: fit-content !important;
+  /* overflow: auto !important; */
 }
 
 .bg-color-note {
@@ -93,6 +90,7 @@
 import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
+import { mdToCanvas } from "src/lib/md";
 
 const bgColor = V.ref("white");
 const isInternal = V.ref(true);
@@ -133,7 +131,8 @@ function adjustSizes() {
 
 async function doCanvas() {
   if (!canvasContainer.value) return;
-  const canvas = await U.mdToCanvas(elemNote.value.text, sliderScale.value * 1.2);
+  // const canvas = await U.mdToCanvas(elemNote.value.text, sliderScale.value * 1.2);
+  const canvas = mdToCanvas(elemNote.value.text, sliderScale.value);
   canvasContainer.value.replaceChildren(canvas);
   elemNote.value.scale = sliderScale.value;
   // elemNote.value.makeCanvas();

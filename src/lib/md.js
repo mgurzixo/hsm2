@@ -22,14 +22,23 @@ function mdParser(mdstr) {
     .replace(/^# (.*?)\s*#*$/gm, `${BAD}1$1${BAD}P`);
 
   // text decoration: bold, italic, underline, strikethrough, highlight
-  mdstr = mdstr.replace(/\*\*\*(\w.*?[^\\])\*\*\*/gm, `${BAD}B<em>I$1${BAD}P${BAD}P`);
+  // ***Bold Italic***
+  mdstr = mdstr.replace(/\*\*\*(\w.*?[^\\])\*\*\*/gm, `${BAD}B${BAD}I$1${BAD}P${BAD}P`);
+  // **Bold**
   mdstr = mdstr.replace(/\*\*(\w.*?[^\\])\*\*/gm, `${BAD}B$1${BAD}P`);
+  // *Italic*
   mdstr = mdstr.replace(/\*(\w.*?[^\\])\*/gm, `${BAD}I$1${BAD}P`);
+  // ___Bold Italic___
   mdstr = mdstr.replace(/___(\w.*?[^\\])___/gm, `${BAD}B${BAD}I$1${BAD}P${BAD}P`);
+  // __Underline__
   mdstr = mdstr.replace(/__(\w.*?[^\\])__/gm, `${BAD}U$1${BAD}P`);
+  // _Subscript_
   mdstr = mdstr.replace(/_(\w.*?[^\\])_/gm, `${BAD}C$1${BAD}P`);  // NOT support!!
+  // ^^^Highlight^^^
   mdstr = mdstr.replace(/\^\^\^(.+?)\^\^\^/gm, `${BAD}H$1${BAD}P`);
+  // ^^Superscript^^
   mdstr = mdstr.replace(/\^\^(\w.*?)\^\^/gm, `${BAD}S$1${BAD}P`);
+  // ~~StrikeThrough
   mdstr = mdstr.replace(/~~(\w.*?)~~/gm, `${BAD}D$1${BAD}P`);
 
   // Escaping Characters
@@ -41,22 +50,32 @@ const inchInMm = 25.4;
 export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "transparent") {
   const maxIdx = parsedStr.length - 1;
   if (maxIdx < 0) return;
-  function toC(lenMm) {
+  function toI(lenMm) {
     return Math.round(lenMm * scale * ((hsm.settings.screenDpi / inchInMm)));
   }
+  function toR(lenMm) {
+    return Math.round(lenMm * scale * ((hsm.settings.screenDpi / inchInMm)) + 0.5);
+  }
 
-  const w0 = hCtx.folio.geo.width;
-  const h0 = hCtx.folio.geo.width;
   const s = hsm.settings.styles.note1;
-  let hMargin = 2;
-  let vMargin = 2;
+  const w0 = hCtx.folio.geo.width;
+  const h0 = s.h1.heightMm;
+  // console.log(`[md.doCanvas] s:${JSON.stringify(s)}`);
+  // const hMargin = s.hMarginMm;
+  // const wMargin = s.wMarginMm;
+  // const hMarginP = toI(hMargin);
+  // const wMarginP = toI(wMargin);
+  const hMarginP = s.marginP;
+  const wMarginP = s.marginP;
   const canvas = document.createElement("canvas");
-  canvas.width = toC(w0 + 2 * hMargin);
-  canvas.height = toC(h0 + 2 * vMargin);
-  const ctx = canvas.getContext("2d");
-  let hMaxP = 0;
-  let curHeight = s.heightMm;
-  let curFont = s.font; // sans-serif
+  const canvasMaxWidthP = toI(w0) + 2 * hMarginP;
+  canvas.width = canvasMaxWidthP;
+
+  canvas.height = toI(h0) + 2 * wMarginP;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+  let curHeight = s.text.heightMm;
+  let curFont = s.text.font; // sans-serif
   let curBg = bgColor;
   let curColor = textColor;
   let curWeight = ""; // "", bold
@@ -66,30 +85,66 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
   let curScript = ""; // "", sub, super
 
   let stack = [];
-  let frag = [];
-  let xP = 0;
-  const yP = toC(s.h1.heightMm + vMargin); // Highest height
+  let frag = "";
+  let xP = hMarginP;
+  let yP = wMarginP;
+  let wMaxP = xP;
+  let hMaxP = yP;
 
-  function flush() {
+  function flush(text) {
     // Flush existing frag
-    if (!frag.length) return;
-    ctx.font = `${curHeight}mm ${curFont} ${curWeight} ${curStyle}`;
+    if (!text.length) return;
+    let spaceBefore = false;
+    let spaceAfter = false;
+    if (text != " ") {
+      // cf. https://stackoverflow.com/questions/64776773/html-canvas-remove-letter-spacing-on-the-beginning-of-a-word
+      if (text.startsWith(" ")) spaceBefore = true;
+      if (text.endsWith(" ")) spaceAfter = true;
+      text = text.trim();
+    }
+    if (spaceBefore) flush(" ");
+    // console.log(`[md.flush] text:"${text}"`);
+    const f0 = `${curHeight}mm ${curFont}`;
+    ctx.font = f0;
+    const fontHeightRawP = parseFloat(ctx.font);
+    const fontHeightP = Math.round(fontHeightRawP);
+    const f3 = `${curStyle} ${curWeight} ${fontHeightP}px ${curFont}`;
+    ctx.font = f3;
+    // console.log(`[md.flush] a:${curHeight}mm" f0:"${f0}" f1:"${f1}" f2:"${f2}" f3:"${f3}"`);
+    // console.log(`[md.flush] f3:"${f3}"`);
     ctx.fillStyle = textColor;
-    ctx.fillText(
-      frag,
-      xP,
-      yP,
-    );
-    const tm = ctx.measureText(frag);
-    xP += tm.width;
-    if (tm.height > hMaxP) hMaxP = tm.height;
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+    if (text != " ") {
+      const tm = ctx.measureText(text);
+      // console.log(`[md.flush] used:'${ctx.font}'`);
+      // const tmHeight = tm.fontBoundingBoxDescent + tm.fontBoundingBoxAscent;
+      const tmHeight = tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent;
+      ctx.fillText(
+        text,
+        xP + tm.actualBoundingBoxLeft,
+        wMarginP + tm.actualBoundingBoxAscent,
+      );
+      xP += tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
+      yP += tmHeight;
+      if (tmHeight > hMaxP) hMaxP = tmHeight;
+      wMaxP = xP;
+      if (spaceAfter) flush(" ");
+    } else {
+      // const tm = ctx.measureText("\u2013");
+      // xP += tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
+      xP += fontHeightP / 3; // Best looking
+      wMaxP = xP;
+    }
   }
 
-  for (let i = 0; i < maxIdx; i++) {
+
+  for (let i = 0; i <= maxIdx; i++) {
     let c = parsedStr[i];
     // console.log(c);
     if (c == BAD) {
-      flush();
+      flush(frag);
+      frag = "";
       c = parsedStr[++i];
       if (c == "P") {
         const c = stack.pop();
@@ -104,47 +159,68 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
         curScript = c.script;
         continue;
       }
-      const curC = { height: curHeight, font: curFont, bg: curBg, color: curColor, weight: curWeight, style: curStyle, line: curLine, highlight: curHighlight, script: curScript };
-      stack.push(curC);
+      const curCtx = { height: curHeight, font: curFont, bg: curBg, color: curColor, weight: curWeight, style: curStyle, line: curLine, highlight: curHighlight, script: curScript };
+      stack.push(curCtx);
       switch (c) {
-        case "B": // Bold
+        case "B":
           curWeight = "bold";
           break;
-        case "I": // Bold
+        case "I":
+          // console.log(`[md.doCanvas] italic`);
           curStyle = "italic";
           break;
-        case "U": // Underline
+        case "U":
           curLine = "underline";
           break;
-        case "H": // Highlight
+        case "H":
           curHighlight = "highlight";
           break;
-        case "S": // Superscript
+        case "S":
           curScript = "super";
           break;
-        case "D": // StrikeThrough
+        case "D":
           curLine = "strike";
           break;
-        case "C": // Subscript
+        case "C":
           curScript = "sub";
           break;
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+          curHeight = s["h" + c].heightMm;
+          curFont = s["h" + c].font;
+          break;
         default:
-          console.error(`[md.doCanvas] Unknown style  "${c}"`);
+          console.error(`[md.doCanvas] Unknown style "${c}"`);
       }
       continue;
     }
-    else frag.push(c);
+    else frag += c;
   }
-  flush();
-  return canvas;
+  flush(frag);
+  frag = "";
+  // console.log(`[md.doCanvas] xP:${xP} yP:${yP}`);
+  const canvas2 = document.createElement("canvas");
+  hMaxP += hMarginP;
+  wMaxP += wMarginP;
+  if (wMaxP > canvasMaxWidthP) wMaxP = canvasMaxWidthP;
+  canvas2.width = wMaxP;
+  canvas2.style.width = wMaxP + "px";
+  canvas2.height = hMaxP;
+  canvas2.style.height = hMaxP + "px";
+  const ctx2 = canvas2.getContext("2d", { willReadFrequently: true });
+  ctx2.drawImage(canvas, 0, 0, wMaxP, hMaxP, 0, 0, wMaxP, hMaxP);
+  return canvas2;
 }
 
-export function md(str) {
+export function mdToCanvas(str, scale = 1, textColor = "black", bgColor = "transparent") {
   const parsedStr = mdParser(str);
-  console.log(`[md.md] str:${str}\nres:${parsedStr}`);
+  // console.log(`[md.md] str:${str}\nres:${parsedStr}`);
   // for (let c of parsedStr) {
   //   console.log(c);
   // }
-  return doCanvas(parsedStr);
+  return doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "transparent");
 
 }

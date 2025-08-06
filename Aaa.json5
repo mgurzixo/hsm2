@@ -1,7 +1,7 @@
 {
   settings: {
     doubleClickTimeoutMs: 300,
-    screenDpi: 96,
+    screenDpi: 97,
     stateRadiusMm: 4,
     stateTitleHeightMm: 6,
     stateMinWidth: 10,
@@ -25,11 +25,12 @@
       silhouetteSelected: "black",
       folioBackground: "seaShell",
       note1: {
-        h9: { heightMm: 3, font: "sans-serif" },
-        h1: { heightMm: 10, font: "sans-serif" },
-        h2: { heightMm: 8, font: "sans-serif" },
-        h3: { heightMm: 6, font: "sans-serif" },
-        h4: { heightMm: 4, font: "sans-serif" },
+        marginP: 1,
+        text: { heightMm: 4, font: "sans-serif" },
+        h1: { heightMm: 14, font: "sans-serif" },
+        h2: { heightMm: 10, font: "sans-serif" },
+        h3: { heightMm: 8, font: "sans-serif" },
+        h4: { heightMm: 6, font: "sans-serif" },
         h5: { heightMm: 2, font: "sans-serif" },
         thin: "thin",
       },
