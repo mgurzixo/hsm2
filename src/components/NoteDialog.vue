@@ -8,9 +8,9 @@
       <q-btn flat v-close-popup round dense icon="close" />
     </q-bar>
 
-    <div id="notePayloadId" class="q-pa-sm my-region-note bg-color-note column no-wrap">
+    <div id="notePayloadId" class="q-pa-sm my-region-note bg-color-note">
 
-      <div class="col-auto row no-wrap q-pb-sm q-pt-md">
+      <div class="row no-wrap q-pb-sm q-pt-md">
         <div class="q-pr-md">Scale:</div>
         <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="2" :step="0.1" label label-always
           color="amber-5">
@@ -18,17 +18,16 @@
       </div>
 
       <q-input dense v-model="elemNote.text" label="Markdown Text:" outlined overflow-auto
-        @update:model-value="doCanvas" class="input-container col-auto q-pb-md" />
+        @update:model-value="doCanvas" class="input-container q-pb-md" />
 
-      <div ref="canvasContainer" class="canvas-container col-auto overflow-auto"></div>
-      <div class="col-grow"></div>
+      <div ref="canvasContainer" class="canvas-container no-overflow"></div>
     </div>
   </q-card>
 </template>
 
 <style>
 .canvas-container {
-  border: solid 1px;
+  /* border: solid 1px; */
   /* min-width: 600px; */
   max-width: fit-content !important;
   /* overflow: auto !important; */
@@ -132,8 +131,10 @@ function adjustSizes() {
 async function doCanvas() {
   if (!canvasContainer.value) return;
   // const canvas = await U.mdToCanvas(elemNote.value.text, sliderScale.value * 1.2);
+  console.log(`[noteDialog.doCanvas] sliderScale:${sliderScale.value}`);
   const canvas = mdToCanvas(elemNote.value.text, sliderScale.value);
   canvasContainer.value.replaceChildren(canvas);
+  canvasContainer.value.style.height = canvas.height + "px";
   elemNote.value.scale = sliderScale.value;
   // elemNote.value.makeCanvas();
   elemNote.value.canvas = canvas;
@@ -148,9 +149,10 @@ const doCanvasDebounced = U.debounce(doCanvas, 100);
 //   doCanvasDebounced();
 // }, { immediate: true });
 
-// V.watch(sliderScale, async (el) => {
-//   doCanvasDebounced();
-// });
+V.watch(sliderScale, async (el) => {
+  // doCanvasDebounced();
+  doCanvas();
+});
 
 V.onUnmounted(() => {
   // console.log(`[noteDialog.onUnmounted]`);
@@ -170,6 +172,7 @@ V.onMounted(async () => {
   // console.log(`[noteDialog.onMounted] qCardE:${qCardE} headerE:${headerE} payloadE:${payloadE}`);
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(qCardE);
-  doCanvasDebounced();
+  // doCanvasDebounced();
+  doCanvas();
 });
 </script>

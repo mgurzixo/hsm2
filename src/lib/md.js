@@ -50,31 +50,34 @@ const inchInMm = 25.4;
 export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "transparent") {
   const maxIdx = parsedStr.length - 1;
   if (maxIdx < 0) return;
+
   function toI(lenMm) {
     return Math.round(lenMm * scale * ((hsm.settings.screenDpi / inchInMm)));
   }
   function toR(lenMm) {
     return Math.round(lenMm * scale * ((hsm.settings.screenDpi / inchInMm)) + 0.5);
   }
+  function bgFillRect(myCtx, bgColor, x0P, y0P, widthP, heightP) {
+    // if (bgColor != "transparent") {
+    myCtx.fillStyle = bgColor;
+    myCtx.fillRect(x0P, y0P, widthP, heightP);
+    // }
+  }
 
+  console.log(`[md.doCanvas] scale:${scale}`);
   const s = hsm.settings.styles.note1;
-  const w0 = hCtx.folio.geo.width;
-  const h0 = s.h1.heightMm;
+  const w0 = hCtx.folio.geo.width * scale;
+  const h0 = s.h1.heightMm * scale;
   // console.log(`[md.doCanvas] s:${JSON.stringify(s)}`);
-  // const hMargin = s.hMarginMm;
-  // const wMargin = s.wMarginMm;
-  // const hMarginP = toI(hMargin);
-  // const wMarginP = toI(wMargin);
   const hMarginP = s.marginP;
   const wMarginP = s.marginP;
   const canvas = document.createElement("canvas");
   const canvasMaxWidthP = toI(w0) + 2 * hMarginP;
   canvas.width = canvasMaxWidthP;
-
-  canvas.height = toI(h0) + 2 * wMarginP;
+  canvas.height = toI(h0) + 2 * wMarginP + 10;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-  let curHeight = s.text.heightMm;
+  let curHeight = s.text.heightMm * scale;
   let curFont = s.text.font; // sans-serif
   let curBg = bgColor;
   let curColor = textColor;
@@ -86,8 +89,8 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
 
   let stack = [];
   let frag = "";
-  let xP = hMarginP;
-  let yP = wMarginP;
+  let xP = 0;
+  let yP = 0;
   let wMaxP = xP;
   let hMaxP = yP;
 
@@ -96,45 +99,45 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
     if (!text.length) return;
     let spaceBefore = false;
     let spaceAfter = false;
-    if (text != " ") {
-      // cf. https://stackoverflow.com/questions/64776773/html-canvas-remove-letter-spacing-on-the-beginning-of-a-word
-      if (text.startsWith(" ")) spaceBefore = true;
-      if (text.endsWith(" ")) spaceAfter = true;
-      text = text.trim();
-    }
-    if (spaceBefore) flush(" ");
-    // console.log(`[md.flush] text:"${text}"`);
     const f0 = `${curHeight}mm ${curFont}`;
     ctx.font = f0;
     const fontHeightRawP = parseFloat(ctx.font);
     const fontHeightP = Math.round(fontHeightRawP);
-    const f3 = `${curStyle} ${curWeight} ${fontHeightP}px ${curFont}`;
+    const f3 = `${curStyle} ${curWeight} ${fontHeightP}px ${curFont}`.trim();
     ctx.font = f3;
-    // console.log(`[md.flush] a:${curHeight}mm" f0:"${f0}" f1:"${f1}" f2:"${f2}" f3:"${f3}"`);
-    // console.log(`[md.flush] f3:"${f3}"`);
-    ctx.fillStyle = textColor;
+    // console.log(`[md.flush] curHeight:${curHeight}mm" f0:"${f0}" rawP:"${fontHeightRawP}" heightP:"${fontHeightP}" f3:"${f3}"`);
+    if (text == " ") {
+      // cf. https://stackoverflow.com/questions/64776773/html-canvas-remove-letter-spacing-on-the-beginning-of-a-word
+      const widthP = fontHeightP / 3; // Best looking
+      bgFillRect(ctx, bgColor, xP, 0, widthP + 1, fontHeightP);
+      xP += widthP;
+      wMaxP = xP;
+      return;
+    }
+    if (text.startsWith(" ")) spaceBefore = true;
+    if (text.endsWith(" ")) spaceAfter = true;
+    text = text.trim();
+    if (spaceBefore) flush(" ");
+    console.log(`[md.flush] f3:"${f3}" text:"${text}"`);
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "left";
     if (text != " ") {
       const tm = ctx.measureText(text);
-      // console.log(`[md.flush] used:'${ctx.font}'`);
-      // const tmHeight = tm.fontBoundingBoxDescent + tm.fontBoundingBoxAscent;
-      const tmHeight = tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent;
+      const tmHeightP = tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent;
+      const tmWidthP = tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
+      // const x0P = xP + tm.actualBoundingBoxLeft;
+      // const y0P = yP + tm.actualBoundingBoxAscent;
+      // bgFillRect(ctx, "green", xP, yP, tm.width, tmHeightP);
+      ctx.fillStyle = textColor;
       ctx.fillText(
         text,
         xP + tm.actualBoundingBoxLeft,
-        wMarginP + tm.actualBoundingBoxAscent,
+        tm.actualBoundingBoxAscent,
       );
-      xP += tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
-      yP += tmHeight;
-      if (tmHeight > hMaxP) hMaxP = tmHeight;
+      xP += tmWidthP;
+      if (tmHeightP > hMaxP) hMaxP = tmHeightP;
       wMaxP = xP;
       if (spaceAfter) flush(" ");
-    } else {
-      // const tm = ctx.measureText("\u2013");
-      // xP += tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
-      xP += fontHeightP / 3; // Best looking
-      wMaxP = xP;
     }
   }
 
@@ -189,7 +192,7 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
         case "3":
         case "4":
         case "5":
-          curHeight = s["h" + c].heightMm;
+          curHeight = s["h" + c].heightMm * scale;
           curFont = s["h" + c].font;
           break;
         default:
@@ -201,17 +204,23 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
   }
   flush(frag);
   frag = "";
+
+
   // console.log(`[md.doCanvas] xP:${xP} yP:${yP}`);
   const canvas2 = document.createElement("canvas");
-  hMaxP += hMarginP;
-  wMaxP += wMarginP;
-  if (wMaxP > canvasMaxWidthP) wMaxP = canvasMaxWidthP;
-  canvas2.width = wMaxP;
-  canvas2.style.width = wMaxP + "px";
-  canvas2.height = hMaxP;
-  canvas2.style.height = hMaxP + "px";
+  canvas2.width = xP + 2 * wMarginP;
+  canvas2.style.width = canvas2.width + "px";
+  canvas2.height = hMaxP + 2 * hMarginP;
+  canvas2.style.height = canvas2.height + "px";
   const ctx2 = canvas2.getContext("2d", { willReadFrequently: true });
-  ctx2.drawImage(canvas, 0, 0, wMaxP, hMaxP, 0, 0, wMaxP, hMaxP);
+  bgFillRect(ctx2, bgColor, wMarginP, hMarginP, xP, hMaxP);
+  // Draw margins
+  bgFillRect(ctx2, bgColor, 0, 0, wMarginP, hMaxP + 2 * hMarginP);
+  bgFillRect(ctx2, bgColor, xP + wMarginP, 0, wMarginP, hMaxP + 2 * hMarginP);
+  bgFillRect(ctx2, bgColor, wMarginP, 0, xP, hMarginP);
+  bgFillRect(ctx2, bgColor, wMarginP, hMaxP + hMarginP, xP, hMarginP);
+
+  ctx2.drawImage(canvas, 0, 0, wMaxP, hMaxP, wMarginP, hMarginP, wMaxP, hMaxP);
   return canvas2;
 }
 
@@ -221,6 +230,6 @@ export function mdToCanvas(str, scale = 1, textColor = "black", bgColor = "trans
   // for (let c of parsedStr) {
   //   console.log(c);
   // }
-  return doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "transparent");
+  return doCanvas(parsedStr, scale, textColor, bgColor);
 
 }
