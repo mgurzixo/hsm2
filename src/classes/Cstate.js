@@ -434,6 +434,10 @@ export class Cstate extends CbaseState {
     hsm.adjustChange(this.id);
   }
 
+  openDialog() {
+    hsm.openDialog(this);
+  }
+
   checkOpenDialogAndEndDrag() {
     // console.log(`[Cstate.checkOpenDialogAndEndDrag] (${this.id}) justCreated:${this.justCreated}`);
     if (this.justCreated == true) {

@@ -130,8 +130,7 @@ function adjustSizes() {
 
 async function doCanvas() {
   if (!canvasContainer.value) return;
-  // const canvas = await U.mdToCanvas(elemNote.value.text, sliderScale.value * 1.2);
-  console.log(`[noteDialog.doCanvas] sliderScale:${sliderScale.value}`);
+  // console.log(`[noteDialog.doCanvas] sliderScale:${sliderScale.value}`);
   const canvas = mdToCanvas(elemNote.value.text, sliderScale.value);
   canvasContainer.value.replaceChildren(canvas);
   canvasContainer.value.style.height = canvas.height + "px";
@@ -143,11 +142,6 @@ async function doCanvas() {
 }
 
 const doCanvasDebounced = U.debounce(doCanvas, 100);
-
-// V.watch(props.elementId, async (id) => {
-//   console.log(`[noteDialog.watch.element] id:${id}`);
-//   doCanvasDebounced();
-// }, { immediate: true });
 
 V.watch(sliderScale, async (el) => {
   // doCanvasDebounced();
@@ -162,8 +156,6 @@ V.onMounted(async () => {
   // console.log(`[noteDialog.onMounted]`);
   elemNote.value = U.getElemById(props.elementId);
   bgColor.value = hsm.settings.styles.folioBackground;
-  // newDiv = document.createElement("div");
-  // document.body.appendChild(newDiv);
   await U.nextTick();
   qCardE = document.getElementById("noteCardId");
   headerE = document.getElementById("noteHeaderId");

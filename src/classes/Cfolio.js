@@ -18,7 +18,6 @@ function deferredNotesUpdate() {
   }, 100);
 }
 
-
 export class Cfolio extends CbaseRegion {
   constructor(parent, options) {
     super(parent, options, "F");
@@ -36,17 +35,6 @@ export class Cfolio extends CbaseRegion {
     for (let note of this.notes) {
       note.setSelected(val);
     }
-  }
-
-  async updateNotes() {
-    // console.log(`[Cfolio.updateNotes] `);
-    for (let note of hCtx.folio.notes) {
-      await note.makeCanvas();
-    }
-    for (let child of hCtx.folio.children) {
-      await child.updateNotes();
-    }
-    hsm.draw();
   }
 
   async addNote(noteOptions) {
@@ -231,6 +219,18 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
+
+  async updateNotes() {
+    // console.log(`[Cfolio.updateNotes] `);
+    for (let note of hCtx.folio.notes) {
+      await note.makeCanvas();
+    }
+    for (let child of hCtx.folio.children) {
+      await child.updateNotes();
+    }
+    hsm.draw();
+  }
+
   wheelP(xP, yP, dyP) {
     const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
@@ -246,6 +246,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.y0 = y0;
     hsm.draw();
     deferredNotesUpdate();
+    // this.updateNotes();
   }
 
   makeIdz(x, y, idz) {

@@ -4,7 +4,8 @@ import * as U from "src/lib/utils";
 import * as T from "src/lib/trUtils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
-import { Ctext } from "src/classes/Ctext";
+import { Ctext } from "src/classes/Cnote";
+// import { Ctext } from "src/classes/Ctext";
 import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
 
 export class Ctr extends CbaseElem {
@@ -12,6 +13,7 @@ export class Ctr extends CbaseElem {
     super(parent, options, type);
     this.lineWidth = 1.5;
     this.isBaseTr = true;
+    this.oldTagText = "";
   }
 
   async load(transOptions) {
@@ -35,15 +37,20 @@ export class Ctr extends CbaseElem {
   }
 
   makeTag() {
-    let text = this.trigger;
+    let text = "";
+    if (this.trigger) text += `[${this.trigger}]`;
     if (this.guard) text += `[${this.guard}]`;
     if (this.effect) text += `/${this.effect}`;
     if (!this.tag) this.tag = new Ctext(this, {
       geo: { x0: 10, y0: 10, width: 20, height: 10 },
       text: text
     });
-    else this.tag.text = text;
-    // if (this.id == "T13") console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
+    else {
+      if (this.oldTagText == text) return;
+      this.tag.text = text;
+      this.tag.makeCanvas();
+      // if (this.id == "T13") console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
+    }
   }
 
   setSelected(val) {
@@ -135,6 +142,10 @@ export class Ctr extends CbaseElem {
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
     else T.dragNormalSegment(this, dx, dy);
+  }
+
+  openDialog() {
+    hsm.openDialog(this);
   }
 
   dragEnd(dx, dy) {
@@ -425,11 +436,12 @@ export class Ctr extends CbaseElem {
       }
     }
     newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
-    this.makeTag();
-    if (this.tag.text) {
-      newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
-    }
+    // this.makeTag();
+    // if (this.tag.text) {
+    newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
+    // }
     // if (this.trigger && newIdz.id == this.tag.id) console.warn(`[Ctr.makeIdz] Tag selected. id:${newIdz.id} zone:${newIdz.zone}`);
+    if (newIdz.id == this.tag.id) console.log(`[Ctr.makeIdz] (${this.id}) id:${newIdz.id} zone:${newIdz.zone}`);
     return newIdz;
   }
 }

@@ -45,11 +45,18 @@ function mdParser(mdstr) {
   return mdstr.replace(/\\([`_~*+\-.^\\<>()[\]])/gm, '$1');
 }
 
-const inchInMm = 25.4;
+
+function bgFillRect(myCtx, bgColor, x0P, y0P, widthP, heightP) {
+  if (bgColor != "transparent") {
+    myCtx.fillStyle = bgColor;
+    myCtx.fillRect(x0P, y0P, widthP, heightP);
+  }
+}
 
 export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "transparent") {
   const maxIdx = parsedStr.length - 1;
   if (maxIdx < 0) return;
+  const inchInMm = 25.4;
 
   function toI(lenMm) {
     return Math.round(lenMm * scale * ((hsm.settings.screenDpi / inchInMm)));
@@ -57,14 +64,8 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
   function toR(lenMm) {
     return Math.round(lenMm * scale * ((hsm.settings.screenDpi / inchInMm)) + 0.5);
   }
-  function bgFillRect(myCtx, bgColor, x0P, y0P, widthP, heightP) {
-    // if (bgColor != "transparent") {
-    myCtx.fillStyle = bgColor;
-    myCtx.fillRect(x0P, y0P, widthP, heightP);
-    // }
-  }
 
-  console.log(`[md.doCanvas] scale:${scale}`);
+  // console.log(`[md.doCanvas] scale:${scale}`);
   const s = hsm.settings.styles.note1;
   const w0 = hCtx.folio.geo.width * scale;
   const h0 = s.h1.heightMm * scale;
@@ -95,6 +96,7 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
   let hMaxP = yP;
 
   function flush(text) {
+    // console.log(`[md.flush] Text:"${text}"`);
     // Flush existing frag
     if (!text.length) return;
     let spaceBefore = false;
@@ -118,27 +120,22 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
     if (text.endsWith(" ")) spaceAfter = true;
     text = text.trim();
     if (spaceBefore) flush(" ");
-    console.log(`[md.flush] f3:"${f3}" text:"${text}"`);
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "left";
-    if (text != " ") {
-      const tm = ctx.measureText(text);
-      const tmHeightP = tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent;
-      const tmWidthP = tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
-      // const x0P = xP + tm.actualBoundingBoxLeft;
-      // const y0P = yP + tm.actualBoundingBoxAscent;
-      // bgFillRect(ctx, "green", xP, yP, tm.width, tmHeightP);
-      ctx.fillStyle = textColor;
-      ctx.fillText(
-        text,
-        xP + tm.actualBoundingBoxLeft,
-        tm.actualBoundingBoxAscent,
-      );
-      xP += tmWidthP;
-      if (tmHeightP > hMaxP) hMaxP = tmHeightP;
-      wMaxP = xP;
-      if (spaceAfter) flush(" ");
-    }
+    const tm = ctx.measureText(text);
+    const tmHeightP = tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent;
+    const tmWidthP = tm.actualBoundingBoxLeft + tm.actualBoundingBoxRight;
+    ctx.fillStyle = textColor;
+    // console.log(`[md.flush] f3:"${f3}" text:"${text}" fillStyle:${ctx.fillStyle}`);
+    ctx.fillText(
+      text,
+      xP + tm.actualBoundingBoxLeft,
+      tm.actualBoundingBoxAscent,
+    );
+    xP += tmWidthP;
+    if (tmHeightP > hMaxP) hMaxP = tmHeightP;
+    wMaxP = xP;
+    if (spaceAfter) flush(" ");
   }
 
 
@@ -219,17 +216,29 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
   bgFillRect(ctx2, bgColor, xP + wMarginP, 0, wMarginP, hMaxP + 2 * hMarginP);
   bgFillRect(ctx2, bgColor, wMarginP, 0, xP, hMarginP);
   bgFillRect(ctx2, bgColor, wMarginP, hMaxP + hMarginP, xP, hMarginP);
-
   ctx2.drawImage(canvas, 0, 0, wMaxP, hMaxP, wMarginP, hMarginP, wMaxP, hMaxP);
   return canvas2;
 }
 
 export function mdToCanvas(str, scale = 1, textColor = "black", bgColor = "transparent") {
-  const parsedStr = mdParser(str);
-  // console.log(`[md.md] str:${str}\nres:${parsedStr}`);
-  // for (let c of parsedStr) {
-  //   console.log(c);
-  // }
-  return doCanvas(parsedStr, scale, textColor, bgColor);
-
+  // console.warn(`[md.md] str:${str}`);
+  if (str && str.length != 0) {
+    const parsedStr = mdParser(str);
+    // console.log(`[md.md] str:${str}\nres:${parsedStr}`);
+    // for (let c of parsedStr) {
+    //   console.log(c);
+    // }
+    return doCanvas(parsedStr, scale, textColor, bgColor);
+  }
+  // console.log(`[md.doCanvas] Null str`);
+  const s = hsm.settings.styles.note1;
+  const hMarginP = s.marginP;
+  const wMarginP = s.marginP;
+  const canvas2 = document.createElement("canvas");
+  canvas2.width = 2 * wMarginP;
+  canvas2.style.width = canvas2.width + "px";
+  canvas2.height = 2 * hMarginP;
+  canvas2.style.height = canvas2.height + "px";
+  const ctx2 = canvas2.getContext("2d", { willReadFrequently: true });
+  bgFillRect(ctx2, bgColor, 0, 0, canvas2.width, canvas2.height);
 }

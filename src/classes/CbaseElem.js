@@ -277,4 +277,6 @@ export class CbaseElem {
     }
   }
 
+  openDialog() { }
+
 }
