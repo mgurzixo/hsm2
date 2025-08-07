@@ -8,27 +8,44 @@ import { noteStyles } from "src/lib/styles";
 import { mdToCanvas } from "src/lib/md";
 
 export class Cnote extends CbaseElem {
-  constructor(parent, options, type = "N") {
-    super(parent, options, type);
-    // console.log(`[Cnote] New state id:${this.id} parent:${this.parent.id}`);
-    // console.log(`[Cnote] text:${options.text}`);
+  constructor(parent, noteOptions, type = "N") {
+    super(parent, noteOptions, type);
+    // console.log(`[Cnote] New note id:${this.id} parent:${this.parent.id} ${noteOptions.container?.id}`);
+    // console.log(`[Cnote] text:${noteOptions.text}`);
+    this.text = noteOptions?.text || "";
+    this.scale = noteOptions?.scale || 1;
+    this.container = noteOptions?.container ? noteOptions.container : parent;
+    this.togetherSelected = noteOptions?.togetherSelected;
+    this.canvasScale = 0;
   }
 
   async load(noteOptions) {
     // console.log(`[Cnote.load] noteOptions:${noteOptions}`);
-    this.text = noteOptions?.text || "";
-    this.scale = noteOptions?.scale || 1;
+
   }
 
   async onLoaded() {
-    this.makeCanvas();
+    // this.makeCanvas();
+  }
+
+  setSelected(val) {
+    this.isSelected = val;
+    console.log(`[Cnote.dragStart] (${this.id}) togetherSelected:${this.togetherSelected}`);
+    if (this.togetherSelected) {
+      if (this.parent.isSelected != val) this.parent.setSelected(val);
+    }
+  }
+
+  openDialog() {
+    if (this.togetherSelected) this.parent.openDialog();
+    else hsm.openDialog(this);
   }
 
   async dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // [x,y] in mm in this.geo.x/y frame
-    console.log(`[Cnote.dragStart] (${this.id}) x:${x?.toFixed()}`);
+    // console.log(`[Cnote.dragStart] (${this.id}) x:${x?.toFixed()} containerId:${this.container.id}`);
     // console.log(
     //   `[Cnote.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
     // );
@@ -36,6 +53,8 @@ export class Cnote extends CbaseElem {
       id: this.id,
       x0: this.geo.x0,
       y0: this.geo.y0,
+      xx0: this.geo.xx0,
+      yy0: this.geo.yy0,
       width: this.geo.width,
       height: this.geo.height,
     };
@@ -47,29 +66,30 @@ export class Cnote extends CbaseElem {
 
   drag(dx, dy) {
     const idz = this.idz();
+    const container = this.container ? this.container : this.parent;
+    // console.log(`[Cnote.drag] (${this.id}) Container:${this.container?.id} ContainerId:${container.id}`);
     // console.log(`[Cnote.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    console.log(`[Cnote.drag] (${this.id}) parentId:${this.parent.id}`);
     const dragCtx = hCtx.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
+    let xx0 = dragCtx.xx0;
+    let yy0 = dragCtx.yy0;
     let width = dragCtx.width;
     let height = dragCtx.height;
+    const m = hsm.settings.minDistanceMm;
     // console.log(`[Cnote.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     if (idz.zone == "M") {
       // console.log(`[Cnote.drag] id:${this.id} idz.zone:${idz.zone}`);
-      dx = U.myClamp(
-        dx,
-        x0,
-        this.geo.width + hsm.settings.minDistanceMm,
-        hsm.settings.minDistanceMm,
-        this.parent.geo.width - hsm.settings.minDistanceMm,
-      );
-      dy = U.myClamp(
-        dy,
-        y0,
-        this.geo.height + hsm.settings.minDistanceMm,
-        hsm.settings.minDistanceMm,
-        this.parent.geo.height - hsm.settings.minDistanceMm,
-      );
+      // console.log(`[Cnote.drag] container.geo.xx0:${container.geo.xx0}`);
+      if (xx0 + dx < container.geo.xx0 + m) dx = container.geo.xx0 + m - xx0;
+      if (xx0 + width + dx > container.geo.xx0 + container.geo.width - m) {
+        dx = container.geo.xx0 + container.geo.width - m - xx0 - width;
+      }
+      if (yy0 + dy < container.geo.yy0 + m) dy = container.geo.yy0 + m - yy0;
+      if (yy0 + height + dy > container.geo.yy0 + container.geo.height - m) {
+        dy = container.geo.yy0 + container.geo.height - m - yy0 - height;
+      }
       x0 += dx;
       y0 += dy;
     } else {
@@ -83,8 +103,8 @@ export class Cnote extends CbaseElem {
         height -= dy;
       } else if (idz.zone.includes("B")) {
         if (height + dy < hsm.settings.noteMinHeight) dy = hsm.settings.noteMinHeight - height;
-        if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
-          dy = this.parent.geo.height - height - y0 - hsm.settings.minDistanceMm;
+        if (y0 + height + dy > container.geo.height - hsm.settings.minDistanceMm)
+          dy = container.geo.height - height - y0 - hsm.settings.minDistanceMm;
         height += dy;
       }
       if (idz.zone.includes("L")) {
@@ -94,24 +114,18 @@ export class Cnote extends CbaseElem {
         width -= dx;
       } else if (idz.zone.includes("R")) {
         if (width + dx < hsm.settings.noteMinWidth) dx = hsm.settings.noteMinWidth - width;
-        if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
-          dx = this.parent.geo.width - width - x0 - hsm.settings.minDistanceMm;
+        if (x0 + width + dx > container.geo.width - hsm.settings.minDistanceMm)
+          dx = container.geo.width - width - x0 - hsm.settings.minDistanceMm;
         width += dx;
       }
     }
-
     // console.log(
     //   `[Cnote.drag] (${this.id}) type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
     // );
-    // console.log(`[Cnote.drag] (${this.id}) Parent id:${this.parent.id}`);
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
     this.geo.width = width;
-  }
-
-  openDialog() {
-    hsm.openDialog(this);
   }
 
   checkOpenDialogAndEndDrag() {
@@ -130,14 +144,24 @@ export class Cnote extends CbaseElem {
     return true;
   }
 
-  async makeCanvas() {
-    // console.log(`[Cnote.makeCanvas] (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
-    this.canvas = mdToCanvas(this.text, this.scale * hCtx.folio.geo.scale);
+  async makeCanvas(text) {
+    // console.warn(`[Cnote.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
+    const canvasScale = this.scale * hCtx.folio.geo.scale;
+    // console.log(`[Cnote.makeCanvas] (${this.id}) canvasScale:${canvasScale.toFixed(2)} text:${text}`);
+    this.canvas = mdToCanvas(this.text, canvasScale);
+    this.canvasScale = canvasScale;
+    // console.log(`[Cnote.makeCanvas] 1 (${this.id}) canvas:${this.canvas}`);
   }
 
-  draw(xx0, yy0) {
+  deleteCanvas() {
+    // console.warn(`[Cnote.deleteCanvas] (${this.id})`);
+    delete this.canvas;
+  }
+
+  draw(xx0, yy0, text = this.text) {
+    if (!text) text = this.parent.id;
     // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0} ge0.x0:${this.geo.x0}`);
-    // console.log(`[Cnote.draw] Drawing ${this.id} text:${this.text}`);
+    // console.log(`[Cnote.draw] Drawing ${this.id} text:${text}`);
     if (xx0 != undefined) {
       this.geo.xx0 = xx0 + this.geo.x0;
       this.geo.yy0 = yy0 + this.geo.y0;
@@ -162,15 +186,15 @@ export class Cnote extends CbaseElem {
     cCtx.stroke();
     // Draw note text
     // console.log(`[Cnote.draw] canvas:${this.canvas}`);
-    if (!this.text) return;
+    if (!text) return;
     cCtx.save();
     cCtx.clip();
-    if (this.canvas) cCtx.drawImage(this.canvas, 0, 0, widthP, heightP, x0P, y0P, widthP, heightP);
+    if (this.canvas) {
+      cCtx.drawImage(this.canvas, 0, 0, widthP, heightP, x0P, y0P, widthP, heightP);
+    }
     else {
-      // console.log(`[Cnote.draw] No canvas!`);
-      this.makeCanvas().then(() => {
-        hsm.draw();
-      });
+      // console.log(`[Cnote.draw] Redo: canvas:${this.canvas}`);
+      this.makeCanvas(text);
     }
     cCtx.restore();
   }
@@ -203,7 +227,7 @@ export class Cnote extends CbaseElem {
     else if (y <= this.geo.y0 + m) zone = "T";
     else if (y >= this.geo.y0 + this.geo.height - m) zone = "B";
     idz = { id: id, zone: zone, x: x, y: y, dist2P: 0 };
-    console.log(`[Cnote.makeIdz] (${this.id}) id:${id} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
+    // console.log(`[Cnote.makeIdz] (${this.id}) id:${id} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
     return idz;
   }
 }
@@ -211,13 +235,10 @@ export class Cnote extends CbaseElem {
 export class Ctext extends Cnote {
   constructor(parent, options) {
     super(parent, options, "X");
-    // console.log(`[Cnote.Ctext] New Ctext id:${this.id} parent:${this.parent.id}`);
-    // console.log(`[Cnote.Ctext] text:${options.text}`);
-    this.text = options?.text ? options.text : "";
-    this.scale = options?.scale || 1;
+    // console.log(`[Cnote.Ctext] New Ctext id:${this.id} parentId:${this.parent.id} containerId:${this.container.id}`);
     this.geo.width = options?.width || 20;
     // console.log(`[Cnote.Ctext] (${this.id}) text:${this.text} scale:${this.scale}`);
-    this.geo.height = hsm.settings.styles.text.text.sizeMm + 2 * (hsm.settings.styles.text.text.marginVMm);
+    this.geo.height = hsm.settings.styles.text.sizeMm + 2 * (hsm.settings.styles.text.marginVMm);
     // console.log(`[Ctext.load] this.geo.height:${this.geo.height}`);
   }
 
@@ -231,5 +252,13 @@ export class Ctext extends Cnote {
     return newIdz;
   }
 
-  openDialog() { }
+  drag(dx, dy) {
+    super.drag(dx, dy, hCtx.folio);
+  }
+
+  draw(xx0, yy0) {
+    if (!this.text) super.draw(xx0, yy0, this.parent.id);
+    else super.draw(xx0, yy0);
+  }
+
 }

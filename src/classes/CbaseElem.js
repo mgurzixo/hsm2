@@ -1,6 +1,7 @@
 "use strict";
 
 import * as U from "src/lib/utils";
+import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
@@ -159,7 +160,11 @@ export class CbaseElem {
   }
 
   assets(icon, defVal) {
-    return `url(../assets/${icon}) 8 8, ${defVal}`;
+    // return `url(../assets/${icon}) 8 8, ${defVal}`;
+    const assetsDir = new URL(`../assets`, import.meta.url).href;
+    const val = `url(${assetsDir}/cursors/${icon}) 8 8, ${defVal}`;
+    // console.log(`[CbaseElem.assets] val:${val}`);
+    return val;
   }
 
   defineCursor(idz) {
@@ -276,7 +281,5 @@ export class CbaseElem {
       child.updateNotes();
     }
   }
-
-  openDialog() { }
 
 }

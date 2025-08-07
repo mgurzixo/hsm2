@@ -28,12 +28,17 @@ export class Ctr extends CbaseElem {
     this.effect = transOptions.effect;
     this.include = transOptions.include;
     this.comment = transOptions.comment;
-    this.makeTag();
   }
 
   async onLoaded() {
     // console.log(`[Ctr.onLoaded] (${this.id})}`);
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
+    this.makeTag();
+  }
+
+  updateNotes() {
+    // console.log(`[Ctr.updateNotes] (${this.id})}`);
+    if (this.tag) this.tag.deleteCanvas();
   }
 
   makeTag() {
@@ -41,22 +46,27 @@ export class Ctr extends CbaseElem {
     if (this.trigger) text += `[${this.trigger}]`;
     if (this.guard) text += `[${this.guard}]`;
     if (this.effect) text += `/${this.effect}`;
-    if (!this.tag) this.tag = new Ctext(this, {
-      geo: { x0: 10, y0: 10, width: 20, height: 10 },
-      text: text
-    });
+    if (!this.tag) {
+      // console.log(`[Ctr.makeTag] (${this.id}) } hCtx.folio:${hCtx}`);
+      this.tag = new Ctext(this, {
+        geo: { x0: 1, y0: 1, width: 20 },
+        text: text,
+        container: hCtx.folio,
+        togetherSelected: true,
+      });
+    }
     else {
-      if (this.oldTagText == text) return;
+      if (this.text == text) return;
       this.tag.text = text;
-      this.tag.makeCanvas();
-      // if (this.id == "T13") console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
+      this.tag.deleteCanvas();
+      // console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
     }
   }
 
   setSelected(val) {
     // console.log(`[Ctr.setSelected] (${this.id}) } setSelected:${val}`);
     super.setSelected(val);
-    this.tag.setSelected(val);
+    if (this.tag.isSelected != val) this.tag.setSelected(val);
   }
 
   findNearestLegalTarget(anchor, x0, y0) {
@@ -364,14 +374,14 @@ export class Ctr extends CbaseElem {
     if (!this.isLegal()) {
       cCtx.lineWidth = s.trLineErrorWidth;
       cCtx.strokeStyle = s.trLineError;
-      this.tag.color = s.trLineError;
+      if (this.tag) this.tag.color = s.trLineError;
       // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
     }
     else {
       if (this.isSelected) cCtx.lineWidth = s.trLineSelectedWidth;
       else cCtx.lineWidth = s.trLineWidth;
       cCtx.strokeStyle = s.trLine;
-      this.tag.color = s.trTag;
+      if (this.tag) this.tag.color = s.trTag;
     }
     pathSegments(this.segments, x0, y0);
     if (this.tag) this.tag.draw(this.geo.xx0, this.geo.yy0);
@@ -436,12 +446,7 @@ export class Ctr extends CbaseElem {
       }
     }
     newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
-    // this.makeTag();
-    // if (this.tag.text) {
-    newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
-    // }
-    // if (this.trigger && newIdz.id == this.tag.id) console.warn(`[Ctr.makeIdz] Tag selected. id:${newIdz.id} zone:${newIdz.zone}`);
-    if (newIdz.id == this.tag.id) console.log(`[Ctr.makeIdz] (${this.id}) id:${newIdz.id} zone:${newIdz.zone}`);
+    if (this.tag) newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
     return newIdz;
   }
 }

@@ -54,6 +54,8 @@ function bgFillRect(myCtx, bgColor, x0P, y0P, widthP, heightP) {
 }
 
 export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "transparent") {
+  // bgColor = "lightblue";
+  // if (scale > 2) scale = 2;
   const maxIdx = parsedStr.length - 1;
   if (maxIdx < 0) return;
   const inchInMm = 25.4;
@@ -67,15 +69,15 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
 
   // console.log(`[md.doCanvas] scale:${scale}`);
   const s = hsm.settings.styles.note1;
-  const w0 = hCtx.folio.geo.width * scale;
-  const h0 = s.h1.heightMm * scale;
+  const w0 = hCtx.folio.geo.width * scale * 2;
+  const h0 = s.h1.heightMm * scale * 2;
   // console.log(`[md.doCanvas] s:${JSON.stringify(s)}`);
   const hMarginP = s.marginP;
   const wMarginP = s.marginP;
   const canvas = document.createElement("canvas");
-  const canvasMaxWidthP = toI(w0) + 2 * hMarginP;
+  const canvasMaxWidthP = (toI(w0) + 2 * hMarginP);
   canvas.width = canvasMaxWidthP;
-  canvas.height = toI(h0) + 2 * wMarginP + 10;
+  canvas.height = toI(h0) + 2 * wMarginP;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
   let curHeight = s.text.heightMm * scale;
@@ -104,7 +106,7 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
     const f0 = `${curHeight}mm ${curFont}`;
     ctx.font = f0;
     const fontHeightRawP = parseFloat(ctx.font);
-    const fontHeightP = Math.round(fontHeightRawP);
+    let fontHeightP = Math.round(fontHeightRawP);
     const f3 = `${curStyle} ${curWeight} ${fontHeightP}px ${curFont}`.trim();
     ctx.font = f3;
     // console.log(`[md.flush] curHeight:${curHeight}mm" f0:"${f0}" rawP:"${fontHeightRawP}" heightP:"${fontHeightP}" f3:"${f3}"`);
@@ -221,14 +223,16 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
 }
 
 export function mdToCanvas(str, scale = 1, textColor = "black", bgColor = "transparent") {
-  // console.warn(`[md.md] str:${str}`);
+  // console.warn(`[md.mdToCanvas] scale:${scale.toFixed(2)} str:${str}`);
   if (str && str.length != 0) {
     const parsedStr = mdParser(str);
-    // console.log(`[md.md] str:${str}\nres:${parsedStr}`);
+    // console.log(`[md.mdToCanvas] str:${str}\nres:${parsedStr}`);
     // for (let c of parsedStr) {
     //   console.log(c);
     // }
-    return doCanvas(parsedStr, scale, textColor, bgColor);
+    const canvas2 = doCanvas(parsedStr, scale, textColor, bgColor);
+    // console.log(`[md.mdToCanvas] canvas2:${canvas2}`);
+    return canvas2;
   }
   // console.log(`[md.doCanvas] Null str`);
   const s = hsm.settings.styles.note1;
@@ -241,4 +245,5 @@ export function mdToCanvas(str, scale = 1, textColor = "black", bgColor = "trans
   canvas2.style.height = canvas2.height + "px";
   const ctx2 = canvas2.getContext("2d", { willReadFrequently: true });
   bgFillRect(ctx2, bgColor, 0, 0, canvas2.width, canvas2.height);
+  return canvas2;
 }

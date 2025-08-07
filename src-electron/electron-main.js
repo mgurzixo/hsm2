@@ -51,6 +51,7 @@ async function createWindow() {
     await mainWindow.loadFile("index.html");
   }
 
+  // mainWindow.webContents.openDevTools();
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools();

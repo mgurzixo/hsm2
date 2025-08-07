@@ -112,6 +112,12 @@ export class Chsm extends CbaseElem {
     hCtx.folio.draw();
   }
 
+  async draw2() {
+    this.draw();
+    await V.nextTick();
+    this.draw();
+  }
+
   click(xDown, yDown) {
     let idz = this.makeIdz(xDown, yDown);
     hCtx.setIdz(idz);
@@ -144,11 +150,11 @@ export class Chsm extends CbaseElem {
   async dragStart(xDown, yDown) {
     // console.log(`[Chsm.dragStart] Making idz`);
     const idz = this.makeIdz(xDown, yDown);
-    console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
+    // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
-    console.log(`[Chsm.dragStart] elem:${elem?.id} Mode:'${modeRef.value}'`);
+    // console.log(`[Chsm.dragStart] elem:${elem?.id} Mode:'${modeRef.value}'`);
     const mode = modeRef.value;
     switch (mode) {
       case "":
@@ -220,7 +226,7 @@ export class Chsm extends CbaseElem {
 
   makeIdz(x = mousePos.value.x, y = mousePos.value.y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
     idz = hCtx.folio?.makeIdz(x, y, idz);
-    if (idz.id.startsWith("Z")) console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
+    // console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
   }
 }

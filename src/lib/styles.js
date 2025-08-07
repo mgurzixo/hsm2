@@ -62,7 +62,7 @@ export function stateStyles(baseColor) {
 }
 
 export function noteStyles(baseColor) {
-  const t = hsm.settings.styles.note;
+  const t = hsm.settings.styles.note1;
   return {
     bg: t.bg.color,
     borderColor: t.border.color,

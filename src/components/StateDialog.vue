@@ -11,26 +11,26 @@
 
     <div class="q-pa-sm my-region">
       <div class="q-pa-sm q-mb-md">
-        <q-input dense outlined v-model="element.name" label="Name:" />
+        <q-input dense outlined v-model="element.name" label="Name:" @update:model-value="onChange" />
       </div>
       <div class="q-pa-sm">
-        <q-input dense v-model="element.entry" label="Entry:" outlined />
+        <q-input dense v-model="element.entry" label="Entry:" outlined @update:model-value="onChange" />
       </div>
       <div class="q-pa-sm">
-        <q-input dense v-model="element.exit" label="Exit:" outlined />
+        <q-input dense v-model="element.exit" label="Exit:" outlined @update:model-value="onChange" />
       </div>
       <div class="q-pa-sm">
-        <q-input dense v-model="element.include" label="Include:" outlined autogrow />
+        <q-input dense v-model="element.include" label="Include:" outlined autogrow @update:model-value="onChange" />
       </div>
-      <div class="q-px-sm row no-wrap items-center">
+      <div class="q-pa-sm">
+        <q-input dense v-model="element.comment" label="Comment:" outlined autogrow @update:model-value="onChange" />
+      </div>
+      <div class="q-pr-sm row no-wrap items-center">
         <hue-slider v-model="stateHue" class="col-grow q-px-sm"></hue-slider>
         <div class="col-3 mini-state column col">
           <div class="mini-title row justify-center items-center"> STATE </div>
-          <div class="Xygreen col-grow"> &nbsp;</div>
+          <div class="col-grow"> &nbsp;</div>
         </div>
-      </div>
-      <div class="q-pa-sm">
-        <q-input dense v-model="element.comment" label="Comment:" outlined autogrow />
       </div>
     </div>
   </q-card>
@@ -106,10 +106,12 @@ const props = defineProps({
   },
 });
 
-V.watch(props.element, (el) => {
-  // console.log(`[StateDialog.watch.element] color:${el.color}`);
-  stateColor.value = el.color;
-});
+function onChange() {
+  console.log(`[trDialog.onChange]`);
+  // eslint-disable-next-line vue/no-mutating-props
+  props.element.name = U.underscorize(props.element.name);
+  hsm.draw();
+}
 
 V.watch(stateHue, (baseColor) => {
   // console.log(`[StateDialog.watch.stateColor] baseColor:${baseColor}`);
@@ -118,7 +120,6 @@ V.watch(stateHue, (baseColor) => {
   msBorderWidth.value = styles.borderWidth + "px";
   msTitleLine.value = styles.titleLine;
   msTitleLineWidth.value = styles.titleLineWidth;
-  msBorder.value = styles.border;
   msTitleText.value = styles.titleText;
   msTitleGradient.value = `linear-gradient(to top,${styles.titleBgs[0]}, ${styles.titleBgs[1]})`;
   msBg.value = styles.bg;

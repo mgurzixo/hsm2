@@ -1,12 +1,14 @@
 "use strict";
 
 import * as U from "src/lib/utils";
+import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/canvasListeners";
+
 
 let noteTo;
 
@@ -219,34 +221,35 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
-
-  async updateNotes() {
-    // console.log(`[Cfolio.updateNotes] `);
+  updateNotes() {
+    console.log(`[Cfolio.updateNotes] `);
     for (let note of hCtx.folio.notes) {
-      await note.makeCanvas();
+      note.deleteCanvas();
     }
     for (let child of hCtx.folio.children) {
-      await child.updateNotes();
+      child.updateNotes();
     }
-    hsm.draw();
+    for (let tr of hCtx.folio.trs) {
+      tr.updateNotes();
+    }
+    hsm.draw2();
   }
 
-  wheelP(xP, yP, dyP) {
+  async wheelP(xP, yP, dyP) {
     const [x, y] = this.pToMmXY(xP, yP);
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
-    // console.log(`[Cfolio.wheelP] scale0:${this.geo.scale}`);
     let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
     if (scale >= 1.5) scale += deltas * hsm.settings.deltaScale;
-    scale = Math.min(Math.max(0.1, scale), 10);
+    scale = Math.min(Math.max(0.1, scale), 5);
+    // console.log(`[Cfolio.wheelP] scale:${scale}`);
     const rScale = scale / this.geo.scale;
     this.geo.scale = scale;
     const x0 = (this.geo.x0 - (rScale - 1) * x) / rScale;
     const y0 = (this.geo.y0 - (rScale - 1) * y) / rScale;
     this.geo.x0 = x0;
     this.geo.y0 = y0;
-    hsm.draw();
     deferredNotesUpdate();
-    // this.updateNotes();
+    hsm.draw2();
   }
 
   makeIdz(x, y, idz) {
@@ -289,10 +292,6 @@ export class Cfolio extends CbaseRegion {
       if (U.rectsIntersect(child.geo, geo)) return false;
     }
     return true;
-  }
-
-  adjustTrsSelection() {
-    // console.log(`[Cfolio.setSelected] (${this.id}) } setSelected:${val}`);
   }
 
   canInsertNote(idz) {

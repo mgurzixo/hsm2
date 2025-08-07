@@ -311,44 +311,6 @@ export function rgbToHsl(r, g, b) {
   return [h * 60, s, l];
 }
 
-
-let mdDiv = document.getElementById("mdDiv");
-if (mdDiv) mdDiv.remove(); // when hotloading
-mdDiv = document.createElement("div");
-mdDiv.id = "mdDiv";
-mdDiv.style.position = "fixed";
-mdDiv.style.top = "-2000px";
-mdDiv.style.left = "-2000px";
-mdDiv.style.minWidth = "1em";
-mdDiv.style.minHeight = "1em";
-mdDiv.style.backgroundColor = "transparent";
-mdDiv.classList.add("markdown-body");
-
-document.body.appendChild(mdDiv);
-
-export async function mdToCanvas(mdText, scale = 1) {
-  const mdHtml = md.render(mdText);
-  // console.log(`[utils.mdToCanvas] mdHtml:${mdHtml}`);
-  mdDiv.innerHTML = mdHtml;
-  mdDiv.style.transform = "scale(" + scale + ")";
-  mdDiv.style.transformOrigin = "top left";
-  return html2canvas(mdDiv,
-    { backgroundColor: null, }
-  )
-    .then(function (canvas) {
-      // console.log(`[utils.mdToCanvas] dataUrl:${dataUrl}`);
-      // console.log(`[utils.mdToCanvas] canvas:${canvas} w:${canvas.width} h:${canvas.height}`);
-      canvas.getContext("2d", { willReadFrequently: true }); // TODO
-      mdDiv.innerHTML = "";
-      return canvas;
-    })
-    .catch(function (error) {
-      console.error(`[utils.mdToCanvas] Error:${error}`);
-      return null;
-    });
-}
-
-
 export function debounce(callback, delay) {
   let timer;
   return function () {
@@ -357,4 +319,16 @@ export function debounce(callback, delay) {
       callback();
     }, delay);
   };
+}
+
+// cf. https://stackoverflow.com/questions/2970525/converting-a-string-with-spaces-into-camel-case
+export function camelize(str) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index) {
+    if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+    return index === 0 ? match.toLowerCase() : match.toUpperCase();
+  });
+}
+
+export function underscorize(str) {
+  return str.replace(/ /g, "_");
 }

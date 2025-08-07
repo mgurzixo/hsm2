@@ -61,6 +61,8 @@ export default [
       "no-unused-vars": "off",
       "no-undef": "error",
       "no-unreachable": process.env.NODE_ENV === "production" ? "error" : "off",
+      "no-constant-condition": process.env.NODE_ENV === "production" ? "error" : "off",
+      "no-constant-binary-expression": process.env.NODE_ENV === "production" ? "error" : "off",
     },
   },
 

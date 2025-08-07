@@ -1,6 +1,6 @@
 <template id="colorSlider">
   <div class=" row no-wrap flex-center">
-    <div class="col-auto min-width3 q-mr-xs">{{ hue }}</div>
+    <div class="Xcol-auto min-width3 q-mr-xs">{{ hue }}</div>
     <div class=" container col-grow">
       <div class="c-range">
         <div class="c-range__holder">
@@ -14,7 +14,9 @@
 
 <style>
 .min-width3 {
-  min-width: 4em;
+  /* min-width: 4em;
+  max-width: 4em; */
+  width: 2em;
 }
 
 /* color range styles */

@@ -1,4 +1,5 @@
 <!-- eslint-disable vue/no-mutating-props -->
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <q-card class="my-card-tr text-black bg-blue">
     <q-bar class="text-grey-9 bg-amber-2">
@@ -24,17 +25,17 @@
         <q-checkbox dense v-if="element.from.id == element.to.id" class="q-pt-xs color-from "
           v-model="element.isInternal" label="Internal transition" @click="hsm.draw()" />
       </div>
-      <div class="q-py-sm">
-        <q-input dense v-model="element.trigger" label="Trigger:" outlined />
+      <div class="q-py-sm" spellcheck="false">
+        <q-input dense v-model="element.trigger" label="Trigger:" outlined @update:model-value="onUpdate" />
       </div>
       <div class="q-py-sm">
-        <q-input dense v-model="element.guard" label="Guard:" outlined />
+        <q-input dense v-model="element.guard" label="Guard:" outlined @update:model-value="onUpdate" />
       </div>
       <div class="q-py-sm">
-        <q-input dense v-model="element.effect" label="Effect:" outlined />
+        <q-input dense v-model="element.effect" label="Effect:" outlined @update:model-value="onUpdate" />
       </div>
-      <div class="q-pa-sm">
-        <q-input dense v-model="element.include" label="Include:" outlined autogrow />
+      <div class="q-py-sm">
+        <q-input dense v-model="element.include" label="Include:" outlined autogrow @update:model-value="onUpdate" />
       </div>
       <div class="q-py-sm">
         <q-input dense v-model="element.comment" label="Comment:" outlined autogrow />
@@ -103,16 +104,21 @@ const props = defineProps({
   },
 });
 
-V.watch(props.element, (el) => {
-  console.log(`[trDialog.watch.element] id:${el.id}`);
+function onUpdate() {
+  // console.log(`[trDialog.fixTrigger] m:${m}`);
+  // eslint-disable-next-line vue/no-mutating-props
+  props.element.trigger = U.underscorize(props.element.trigger.toUpperCase());
+  props.element.makeTag();
+  hsm.draw2();
+}
 
-});
-
-V.onMounted(() => {
+V.onMounted(async () => {
   bgColor.value = hsm.settings.styles.folioBackground;
   elemFrom.value = U.getElemById(props.element.from.id);
   elemTo.value = U.getElemById(props.element.to.id);
   colorFrom.value = elemFrom.value.styles.border;
   colorTo.value = elemTo.value.styles.border;
+  await V.nextTick();
+  document.querySelectorAll('input').forEach(e => e.setAttribute('spellcheck', false));
 });
 </script>

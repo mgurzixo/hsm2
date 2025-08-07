@@ -7,6 +7,8 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig((/* ctx */) => {
   return {
+    // MG
+    base: "/",
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
 

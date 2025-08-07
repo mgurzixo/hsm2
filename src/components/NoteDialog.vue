@@ -10,9 +10,9 @@
 
     <div id="notePayloadId" class="q-pa-sm my-region-note bg-color-note">
 
-      <div class="row no-wrap q-pb-sm q-pt-md">
+      <div class="row no-wrap q-pb-sm q-pt-md q-pr-sm">
         <div class="q-pr-md">Scale:</div>
-        <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="2" :step="0.1" label label-always
+        <q-slider dense v-model="sliderScale" class="slider-css" :min="0.5" :max="4" :step="0.1" label label-always
           color="amber-5">
         </q-slider>
       </div>
@@ -20,7 +20,7 @@
       <q-input dense v-model="elemNote.text" label="Markdown Text:" outlined overflow-auto
         @update:model-value="doCanvas" class="input-container q-pb-md" />
 
-      <div ref="canvasContainer" class="canvas-container no-overflow"></div>
+      <div ref="canvasContainer" class="canvas-container "></div>
     </div>
   </q-card>
 </template>
@@ -30,7 +30,7 @@
   /* border: solid 1px; */
   /* min-width: 600px; */
   max-width: fit-content !important;
-  /* overflow: auto !important; */
+  overflow: auto !important;
 }
 
 .bg-color-note {
@@ -45,22 +45,13 @@
   max-width: 50em;
 }
 
-.height100 {
-  max-height: 100%;
-  min-height: 100%;
-}
-
-.width100 {
-  width: 100%;
-}
-
 .input-container {
   max-width: 800px !important;
 }
 
 
 .my-region-note {
-  min-height: 350px;
+  min-height: 250px;
   max-height: 90vv;
   /* height: 400px; */
 }
@@ -77,9 +68,8 @@
   width: 90vw !important;
   min-width: 200px !important;
   max-width: 1200px !important;
-  min-height: 200px !important;
-  max-height: 800px !important;
-  /* min-width: 90vw !important; */
+  /* min-height: 200px !important;
+  max-height: 800px !important; */
 }
 </style>
 
@@ -129,22 +119,17 @@ function adjustSizes() {
 // let newDiv;
 
 async function doCanvas() {
-  if (!canvasContainer.value) return;
-  // console.log(`[noteDialog.doCanvas] sliderScale:${sliderScale.value}`);
+  console.log(`[noteDialog.doCanvas]`);
+  canvasContainer.value.textContent = '';
   const canvas = mdToCanvas(elemNote.value.text, sliderScale.value);
   canvasContainer.value.replaceChildren(canvas);
-  canvasContainer.value.style.height = canvas.height + "px";
+  // canvasContainer.value.style.height = canvas.height + "px";
   elemNote.value.scale = sliderScale.value;
-  // elemNote.value.makeCanvas();
-  elemNote.value.canvas = canvas;
-  hsm.draw();
-  // console.log(`[noteDialog.doCanvas]`);
+  elemNote.value.deleteCanvas();
+  hsm.draw2(); // Will remake canvas
 }
 
-const doCanvasDebounced = U.debounce(doCanvas, 100);
-
 V.watch(sliderScale, async (el) => {
-  // doCanvasDebounced();
   doCanvas();
 });
 
@@ -164,7 +149,6 @@ V.onMounted(async () => {
   // console.log(`[noteDialog.onMounted] qCardE:${qCardE} headerE:${headerE} payloadE:${payloadE}`);
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(qCardE);
-  // doCanvasDebounced();
   doCanvas();
 });
 </script>
