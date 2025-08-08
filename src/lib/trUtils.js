@@ -207,84 +207,84 @@ export function dragNormalSegment(tr, dx, dy) {
   const nA = dragCtx.zone;
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) (x:${x}, y:${y})`);
   const segA = tr.segments[nA];
-  const seg1 = tr.segments[nA - 1];
-  const seg2 = tr.segments[nA + 1];
-  if (typeof dragCtx.seg1Orig == "undefined") {
-    dragCtx.seg1Orig = { len: seg1.len, dir: seg1.dir };
-    dragCtx.seg2Orig = { len: seg2.len, dir: seg2.dir };
+  const segPrev = tr.segments[nA - 1];
+  const segNext = tr.segments[nA + 1];
+  if (typeof dragCtx.segPrevOrig == "undefined") {
+    dragCtx.segPrevOrig = { len: segPrev.len, dir: segPrev.dir };
+    dragCtx.segNextOrig = { len: segNext.len, dir: segNext.dir };
   }
   const hDir = U.isHoriz(segA.dir);
-  const dir1 = dragCtx.seg1Orig.dir;
-  const len1 = dragCtx.seg1Orig.len;
-  const dir2 = dragCtx.seg2Orig.dir;
-  const len2 = dragCtx.seg2Orig.len;
+  const dirPrev = dragCtx.segPrevOrig.dir;
+  const lenPrev = dragCtx.segPrevOrig.len;
+  const dirNext = dragCtx.segNextOrig.dir;
+  const lenNext = dragCtx.segNextOrig.len;
 
   if (hDir) {
-    if (dir1 == "N") {
-      if (dir2 == "N") {
+    if (dirPrev == "N") {
+      if (dirNext == "N") {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) NN`);
         // OK
-        seg1.len = len1 - dy;
-        seg2.len = len2 + dy;
+        segPrev.len = lenPrev - dy;
+        segNext.len = lenNext + dy;
       } else {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) NS`);
         // OK
-        seg1.len = len1 - dy;
-        seg2.len = len2 - dy;
+        segPrev.len = lenPrev - dy;
+        segNext.len = lenNext - dy;
       }
     }
     else {
-      if (dir2 == "N") {
+      if (dirNext == "N") {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) SN`);
         // OK
-        seg1.len = len1 + dy;
-        seg2.len = len2 + dy;
+        segPrev.len = lenPrev + dy;
+        segNext.len = lenNext + dy;
       } else {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) SS`);
         // OK
-        seg1.len = len1 + dy;
-        seg2.len = len2 - dy;
+        segPrev.len = lenPrev + dy;
+        segNext.len = lenNext - dy;
       }
     }
   }
   else {
-    if (dir1 == "W") {
-      if (dir2 == "W") {
+    if (dirPrev == "W") {
+      if (dirNext == "W") {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) WW`);
         // OK
-        seg1.len = len1 - dx;
-        seg2.len = len2 + dx;
+        segPrev.len = lenPrev - dx;
+        segNext.len = lenNext + dx;
       } else {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) WE`);
         // OK
-        seg1.len = len1 - dx;
-        seg2.len = len2 - dx;
+        segPrev.len = lenPrev - dx;
+        segNext.len = lenNext - dx;
       }
     }
     else {
-      if (dir2 == "W") {
+      if (dirNext == "W") {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) EW`);
         // OK
-        seg1.len = len1 + dx;
-        seg2.len = len2 + dx;
+        segPrev.len = lenPrev + dx;
+        segNext.len = lenNext + dx;
       } else {
         // console.log(`[trUtils.dragNormalSegment] (${tr.id}) EE`);
         // OK F bad L
-        seg1.len = len1 + dx;
-        seg2.len = len2 - dx;
+        segPrev.len = lenPrev + dx;
+        segNext.len = lenNext - dx;
       }
     }
   }
 
-  seg1.dir = dir1;
-  seg2.dir = dir2;
-  if (seg1.len <= 0) {
-    seg1.len = -seg1.len;
-    seg1.dir = U.reverseDir(seg1.dir);
+  segPrev.dir = dirPrev;
+  segNext.dir = dirNext;
+  if (segPrev.len <= 0) {
+    segPrev.len = -segPrev.len;
+    segPrev.dir = U.reverseDir(segPrev.dir);
   }
-  if (seg2.len <= 0) {
-    seg2.len = -seg2.len;
-    seg2.dir = U.reverseDir(seg2.dir);
+  if (segNext.len <= 0) {
+    segNext.len = -segNext.len;
+    segNext.dir = U.reverseDir(segNext.dir);
   }
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) nbSeg:${tr.segments.length} seg#:${nA} l2:${segA.len}`);
