@@ -48,6 +48,7 @@ export class Ctr extends CbaseElem {
     if (this.effect) text += `/${this.effect}`;
     if (!this.tag) {
       // console.log(`[Ctr.makeTag] (${this.id}) } hCtx.folio:${hCtx}`);
+      const t = hsm.settings.styles.tag;
       this.tag = new Ctext(this, {
         geo: { x0: 1, y0: 1, width: 20 },
         text: text,
@@ -80,9 +81,7 @@ export class Ctr extends CbaseElem {
     function visit(myElem) {
       if (myElem.id.startsWith("S")) {
         for (let mySide of ["T", "R", "B", "L"]) {
-          if ((anchor.id == myElem.id) && (anchor.side != mySide)) {
-            continue;
-          }
+          // if ((anchor.id == myElem.id) && (anchor.side != mySide)) continue;
           const geo = myElem.geo;
           let myX0, myY0, myX1, myY1;
           switch (mySide) {
@@ -116,7 +115,6 @@ export class Ctr extends CbaseElem {
         visit(elem1);
       }
     }
-
     visit(hCtx.folio);
     return [bestElem, bestSide, bestPos];
   }
@@ -132,6 +130,8 @@ export class Ctr extends CbaseElem {
         type: idz.type,
         xx0: idz.x,
         yy0: idz.y,
+        x0: this.geo.x0,
+        y0: this.geo.y0,
         tr0: {
           from: structuredClone(this.from),
           to: structuredClone(this.to),
@@ -378,13 +378,26 @@ export class Ctr extends CbaseElem {
       // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
     }
     else {
-      if (this.isSelected) cCtx.lineWidth = s.trLineSelectedWidth;
+      if (this.isSelected || this.id == hCtx.selectedId) cCtx.lineWidth = s.trLineSelectedWidth;
       else cCtx.lineWidth = s.trLineWidth;
       cCtx.strokeStyle = s.trLine;
-      if (this.tag) this.tag.color = s.trTag;
     }
     pathSegments(this.segments, x0, y0);
-    if (this.tag) this.tag.draw(this.geo.xx0, this.geo.yy0);
+    cCtx.stroke();
+    if (this.tag) {
+      this.tag.tagStyle = {
+        bg: s.tagBg,
+        borderColor: s.tagBorderColor,
+        borderWidth: s.tagBorderWidth,
+        borderSelectedColor: s.tagBorderSelectedColor,
+        borderSelectedWidth: s.tagBorderSelectedWidth,
+        textColor: s.tagTextColor,
+        textSelectedColor: s.tagTextSelectedColor,
+        textFont: s.tagTextFont,
+        cornerP: s.tagCornerP,
+      };
+      this.tag.draw(this.geo.xx0, this.geo.yy0);
+    }
   }
 
   adjustChange(changedId) {

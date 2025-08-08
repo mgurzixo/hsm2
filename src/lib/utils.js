@@ -87,7 +87,7 @@ export async function isIdle() {
 }
 
 export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
-  // console.log(`[utils.drawArrow] side0:${side0} side1:${side1}`);
+  // console.log(`[utils.connectPoints] side0:${side0} side1:${side1}`);
   const r = hsm.settings.maxTransRadiusMm * 1.5;
   let segments = [];
   const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
@@ -240,16 +240,20 @@ export function reverseDir(dir) {
   console.error(`[utils.reverseDir] Unknown dir:${dir}`);
 }
 
-export function patchSegment(segment, dl) {
-  let dir = segment.dir;
-  let len = segment.len;
-  if (dir == "S" || dir == "E") len += dl;
-  else len -= dl;
-  if (len < 0) {
-    len = -len;
-    dir = reverseDir(dir);
+export function normalizeSegment(seg) {
+  if (seg.len < 0) {
+    seg.len = -seg.len;
+    seg.dir = reverseDir(seg.dir);
   }
-  return { len: len, dir: dir };
+  return seg;
+}
+
+export function addToSegment(seg, dl) {
+  let dir = seg.dir;
+  let len = seg.len;
+  if (seg.dir == "S" || seg.dir == "E") seg.len += dl;
+  else seg.len -= dl;
+  return normalizeSegment(seg);
 }
 
 export function goesToOutside(side, dir) {

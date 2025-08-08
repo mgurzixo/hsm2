@@ -28,16 +28,21 @@ export function stateStyles(baseColor) {
   titleLine.lch.l = s.titleLine.light;
 
   const t = hsm.settings.styles.tr;
+  const x = hsm.settings.styles.tag;
   // Line
   const trLine = new Color(baseColor);
   trLine.lch.c = t.line.chroma;
   trLine.lch.l = t.line.light;
   const colLine = trLine.to("srgb") + "";
-  trLine.lch.c = t.tag.chroma;
-  trLine.lch.l = t.tag.light;
-  const colTag = trLine.to("srgb") + "";
+  trLine.lch.c = x.textChroma;
+  trLine.lch.l = x.textLight;
+  const tagColor = trLine.to("srgb") + "";
+  trLine.lch.c = x.borderChroma;
+  trLine.lch.l = x.borderLight;
+  const tagBorderColor = trLine.to("srgb") + "";
 
 
+  const n = hsm.settings.styles.tag;
   return {
     bg: bg.to("srgb") + "",
     border: border.to("srgb") + "",
@@ -57,7 +62,17 @@ export function stateStyles(baseColor) {
     trLineSelectedWidth: t.lineSelected.lineWidth,
     trLineError: t.lineError.color,
     trLineErrorWidth: t.lineError.lineWidth,
-    trTag: colTag,
+
+    // TODO ICI
+    tagBg: "transparent",
+    tagBorderColor: tagBorderColor,
+    tagBorderWidth: n.borderWidth,
+    tagBorderSelectedColor: colLine,
+    tagBorderSelectedWidth: n.borderSelectedWidth,
+    tagTextColor: tagColor,
+    tagTextSelectedColor: n.textColor,
+    tagTextFont: n.textFfont,
+    tagCornerP: n.tagCornerP,
   };
 }
 
@@ -70,22 +85,23 @@ export function noteStyles(baseColor) {
     borderSelectedColor: t.borderSelected.color,
     borderSelectedWidth: t.borderSelected.lineWidth,
     textColor: t.text.color,
+    textSelectedColor: t.text.color,
     textFont: t.text.font,
     cornerP: hsm.settings.noteCornerP
   };
 }
 
-export function textStyles(baseColor) {
-  const t = hsm.settings.styles.text;
-  return {
-    bg: t.bg.color,
-    borderColor: t.border.color,
-    borderWidth: t.border.lineWidth,
-    borderSelectedColor: t.borderSelected.color,
-    borderSelectedWidth: t.borderSelected.lineWidth,
-    textColor: t.text.color,
-    textFont: t.text.font,
-    textSize: t.text.sizeMm,
-    marginV: t.text.marginVMm,
-  };
-}
+// export function textStyles(baseColor) {
+//   const t = hsm.settings.styles.text;
+//   return {
+//     bg: t.bg.color,
+//     borderColor: t.border.color,
+//     borderWidth: t.border.lineWidth,
+//     borderSelectedColor: t.borderSelected.color,
+//     borderSelectedWidth: t.borderSelected.lineWidth,
+//     textColor: t.text.color,
+//     textFont: t.text.font,
+//     textSize: t.text.sizeMm,
+//     marginV: t.text.marginVMm,
+//   };
+// }

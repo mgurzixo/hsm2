@@ -149,6 +149,7 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
       frag = "";
       c = parsedStr[++i];
       if (c == "P") {
+        // Pop context
         const c = stack.pop();
         curHeight = c.height;
         curFont = c.font;

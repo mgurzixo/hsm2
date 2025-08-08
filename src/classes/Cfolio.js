@@ -222,7 +222,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   updateNotes() {
-    console.log(`[Cfolio.updateNotes] `);
+    // console.log(`[Cfolio.updateNotes] `);
     for (let note of hCtx.folio.notes) {
       note.deleteCanvas();
     }

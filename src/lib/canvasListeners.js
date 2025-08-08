@@ -98,6 +98,7 @@ export function handleMouseUp(e) {
   // );
   if (button1Down && ~e.buttons & 1) {
     // Button 1 released
+    console.log(`[canvasListeners.handleMouseUp] isDragging:${isDragging}`);
     if (isDragging) {
       const [dx, dy] = [U.pToMmL(xP - mouseDown.x), U.pToMmL(yP - mouseDown.y)];
       hsm.dragEnd(dx - dragOffset[0], dy - dragOffset[1]);
@@ -115,6 +116,7 @@ export function handleMouseUp(e) {
         hsm.handleDoubleClick(x, y);
       }
       else {
+        console.log(`[canvasListeners.handleMouseUp] Starting clickTimeout`);
         clickTimeoutId = setTimeout(() => {
           clickTimeoutId = null;
           inDoubleClick = false;
