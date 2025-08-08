@@ -177,6 +177,7 @@ export class Ctr extends CbaseElem {
       return false;
     }
     window.windump = false;
+    hsm.clearSelections();
     return true;
   }
 

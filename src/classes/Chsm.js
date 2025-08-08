@@ -119,6 +119,11 @@ export class Chsm extends CbaseElem {
     this.draw();
   }
 
+  clearSelections() {
+    hCtx.setSelectedId(null);
+    hCtx.folio.setSelected(null);
+  }
+
   click(xDown, yDown) {
     let idz = this.makeIdz(xDown, yDown);
     hCtx.setIdz(idz);
