@@ -54,6 +54,7 @@ import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/canvasListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
+import { doPdf } from "src/lib/doPdf";
 
 async function doLoadHsm() {
   await loadHsm();
@@ -82,13 +83,18 @@ V.watch(modeRef, (newMode, oldMode) => {
   }
 });
 
-function doTest() {
+async function doTest() {
+  const XMLS = new XMLSerializer();
+  const el = document.getElementById("inserting-state");
+  el.style.color = "red";
+  const myHtml = XMLS.serializeToString(el);
+  // console.log(`[LeftButtons.doTest] res:${myHtml}`);
+  const toto = '<button class="" tabindex="0" type="button" id="inserting-state" style="color: red; width:100mm;height:100mm;">Hello World!</button>';
+  doPdf(toto);
+  // const res = await window.hsm2Api.toPrintWindow(toto);
 }
 
 V.onMounted(async () => {
-  await U.nextTick();
-  await U.timeout(100);
-  doTest();
 });
 
 

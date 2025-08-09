@@ -1,9 +1,10 @@
 <template>
-  <div class="full-size">
+  <div class="full-size bg-grey">
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <canvas ref="canvasRef" class="full-size, canvas-cursor"> </canvas>
+    <div id="hsmRoot" class="hsm-root full-size"></div>
+    <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
     </div>
@@ -11,6 +12,12 @@
 </template>
 
 <style>
+.invisible {
+  display: none;
+}
+
+.hsm-root {}
+
 .full-size {
   width: 100%;
   height: 100%;
@@ -90,7 +97,7 @@ function openElementDialog(myElement) {
 V.onMounted(async () => {
   await U.nextTick();
   const canvas = canvasRef.value;
-  new Chsm(null, { name: "Hsm", canvas: canvas });
+  new Chsm(null, { name: "Hsm", parentElem: document.getElementById("hsmRoot"), canvas: canvas });
   await loadHsm(); // For devpt
   setCanvasListeners();
   hsm.handleRightClick = handleRightClick;

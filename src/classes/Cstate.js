@@ -14,6 +14,11 @@ class CbaseState extends CbaseElem {
     super(parent, options, type);
     this.isBaseState = true;
     this.isRevertingDrag = false;
+    this.parentElem = options.parentElem;
+    console.log(`[Cstate.constructor] parentElem:${this.parentElem}`);
+    this.myElem = document.createElement("div");
+    this.parentElem.append(this.myElem);
+    this.myElem.id = this.id;
     // console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
   }
 
@@ -506,6 +511,15 @@ export class Cstate extends CbaseState {
   }
 
   draw(xx0, yy0) {
+    const s = this.myElem.style;
+    const g = this.geo;
+    s.position = "absolute";
+    s.top = "0mm"; s.left = "0mm";
+    s.width = g.width + "mm"; s.height = g.height + "mm";
+    s.background = hsm.settings.styles.folioBackground;
+  }
+
+  oldDraw(xx0, yy0) {
     // console.log(`[Cstate.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
     // console.log(`[canvas.drawState] State:${state.name}`);
     this.geo.xx0 = xx0 + this.geo.x0;

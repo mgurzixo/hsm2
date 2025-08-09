@@ -27,7 +27,11 @@ export class Cfolio extends CbaseRegion {
     this.trs = [];
     this.notes = [];
     this.myOldScale = 0;
-    // console.log(`[Cfolio.constructor] scale:${options.geo.scale}`);
+    this.parentElem = options.parentElem;
+    console.log(`[Cfolio.constructor] parentElem:${this.parentElem}`);
+    this.myElem = document.createElement("div");
+    this.parentElem.append(this.myElem);
+    this.myElem.id = this.id;
   }
 
 
@@ -96,6 +100,16 @@ export class Cfolio extends CbaseRegion {
   }
 
   draw() {
+    console.log(`[Cfolio.draw] Drawing ${this.id} ----------------------`);
+    const s = this.myElem.style;
+    const g = this.geo;
+    s.position = "absolute";
+    s.top = "0mm"; s.left = "0mm";
+    s.width = g.width + "mm"; s.height = g.height + "mm";
+    s.background = hsm.settings.styles.folioBackground;
+  }
+
+  oldDraw() {
     // console.log(`[Cfolio.draw] Drawing ${this.id} ----------------------`);
     this.drawFolioBackground();
     this.geo.xx0 = this.geo.x0;
@@ -128,6 +142,7 @@ export class Cfolio extends CbaseRegion {
         height: h,
       },
       justCreated: true,
+      parentElem: this.myElem,
     };
     const myState = new Cstate(this, stateOptions, "S");
     // console.log(`[Cfolio.insertState] New state id:${myState?.id}`);

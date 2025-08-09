@@ -253,7 +253,7 @@ export class Ctext extends Cnote {
     this.geo.width = options?.width || 20;
     // console.log(`[Cnote.Ctext] (${this.id}) text:${this.text} scale:${this.scale}`);
     this.geo.height = hsm.settings.styles.tag.sizeMm + 2 * (hsm.settings.styles.tag.marginVMm);
-    console.log(`[Ctext.load] this.geo.height:${this.geo.height} ${JSON.stringify(hsm.settings.styles.tag)}`);
+    // console.log(`[Ctext.load] this.geo.height:${this.geo.height} ${JSON.stringify(hsm.settings.styles.tag)}`);
   }
 
   makeIdz(x, y, idz) {

@@ -28,7 +28,7 @@
  * }
  */
 const { contextBridge } = require("electron");
-import { app, BrowserWindow, Menu } from "electron";
+import { app, BrowserWindow, Menu, ipcRenderer } from "electron";
 const fs = require("fs");
 const os = require("os");
 // import { mainWindow } from "./electron-main.js";
@@ -37,11 +37,6 @@ const os = require("os");
 contextBridge.exposeInMainWorld("hsm2Api", {
   fsWrite: (filePath, data) => {
     // console.log(`[electron-preload.fsWrite] filePath:${filePath}`);
-    // whitelist channels
-    // let validChannels = ["toMain"];
-    // if (validChannels.includes(channel)) {
-    //   ipcRenderer.send(channel, op, data);
-    // }
     fs.writeFileSync(filePath, data);
     return "ok";
   },
@@ -59,19 +54,14 @@ contextBridge.exposeInMainWorld("hsm2Api", {
     return fs.readFileSync(filePath, encoding);
   },
 
-  pdf: () => {
-    let win = BrowserWindow
-      .getFocusedWindow();
-    var options = {
-      marginsType: 0,
-      pageSize: 'A4',
-      printBackground: true,
-      printSelectionOnly: false,
-      landscape: false
-    };
-    win.webContents.printToPDF(options).then(data => {
-      fs.writeFileSync("out.pdf", data);
-    });
-    return true;
+  printToPDF: async (data) => {
+    // console.log(`[electron-preload.printToPDF] data:${data}`);
+    let res = await ipcRenderer.invoke("doPrint", data);
+    return res;
+  },
+  toPrintWindow: async (data) => {
+    console.log(`[electron-preload.toPrintWindow] data:${data}`);
+    let res = ipcRenderer.invoke("doPrint", data);
+    return res;
   },
 });

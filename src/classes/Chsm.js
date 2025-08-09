@@ -21,7 +21,7 @@ export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "M");
     this.settings = {};
-    this.sernum = 1;
+    this.sernum = 2;
     this.hElems = new ChElems();
     this.hCtx = new ChCtx();
     hCtx = this.hCtx;
@@ -29,6 +29,11 @@ export class Chsm extends CbaseElem {
     this.setCanvas(this.canvas);
     hsm = this;
     hElems = this.hElems;
+    this.parentElem = options.parentElem,
+      console.log(`[Chsm.constructor] parentElem:${this.parentElem}`);
+    this.myElem = document.createElement("div");
+    this.parentElem.append(this.myElem);
+    this.myElem.id = this.id;
   }
 
   checkSernum(num) {
@@ -59,6 +64,7 @@ export class Chsm extends CbaseElem {
   }
 
   async addFolio(folioOptions) {
+    folioOptions.parentElem = this.myElem;
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
     await myFolio.load(folioOptions);
@@ -101,16 +107,22 @@ export class Chsm extends CbaseElem {
   save() { }
 
   draw() {
-    if (!cCtx) return;
-    // console.log(`[Chsm.draw] Drawing ${this.id}`);
-    // Clear canvas
-    cCtx.fillStyle = "#ccc";
-    cCtx.beginPath();
-    cCtx.rect(0, 0, this.canvas.width, this.canvas.height);
-    cCtx.fill();
     if (!hCtx.folio) return;
     hCtx.folio.draw();
     // console.log(`[Chsm.draw] SelectedId:${hCtx.getSelectedId()}`);
+  }
+
+  oldDraw() {
+    // if (!cCtx) return;
+    // // console.log(`[Chsm.draw] Drawing ${this.id}`);
+    // // Clear canvas
+    // cCtx.fillStyle = "#ccc";
+    // cCtx.beginPath();
+    // cCtx.rect(0, 0, this.canvas.width, this.canvas.height);
+    // cCtx.fill();
+    // if (!hCtx.folio) return;
+    // hCtx.folio.draw();
+    // // console.log(`[Chsm.draw] SelectedId:${hCtx.getSelectedId()}`);
   }
 
   async draw2() {
