@@ -26,7 +26,7 @@ export function setDragOffset(myDragOffset) {
 // TODO Must throttle all...
 
 function handleWheel(e) {
-  hsm.wheelP(mousePos.value.xP, mousePos.value.yP, e.deltaY);
+  hsm.wheelP(mousePos.value.x, mousePos.value.y, e.deltaY);
 }
 
 export function getPxFromMouseEvent(e) {
@@ -38,8 +38,8 @@ export function getPxFromMouseEvent(e) {
 }
 
 export async function handleMouseMove(e) {
-  let [xP, yP] = getPxFromMouseEvent(e);
-  const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
+  let [xP, yP] = getPxFromMouseEvent(e); // px from rootElem
+  const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)]; // mm from rootElem
   mousePos.value = { xP: xP, yP: yP, x: x, y: y, buttons: e.buttons };
   // console.log(`[canvasListeners.handleMouseMove] [xP:${xP.toFixed()}, yP:${yP.toFixed()}]`);
 

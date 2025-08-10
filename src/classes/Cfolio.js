@@ -25,6 +25,10 @@ export class Cfolio extends CbaseRegion {
     this.trs = [];
     this.notes = [];
     this.myOldScale = 0;
+    this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
+    this.myElem.style.transformOrigin = `top left`;
+    this.myElem.style.overflow = `hidden`;
+    // this.parent.myElem.style.transform = "scale(0.2)";
     // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
   }
 
@@ -32,9 +36,10 @@ export class Cfolio extends CbaseRegion {
     // console.log(`[Cfolio.draw] Drawing ${this.id} this.geo.xx0:${this.geo.xx0} dCtx.xx0: ${dCtx.xx0} ----------------------`);
     const s = this.myElem.style;
     const g = this.geo;
+    this.myElem.style.border = `solid 1px red`;
+    this.myElem.style.transform = `scale(${this.geo.scale})`;
     g.xx0 = dCtx.xx0 - g.x0;
     g.yy0 = dCtx.yy0 - g.y0;
-    s.position = "absolute";
     s.top = g.y0 + "mm"; s.left = g.x0 + "mm";
     s.width = g.width + "mm"; s.height = g.height + "mm";
     s.background = hsm.settings.styles.folioBackground;
@@ -57,9 +62,8 @@ export class Cfolio extends CbaseRegion {
   //   }
   // }
 
-  makeIdz(xP, yP, idz) {
+  makeIdz(x, y, idz) {
     // console.warn(`[Cfolio.makeIdz] [xP:${xP?.toFixed()}, yP: ${yP?.toFixed()}] xx0:${this.geo.xx0}`);
-    const [x, y] = this.pxToMyMm(xP, yP);
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     // console.warn(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
     if (x < this.geo.x0 || y < this.geo.y0) return idz;
@@ -86,19 +90,20 @@ export class Cfolio extends CbaseRegion {
     return idz;
   }
 
-  async wheelP(xP, yP, dyP) {
-    const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
+  async wheelP(x, y, dxyP) {
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
     let scale = this.geo.scale + deltas * hsm.settings.deltaScale;
     if (scale >= 1.5) scale += deltas * hsm.settings.deltaScale;
     scale = Math.min(Math.max(0.1, scale), 5);
     console.log(`[Cfolio.wheelP] scale: ${scale}`);
-    const rScale = scale / this.geo.scale;
+    // this.geo.x0 = (this.geo.x0 - (rScale - 1) * x) / rScale;
+    // this.geo.y0 = (this.geo.y0 - (rScale - 1) * y) / rScale;
+    const r = (this.geo.scale / scale - 1);
+    this.geo.x0 += x * r;
+    this.geo.y0 += y * r;
     this.geo.scale = scale;
-    this.geo.x0 = (this.geo.x0 - (rScale - 1) * x) / rScale;
-    this.geo.y0 = (this.geo.y0 - (rScale - 1) * y) / rScale;
     deferredNotesUpdate();
-    hsm.draw2();
+    hsm.draw();
   }
 
   setSelected(val) {

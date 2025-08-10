@@ -3,7 +3,9 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <div id="M1" class="my-viewport"></div>
+    <div id="myViewport" class="my-viewport">
+      <div id="M1"></div>
+    </div>
     <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
@@ -17,11 +19,23 @@
 }
 
 .my-viewport {
-  position: fixed;
   left: 0px;
   top: 0px;
   width: 100px;
-  height: 200px;
+  height: 100px;
+  overflow: hidden;
+  position: absolute;
+  background-color: transparent;
+  transform-origin: top left;
+
+}
+
+#M1 {
+  /* background-color: chocolate; */
+  width: 0px;
+  height: 0px;
+  transform-origin: top left;
+  /* transform: scale(0.5); */
 }
 
 .my-container {
@@ -54,9 +68,11 @@ import contextMenu from "src/menus/contextMenu";
 import { setRootElemListeners, removeRootElemListeners } from "src/lib/rootElemListeners";
 import { Chsm, hsm, cursor } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
+import doc from "pdfkit";
 
 let resizeObserver;
 let rootElem;
+let vpElem;
 const canvasRef = V.ref(null);
 const contextAnchor = V.ref(null);
 const dialogToggle = V.ref(false);
@@ -99,14 +115,14 @@ function openElementDialog(myElement) {
 }
 
 function adjustSizes() {
-  const cpe = rootElem.parentElement;
-  const bb = cpe.getBoundingClientRect();
-  const s = rootElem.style;
-  // console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
-  s.left = bb.left + "px";
-  s.top = bb.top + "px";
-  s.width = bb.width + "px";
-  s.height = bb.height + "px";
+  const scale = 1;
+  const bb = vpElem.parentElement.getBoundingClientRect();
+  const v = vpElem.style;
+  console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
+  v.left = bb.left + "px";
+  v.top = bb.top + "px";
+  v.width = bb.width + "px";
+  v.height = bb.height - bb.top + "px";
 }
 
 V.onUnmounted(() => {
@@ -121,9 +137,10 @@ V.onUnmounted(() => {
 V.onMounted(async () => {
   await U.nextTick();
   rootElem = document.getElementById("M1");
+  vpElem = document.getElementById("myViewport");
   adjustSizes();
   resizeObserver = new ResizeObserver(adjustSizes);
-  resizeObserver.observe(rootElem.parentElement);
+  resizeObserver.observe(vpElem.parentElement);
   const canvas = canvasRef.value;
   new Chsm(null, { name: "Hsm", elem: rootElem, canvas: canvas });
   await loadHsm(); // For devpt

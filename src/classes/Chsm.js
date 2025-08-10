@@ -70,6 +70,7 @@ export class Chsm extends CbaseElem {
     this.status = hsmOptions.status;
     this.serNum = hsmOptions.serNum;
     this.hElems.clearElems();
+    this.myElem.textContent = ""; // Clear screen
     this.hElems.insertElem(this);
     setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
     for (let folioOptions of hsmOptions.folios) {
@@ -202,18 +203,18 @@ export class Chsm extends CbaseElem {
     this.setCursor();
   }
 
-  mouseMove(xP, yP) {
-    const idz = this.makeIdz(xP, yP);
+  mouseMove(x, y) {
+    const idz = this.makeIdz(x, y);
     hCtx.setIdz(idz);
     this.setCursor();
   }
 
-  wheelP(xP, yP, dyP) {
-    hCtx.folio.wheelP(xP, yP, dyP);
+  wheelP(x, y, dyP) {
+    hCtx.folio.wheelP(x, y, dyP);
   }
 
-  makeIdz(xP, yP, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
-    idz = hCtx.folio?.makeIdz(xP, yP, idz);
+  makeIdz(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+    idz = hCtx.folio?.makeIdz(x, y, idz);
     // console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
   }

@@ -4,7 +4,7 @@
     epsilonMm: 0.1,
     magnetAttractionMm: 2,
     doubleClickTimeoutMs: 300,
-    deltaMouseWheel: 120,
+    deltaMouseWheel: 360,
     deltaScale: 0.1,
     deltaScale2: 0.2,
     cursorMarginP: 9,
@@ -84,7 +84,7 @@
     {
       id: "F1",
       name: "Main Folio",
-      geo: { x0: 10, y0: 20, width: 210, height: 297, scale: 1 },
+      geo: { x0: 0, y0: 0, width: 210, height: 297, scale: 0.6 },
       notes: [
         {
           geo: { x0: 20, y0: 5, width: 100, height: 20 },

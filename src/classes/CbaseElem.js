@@ -26,15 +26,17 @@ export class CbaseElem {
     this.parent = parent;
     this.children = [];
     this.myElem = obj.elem;
+    this.myElem.textContent = '';
+    this.myElem.style.position = "absolute";
     this.myElem.id = this.id;
     this.geo = { x0: 0, y0: 0, scale: 1 }; // Offset from parent
     if (obj.geo) this.geo = Object.assign(this.geo, obj.geo);
     const bb = this.myElem.getBoundingClientRect();
     // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} bb.left:${bb.left}`);
-
+    // [xx0,yy0] coords in mm from viewport
     this.geo.xx0 = U.pxToMm(bb.left);
     this.geo.yy0 = U.pxToMm(bb.top);
-    // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${this.geo.x0.toFixed(2)}, y0:${this.geo.y0.toFixed(2)}] [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
     if (obj.color) this.color = obj.color;
     else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
@@ -42,6 +44,11 @@ export class CbaseElem {
     this.isSelected = false;
     if (obj.justCreated) this.justCreated = obj.justCreated;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
+  }
+
+  async load(options) {
+    console.warn(`[CbaseElem.load] this:${this.id}`);
+    return true;
   }
 
   pxToMyMm(xP, yP) {
@@ -73,11 +80,6 @@ export class CbaseElem {
     this.parent = null;
     this.parent.excludeChild(this);
     hsm.hElems.removeElemById(this.id);
-  }
-
-  async load(options) {
-    console.warn(`[CbaseElem.load] this:${this.id}`);
-    return true;
   }
 
   async onLoaded() {
