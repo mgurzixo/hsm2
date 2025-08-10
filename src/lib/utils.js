@@ -1,9 +1,10 @@
 "use strict";
 
 export const inchInMm = 25.4;
+const mmInPx = 0.378;
 
 import * as V from "vue";
-import { hsm, hElems, cCtx } from "src/classes/Chsm";
+import { hsm, hCtx, hElems, cCtx } from "src/classes/Chsm";
 import html2canvas from 'html2canvas-pro';
 import markdownit from 'markdown-it';
 const md = markdownit();
@@ -283,6 +284,23 @@ export function mmToPL(lMm) {
 
 export function pToMmL(lP) {
   return lP / hsm.scalePhy();
+}
+
+export function mmToPx(len) {
+  const px = len * hCtx.folio.geo.scale * mmInPx;
+  return px;
+}
+
+export function pxToMm(px) {
+  // Beware of hsm initialisation
+  const scale = hCtx?.folio?.geo.scale ? hCtx.folio.geo.scale : 1;
+  const len = px / (scale * mmInPx);
+  // console.log(`[utils.pxToMm] px:${px} len:${len}`);
+  return len;
+}
+
+export function getScale() {
+  return hCtx.folio.Scale;
 }
 
 export function getElemById(id) {

@@ -1,9 +1,9 @@
 <template>
-  <div class="full-size bg-grey">
+  <div class="my-container bg-grey">
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <div id="M1" class="hsm-root"></div>
+    <div id="M1" class="my-viewport"></div>
     <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
@@ -16,19 +16,18 @@
   display: none;
 }
 
-.hsm-root {
+.my-viewport {
   position: fixed;
   left: 0px;
   top: 0px;
   width: 100px;
   height: 200px;
-  overflow: auto;
-  background: blue;
 }
 
-.full-size {
+.my-container {
   width: 100%;
   height: 100%;
+  overflow: auto;
 }
 
 .context-anchor {
@@ -52,7 +51,7 @@ import TrDialog from "src/components/TrDialog.vue";
 import NoteDialog from "src/components/NoteDialog.vue";
 import FolioDialog from "src/components/FolioDialog.vue";
 import contextMenu from "src/menus/contextMenu";
-import { setCanvasListeners, removeCanvasListeners } from "src/lib/rootElemListeners";
+import { setRootElemListeners, removeRootElemListeners } from "src/lib/rootElemListeners";
 import { Chsm, hsm, cursor } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
 
@@ -111,7 +110,7 @@ function adjustSizes() {
 }
 
 V.onUnmounted(() => {
-  removeCanvasListeners();
+  removeRootElemListeners(rootElem);
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;;
@@ -122,13 +121,13 @@ V.onUnmounted(() => {
 V.onMounted(async () => {
   await U.nextTick();
   rootElem = document.getElementById("M1");
+  adjustSizes();
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(rootElem.parentElement);
   const canvas = canvasRef.value;
   new Chsm(null, { name: "Hsm", elem: rootElem, canvas: canvas });
   await loadHsm(); // For devpt
-  return; // ICI
-  setCanvasListeners();
+  setRootElemListeners(rootElem);
   hsm.handleRightClick = handleRightClick;
   hsm.openDialog = openElementDialog;
 });

@@ -7,6 +7,7 @@ import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
 import { setDoubleClickTimeout, mousePos } from "src/lib/rootElemListeners";
+import { XYZ_D50 } from "colorjs.io/fn";
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -25,14 +26,11 @@ export class Chsm extends CbaseElem {
     this.hElems = new ChElems();
     this.hCtx = new ChCtx();
     hCtx = this.hCtx;
-    this.rootElem = options.canvas;
     this.canvas = options.canvas; // TODO
     this.setCanvas(this.canvas);
     hsm = this;
     hElems = this.hElems;
-    this.myElem = options.elem,
-      console.log(`[Chsm.constructor] myElem:${this.myElem}`);
-    this.myElem.id = this.id; // Already the case :)
+    // console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
 
   checkSernum(num) {
@@ -44,12 +42,8 @@ export class Chsm extends CbaseElem {
   }
 
   setCanvas(myCanvas) { // TODO
-    // this.destroyResizeObserver();
     this.canvas = myCanvas;
     cCtx = this.canvas.getContext("2d");
-    // const bindedAdjustSizes = this.adjustSizes.bind(this);
-    // this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
-    // this.resizeObserver.observe(this.canvas.parentElement);
   }
 
   setCursor(idz = this.idz()) {
@@ -63,8 +57,9 @@ export class Chsm extends CbaseElem {
   }
 
   async addFolio(folioOptions) {
-    return; // ICI
-    folioOptions.parentElem = this.myElem;
+    const folioElem = document.createElement("div");
+    this.myElem.append(folioElem);
+    folioOptions.elem = folioElem;
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
     await myFolio.load(folioOptions);
@@ -82,18 +77,12 @@ export class Chsm extends CbaseElem {
     }
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
-    this.makeIdz(this.idz.x, this.idz.y);
+    this.makeIdz(this.idz().x, this.idz().y);
     await hCtx.folio.onLoaded();
     this.draw();
     return null;
   }
 
-  // destroyResizeObserver() {
-  //   if (this.resizeObserver) {
-  //     this.resizeObserver.disconnect();
-  //     delete this.resizeObserver;
-  //   }
-  // }
 
   destroy() { // TODO
     // super.destroy();
@@ -108,21 +97,12 @@ export class Chsm extends CbaseElem {
 
   draw() {
     if (!hCtx.folio) return;
-    hCtx.folio.draw();
+    const dCtx = {
+      xx0: this.geo.xx0,
+      yy0: this.geo.yy0,
+    };
+    hCtx.folio.draw(dCtx);
     // console.log(`[Chsm.draw] SelectedId:${hCtx.getSelectedId()}`);
-  }
-
-  oldDraw() {
-    // if (!cCtx) return;
-    // // console.log(`[Chsm.draw] Drawing ${this.id}`);
-    // // Clear canvas
-    // cCtx.fillStyle = "#ccc";
-    // cCtx.beginPath();
-    // cCtx.rect(0, 0, this.canvas.width, this.canvas.height);
-    // cCtx.fill();
-    // if (!hCtx.folio) return;
-    // hCtx.folio.draw();
-    // // console.log(`[Chsm.draw] SelectedId:${hCtx.getSelectedId()}`);
   }
 
   async draw2() {
@@ -167,9 +147,9 @@ export class Chsm extends CbaseElem {
   }
 
   async dragStart(xDown, yDown) {
-    // console.log(`[Chsm.dragStart] Making idz`);
+    console.log(`[Chsm.dragStart] Making idz`);
     const idz = this.makeIdz(xDown, yDown);
-    // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
+    console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
@@ -222,29 +202,18 @@ export class Chsm extends CbaseElem {
     this.setCursor();
   }
 
-  mouseMove(x, y) {
-    const idz = hsm.makeIdz();
+  mouseMove(xP, yP) {
+    const idz = this.makeIdz(xP, yP);
     hCtx.setIdz(idz);
     this.setCursor();
   }
-
-  // adjustSizes() {
-  //   const cpe = this.canvas.parentElement;
-  //   const bb = cpe.getBoundingClientRect();
-  //   // console.log(`[Chsm.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
-  //   this.canvas.x0 = bb.left;
-  //   this.canvas.y0 = bb.top;
-  //   this.canvas.width = bb.width;
-  //   this.canvas.height = bb.height;
-  //   this.draw();
-  // }
 
   wheelP(xP, yP, dyP) {
     hCtx.folio.wheelP(xP, yP, dyP);
   }
 
-  makeIdz(x = mousePos.value.x, y = mousePos.value.y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
-    idz = hCtx.folio?.makeIdz(x, y, idz);
+  makeIdz(xP, yP, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+    idz = hCtx.folio?.makeIdz(xP, yP, idz);
     // console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
   }

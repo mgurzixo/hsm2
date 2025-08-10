@@ -59,8 +59,6 @@ import { doPdf } from "src/lib/doPdf";
 async function doLoadHsm() {
   await loadHsm();
   // console.log(`[LeftButtons.doLoadHsm] `);
-  await U.timeout(100);
-  hsm.draw();
 }
 
 V.watch(modeRef, (newMode, oldMode) => {

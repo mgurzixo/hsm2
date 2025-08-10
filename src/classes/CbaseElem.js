@@ -5,6 +5,7 @@ import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
+const mmInPx = 0.378;
 
 
 export class CbaseElem {
@@ -24,8 +25,16 @@ export class CbaseElem {
     this.name = obj?.name || `S${id}`;
     this.parent = parent;
     this.children = [];
-    if (obj.geo) this.geo = obj.geo;
-    else this.geo = { x0: 0, y0: 0 }; // Offset from parent
+    this.myElem = obj.elem;
+    this.myElem.id = this.id;
+    this.geo = { x0: 0, y0: 0, scale: 1 }; // Offset from parent
+    if (obj.geo) this.geo = Object.assign(this.geo, obj.geo);
+    const bb = this.myElem.getBoundingClientRect();
+    // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} bb.left:${bb.left}`);
+
+    this.geo.xx0 = U.pxToMm(bb.left);
+    this.geo.yy0 = U.pxToMm(bb.top);
+    // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
     if (obj.color) this.color = obj.color;
     else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
@@ -33,6 +42,11 @@ export class CbaseElem {
     this.isSelected = false;
     if (obj.justCreated) this.justCreated = obj.justCreated;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
+  }
+
+  pxToMyMm(xP, yP) {
+    // console.warn(`[CbaseElem.pxToMyMm] (${this.id}) xP:${xP} this.geo.xx0:${this.geo.xx0}`);
+    return [U.pxToMm(xP) - this.geo.xx0, U.pxToMm(yP) - this.geo.xx0];
   }
 
   destroy() {

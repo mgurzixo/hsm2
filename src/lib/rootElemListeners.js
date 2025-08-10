@@ -15,6 +15,10 @@ let inDoubleClick = false;
 let doubleClickTimeout = 250; // ms
 let dragOffset = [0, 0];
 
+let rootElem;
+let rootTopP;
+let rootLeftP;
+
 export function setDragOffset(myDragOffset) {
   dragOffset = myDragOffset;
 }
@@ -25,18 +29,19 @@ function handleWheel(e) {
   hsm.wheelP(mousePos.value.xP, mousePos.value.yP, e.deltaY);
 }
 
-export function getXYFromMouseEvent(e) {
-  let x = Math.round(e.clientX - hsm.rootElem.x0);
-  let y = Math.round(e.clientY - hsm.rootElem.y0);
+export function getPxFromMouseEvent(e) {
+  let x = e.clientX - rootLeftP;
+  let y = e.clientY - rootTopP;
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   return [x, y];
 }
 
 export async function handleMouseMove(e) {
-  const [xP, yP] = getXYFromMouseEvent(e);
+  let [xP, yP] = getPxFromMouseEvent(e);
   const [x, y] = [U.pToMmL(xP), U.pToMmL(yP)];
   mousePos.value = { xP: xP, yP: yP, x: x, y: y, buttons: e.buttons };
+  // console.log(`[canvasListeners.handleMouseMove] [xP:${xP.toFixed()}, yP:${yP.toFixed()}]`);
 
   if (!isDragging && e.buttons & 1) {
     const dxP = xP - mouseDown.x;
@@ -72,7 +77,7 @@ export function patchMouseDown() {
 }
 
 export function handleMouseDown(e) {
-  const [xP, yP] = getXYFromMouseEvent(e);
+  const [xP, yP] = getPxFromMouseEvent(e);
   if (e.buttons & 1) {
     button1Down = true;
     mouseDown = { x: xP, y: yP };
@@ -92,7 +97,7 @@ export function handleMouseDown(e) {
 }
 
 export function handleMouseUp(e) {
-  const [xP, yP] = getXYFromMouseEvent(e);
+  const [xP, yP] = getPxFromMouseEvent(e);
   // console.log(
   //   `[canvasListeners.handleMouseUp] x:${x} y:${y} buttons:${e.buttons} button1Down:${button1Down} button2Down:${button2Down}`,
   // );
@@ -135,7 +140,7 @@ export function handleMouseUp(e) {
 }
 
 export function handleMouseOut(e) {
-  const [x, y] = getXYFromMouseEvent(e);
+  const [x, y] = getPxFromMouseEvent(e);
   // console.log(`[canvasListeners.handleMouseOut] x:${x} y:${y} isDragging:${isDragging}`);
   if (isDragging) {
     // mouseOut.x = x;
@@ -146,7 +151,7 @@ export function handleMouseOut(e) {
 }
 
 export function handleMouseEnter(e) {
-  const [xP, yP] = getXYFromMouseEvent(e);
+  const [xP, yP] = getPxFromMouseEvent(e);
   // console.log(`[canvasListeners.handleMouseEnter] x:${x} y:${y} isDragging:${isDragging}`);
   if (isDragging) {
     if (!e.buttons & 1) {
@@ -161,21 +166,25 @@ export function setDoubleClickTimeout(val) {
   doubleClickTimeout = Number(val);
 }
 
-export function setCanvasListeners() {
-  hsm.rootElem.addEventListener("wheel", handleWheel);
-  hsm.rootElem.addEventListener("mousemove", handleMouseMove);
-  hsm.rootElem.addEventListener("mousedown", handleMouseDown);
-  hsm.rootElem.addEventListener("mouseup", handleMouseUp);
-  hsm.rootElem.addEventListener("mouseout", handleMouseOut);
-  hsm.rootElem.addEventListener("mouseenter", handleMouseEnter);
+export function setRootElemListeners(myRootElem) {
+  // console.log(`[canvasListeners.setRootElemListeners] rootElemId:${myRootElem?.id}`);
+  rootElem = myRootElem;
+  const bb = rootElem.getBoundingClientRect();
+  rootLeftP = bb.left;
+  rootTopP = bb.top;
+  rootElem.addEventListener("wheel", handleWheel);
+  rootElem.addEventListener("mousemove", handleMouseMove);
+  rootElem.addEventListener("mousedown", handleMouseDown);
+  rootElem.addEventListener("mouseup", handleMouseUp);
+  rootElem.addEventListener("mouseout", handleMouseOut);
+  rootElem.addEventListener("mouseenter", handleMouseEnter);
 }
 
-export function removeCanvasListeners() {
-  return; // ICI
-  hsm.rootElem?.removeEventListener("wheel", handleWheel);
-  hsm.rootElem?.removeEventListener("mousemove", handleMouseMove);
-  hsm.rootElem?.removeEventListener("mousedown", handleMouseDown);
-  hsm.rootElem?.removeEventListener("mouseup", handleMouseUp);
-  hsm.rootElem?.removeEventListener("mouseout", handleMouseOut);
-  hsm.rootElem?.removeEventListener("mouseenter", handleMouseEnter);
+export function removeRootElemListeners() {
+  rootElem?.removeEventListener("wheel", handleWheel);
+  rootElem?.removeEventListener("mousemove", handleMouseMove);
+  rootElem?.removeEventListener("mousedown", handleMouseDown);
+  rootElem?.removeEventListener("mouseup", handleMouseUp);
+  rootElem?.removeEventListener("mouseout", handleMouseOut);
+  rootElem?.removeEventListener("mouseenter", handleMouseEnter);
 }

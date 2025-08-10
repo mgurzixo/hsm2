@@ -15,7 +15,7 @@ class CbaseState extends CbaseElem {
     this.isBaseState = true;
     this.isRevertingDrag = false;
     this.parentElem = options.parentElem;
-    console.log(`[Cstate.constructor] parentElem:${this.parentElem}`);
+    // console.log(`[Cstate.constructor] parentElem:${this.parentElem}`);
     this.myElem = document.createElement("div");
     // this.parentElem.append(this.myElem); //ICI
     this.myElem.id = this.id;
