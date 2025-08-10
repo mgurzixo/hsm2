@@ -3,7 +3,7 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <div id="hsmRoot" class="hsm-root full-size"></div>
+    <div id="M1" class="hsm-root"></div>
     <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
@@ -16,7 +16,15 @@
   display: none;
 }
 
-.hsm-root {}
+.hsm-root {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100px;
+  height: 200px;
+  overflow: auto;
+  background: blue;
+}
 
 .full-size {
   width: 100%;
@@ -44,10 +52,12 @@ import TrDialog from "src/components/TrDialog.vue";
 import NoteDialog from "src/components/NoteDialog.vue";
 import FolioDialog from "src/components/FolioDialog.vue";
 import contextMenu from "src/menus/contextMenu";
-import { setCanvasListeners, removeCanvasListeners } from "src/lib/canvasListeners";
+import { setCanvasListeners, removeCanvasListeners } from "src/lib/rootElemListeners";
 import { Chsm, hsm, cursor } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
 
+let resizeObserver;
+let rootElem;
 const canvasRef = V.ref(null);
 const contextAnchor = V.ref(null);
 const dialogToggle = V.ref(false);
@@ -55,11 +65,6 @@ const dialogComponent = V.shallowRef(null);
 const trDialogToggle = V.ref(false);
 const element = V.ref(null);
 const elementId = V.ref(null);
-
-V.onUnmounted(() => {
-  removeCanvasListeners();
-  if (hsm) hsm.destroy();
-});
 
 // mouseX: from start of canvas
 function handleRightClick(mouseX, mouseY, rawMouseX, rawMouseY) {
@@ -94,14 +99,37 @@ function openElementDialog(myElement) {
   // contextAnchor.value.dispatchEvent(e);
 }
 
+function adjustSizes() {
+  const cpe = rootElem.parentElement;
+  const bb = cpe.getBoundingClientRect();
+  const s = rootElem.style;
+  // console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
+  s.left = bb.left + "px";
+  s.top = bb.top + "px";
+  s.width = bb.width + "px";
+  s.height = bb.height + "px";
+}
+
+V.onUnmounted(() => {
+  removeCanvasListeners();
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;;
+    if (hsm) hsm.destroy();
+  }
+});
+
 V.onMounted(async () => {
   await U.nextTick();
+  rootElem = document.getElementById("M1");
+  resizeObserver = new ResizeObserver(adjustSizes);
+  resizeObserver.observe(rootElem.parentElement);
   const canvas = canvasRef.value;
-  new Chsm(null, { name: "Hsm", parentElem: document.getElementById("hsmRoot"), canvas: canvas });
+  new Chsm(null, { name: "Hsm", elem: rootElem, canvas: canvas });
   await loadHsm(); // For devpt
+  return; // ICI
   setCanvasListeners();
   hsm.handleRightClick = handleRightClick;
   hsm.openDialog = openElementDialog;
-  // openElementDialog(U.getElemById("N16"));
 });
 </script>

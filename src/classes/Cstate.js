@@ -7,7 +7,7 @@ import { Cregion } from "src/classes/Cregion";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { stateStyles } from "src/lib/styles";
 import { Cnote } from "src/classes/Cnote";
-import { setDragOffset } from "src/lib/canvasListeners";
+import { setDragOffset } from "src/lib/rootElemListeners";
 
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
@@ -17,7 +17,7 @@ class CbaseState extends CbaseElem {
     this.parentElem = options.parentElem;
     console.log(`[Cstate.constructor] parentElem:${this.parentElem}`);
     this.myElem = document.createElement("div");
-    this.parentElem.append(this.myElem);
+    // this.parentElem.append(this.myElem); //ICI
     this.myElem.id = this.id;
     // console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
   }

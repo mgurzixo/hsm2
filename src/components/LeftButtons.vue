@@ -51,7 +51,7 @@ import ButtonBurger from "components/ButtonBurger.vue";
 // import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
-import { mousePos } from "src/lib/canvasListeners";
+import { mousePos } from "src/lib/rootElemListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
 import { doPdf } from "src/lib/doPdf";

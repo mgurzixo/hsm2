@@ -7,7 +7,7 @@ import { CbaseRegion } from "src/classes/Cregion";
 import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
-import { setDragOffset } from "src/lib/canvasListeners";
+import { setDragOffset } from "src/lib/rootElemListeners";
 
 
 let noteTo;

@@ -3,7 +3,7 @@
 import * as U from "src/lib/utils";
 import { hsm, hElems, hCtx } from "src/classes/Chsm";
 import { nextXY } from "src/lib/segments";
-import { patchMouseDown } from "src/lib/canvasListeners";
+import { patchMouseDown } from "src/lib/rootElemListeners";
 
 // All distances in mm from folio origin
 

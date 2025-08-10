@@ -6,7 +6,7 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
-import { setDoubleClickTimeout, mousePos } from "src/lib/canvasListeners";
+import { setDoubleClickTimeout, mousePos } from "src/lib/rootElemListeners";
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -19,21 +19,20 @@ export let ctxMenu = V.ref(null);
 
 export class Chsm extends CbaseElem {
   constructor(parent, options) {
-    super(parent, options, "M");
+    super(null, options, "M");
     this.settings = {};
     this.sernum = 2;
     this.hElems = new ChElems();
     this.hCtx = new ChCtx();
     hCtx = this.hCtx;
-    this.canvas = options.canvas;
+    this.rootElem = options.canvas;
+    this.canvas = options.canvas; // TODO
     this.setCanvas(this.canvas);
     hsm = this;
     hElems = this.hElems;
-    this.parentElem = options.parentElem,
-      console.log(`[Chsm.constructor] parentElem:${this.parentElem}`);
-    this.myElem = document.createElement("div");
-    this.parentElem.append(this.myElem);
-    this.myElem.id = this.id;
+    this.myElem = options.elem,
+      console.log(`[Chsm.constructor] myElem:${this.myElem}`);
+    this.myElem.id = this.id; // Already the case :)
   }
 
   checkSernum(num) {
@@ -44,13 +43,13 @@ export class Chsm extends CbaseElem {
     return this.sernum++;
   }
 
-  setCanvas(myCanvas) {
-    this.destroyResizeObserver();
+  setCanvas(myCanvas) { // TODO
+    // this.destroyResizeObserver();
     this.canvas = myCanvas;
     cCtx = this.canvas.getContext("2d");
-    const bindedAdjustSizes = this.adjustSizes.bind(this);
-    this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
-    this.resizeObserver.observe(this.canvas.parentElement);
+    // const bindedAdjustSizes = this.adjustSizes.bind(this);
+    // this.resizeObserver = new ResizeObserver(bindedAdjustSizes);
+    // this.resizeObserver.observe(this.canvas.parentElement);
   }
 
   setCursor(idz = this.idz()) {
@@ -64,6 +63,7 @@ export class Chsm extends CbaseElem {
   }
 
   async addFolio(folioOptions) {
+    return; // ICI
     folioOptions.parentElem = this.myElem;
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
@@ -88,20 +88,20 @@ export class Chsm extends CbaseElem {
     return null;
   }
 
-  destroyResizeObserver() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-      delete this.resizeObserver;
-    }
-  }
+  // destroyResizeObserver() {
+  //   if (this.resizeObserver) {
+  //     this.resizeObserver.disconnect();
+  //     delete this.resizeObserver;
+  //   }
+  // }
 
-  destroy() {
-    super.destroy();
-    delete this.activeFolio;
-    hCtx.folio = null;
-    this.destroyResizeObserver();
-    this.canvas = null;
-    hsm = null;
+  destroy() { // TODO
+    // super.destroy();
+    // delete this.activeFolio;
+    // hCtx.folio = null;
+    // this.destroyResizeObserver();
+    // this.canvas = null;
+    // hsm = null;
   }
 
   save() { }
@@ -228,16 +228,16 @@ export class Chsm extends CbaseElem {
     this.setCursor();
   }
 
-  adjustSizes() {
-    const cpe = this.canvas.parentElement;
-    const bb = cpe.getBoundingClientRect();
-    // console.log(`[Chsm.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
-    this.canvas.x0 = bb.left;
-    this.canvas.y0 = bb.top;
-    this.canvas.width = bb.width;
-    this.canvas.height = bb.height;
-    this.draw();
-  }
+  // adjustSizes() {
+  //   const cpe = this.canvas.parentElement;
+  //   const bb = cpe.getBoundingClientRect();
+  //   // console.log(`[Chsm.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
+  //   this.canvas.x0 = bb.left;
+  //   this.canvas.y0 = bb.top;
+  //   this.canvas.width = bb.width;
+  //   this.canvas.height = bb.height;
+  //   this.draw();
+  // }
 
   wheelP(xP, yP, dyP) {
     hCtx.folio.wheelP(xP, yP, dyP);

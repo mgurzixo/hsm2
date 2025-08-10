@@ -26,8 +26,8 @@ function handleWheel(e) {
 }
 
 export function getXYFromMouseEvent(e) {
-  let x = Math.round(e.clientX - hsm.canvas.x0);
-  let y = Math.round(e.clientY - hsm.canvas.y0);
+  let x = Math.round(e.clientX - hsm.rootElem.x0);
+  let y = Math.round(e.clientY - hsm.rootElem.y0);
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   return [x, y];
@@ -162,21 +162,20 @@ export function setDoubleClickTimeout(val) {
 }
 
 export function setCanvasListeners() {
-  hsm.canvas.addEventListener("wheel", handleWheel);
-  hsm.canvas.addEventListener("mousemove", handleMouseMove);
-  hsm.canvas.addEventListener("mousedown", handleMouseDown);
-  hsm.canvas.addEventListener("mouseup", handleMouseUp);
-  hsm.canvas.addEventListener("mouseout", handleMouseOut);
-  hsm.canvas.addEventListener("mouseenter", handleMouseEnter);
-  // setDragListeners();
+  hsm.rootElem.addEventListener("wheel", handleWheel);
+  hsm.rootElem.addEventListener("mousemove", handleMouseMove);
+  hsm.rootElem.addEventListener("mousedown", handleMouseDown);
+  hsm.rootElem.addEventListener("mouseup", handleMouseUp);
+  hsm.rootElem.addEventListener("mouseout", handleMouseOut);
+  hsm.rootElem.addEventListener("mouseenter", handleMouseEnter);
 }
 
 export function removeCanvasListeners() {
-  hsm.canvas?.removeEventListener("wheel", handleWheel);
-  hsm.canvas?.removeEventListener("mousemove", handleMouseMove);
-  hsm.canvas?.removeEventListener("mousedown", handleMouseDown);
-  hsm.canvas?.removeEventListener("mouseup", handleMouseUp);
-  hsm.canvas?.removeEventListener("mouseout", handleMouseOut);
-  hsm.canvas?.removeEventListener("mouseenter", handleMouseEnter);
-  // resetDragListeners();
+  return; // ICI
+  hsm.rootElem?.removeEventListener("wheel", handleWheel);
+  hsm.rootElem?.removeEventListener("mousemove", handleMouseMove);
+  hsm.rootElem?.removeEventListener("mousedown", handleMouseDown);
+  hsm.rootElem?.removeEventListener("mouseup", handleMouseUp);
+  hsm.rootElem?.removeEventListener("mouseout", handleMouseOut);
+  hsm.rootElem?.removeEventListener("mouseenter", handleMouseEnter);
 }
