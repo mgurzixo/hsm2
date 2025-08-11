@@ -30,6 +30,8 @@ export class Chsm extends CbaseElem {
     this.setCanvas(this.canvas);
     hsm = this;
     hElems = this.hElems;
+    this.geo.xx0 = 0;
+    this.geo.yy0 = 0;
     // console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
 
@@ -72,6 +74,7 @@ export class Chsm extends CbaseElem {
     this.hElems.clearElems();
     this.myElem.textContent = ""; // Clear screen
     this.hElems.insertElem(this);
+
     setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
     for (let folioOptions of hsmOptions.folios) {
       await this.addFolio(folioOptions);
@@ -96,16 +99,6 @@ export class Chsm extends CbaseElem {
 
   save() { }
 
-  draw() {
-    if (!hCtx.folio) return;
-    const dCtx = {
-      xx0: this.geo.xx0,
-      yy0: this.geo.yy0,
-    };
-    hCtx.folio.draw(dCtx);
-    // console.log(`[Chsm.draw] SelectedId:${hCtx.getSelectedId()}`);
-  }
-
   async draw2() {
     this.draw();
     await V.nextTick();
@@ -118,7 +111,9 @@ export class Chsm extends CbaseElem {
   }
 
   click(xDown, yDown) {
-    let idz = this.makeIdz(xDown, yDown);
+    console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
+    const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
+    let idz = this.makeIdz(xP, yP);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const newElem = this.hElems.getElemById(idz.id);
@@ -147,9 +142,11 @@ export class Chsm extends CbaseElem {
     elem?.openDialog();
   }
 
-  async dragStart(xDown, yDown) {
-    console.log(`[Chsm.dragStart] Making idz`);
-    const idz = this.makeIdz(xDown, yDown);
+  async dragStart(xP, yP) {
+    // console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
+    // const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
+    let idz = this.makeIdz(xP, yP);
+
     console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
@@ -172,20 +169,23 @@ export class Chsm extends CbaseElem {
     }
   }
 
-  drag(dx, dy) {
+  drag(dxS, dyS) {
     if (modeRef.value != "") return;
+    const [dx, dy] = [dxS * U.getScale(), dyS * U.getScale()];
+    // console.log(`[Chsm.drag]  (dx:${dx}, dy:${dy})`);
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
     // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     if (dragCtx.id == this.id) return;
     const elem = this.hElems.getElemById(dragCtx.id);
-    elem.drag(dx, dy);
+    elem.drag(dxS, dyS);
     this.draw();
     // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()} zone:${this.idz().zone}`);
     this.setCursor();
   }
 
-  dragEnd(dx, dy) {
+  dragEnd(dx0, dy0) {
+    const [dx, dy] = [dx0 * U.getScale(), dy0 * U.getScale()];
     const idz = this.idz();
     // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
     if (modeRef.value != "") {
@@ -209,13 +209,23 @@ export class Chsm extends CbaseElem {
     this.setCursor();
   }
 
+  draw() {
+    if (!hCtx.folio) return;
+    // console.log(`[Chsm.draw] this.geo.xx0:${this.geo.xx0}`);
+    const dCtx = {
+      xx0: this.geo.xx0,
+      yy0: this.geo.yy0,
+    };
+    hCtx.folio.draw(dCtx);
+  }
+
   wheelP(x, y, dyP) {
     hCtx.folio.wheelP(x, y, dyP);
   }
 
-  makeIdz(x, y, idz = { id: hsm.id, zone: "", x: 0, y: 0 }) {
+  makeIdz(x, y, idz = { id: hsm.id, zone: "M", x: x, y: y }) {
     idz = hCtx.folio?.makeIdz(x, y, idz);
-    // console.log(`[Chsm.makeIdz] id:${idz.id} zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
+    // console.log(`[Chsm.makeIdz] id:${idz.id} (x:${x.toFixed(2)}, y:${y.toFixed(2)}) zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     return idz;
   }
 }

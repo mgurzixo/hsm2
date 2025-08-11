@@ -118,7 +118,7 @@ function adjustSizes() {
   const scale = 1;
   const bb = vpElem.parentElement.getBoundingClientRect();
   const v = vpElem.style;
-  console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
+  // console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
   v.left = bb.left + "px";
   v.top = bb.top + "px";
   v.width = bb.width + "px";
@@ -144,7 +144,7 @@ V.onMounted(async () => {
   const canvas = canvasRef.value;
   new Chsm(null, { name: "Hsm", elem: rootElem, canvas: canvas });
   await loadHsm(); // For devpt
-  setRootElemListeners(rootElem);
+  setRootElemListeners(vpElem);
   hsm.handleRightClick = handleRightClick;
   hsm.openDialog = openElementDialog;
 });

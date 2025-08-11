@@ -36,7 +36,7 @@ export class CbaseElem {
     // [xx0,yy0] coords in mm from viewport
     this.geo.xx0 = U.pxToMm(bb.left);
     this.geo.yy0 = U.pxToMm(bb.top);
-    console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${this.geo.x0.toFixed(2)}, y0:${this.geo.y0.toFixed(2)}] [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${this.geo.x0.toFixed(2)}, y0:${this.geo.y0.toFixed(2)}] [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
     if (obj.color) this.color = obj.color;
     else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;

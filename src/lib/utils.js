@@ -299,8 +299,31 @@ export function pxToMm(px) {
   return len;
 }
 
+export function pxLToMm(px) {
+  // Beware of hsm initialisation
+  const scale = hCtx?.folio?.geo.scale ? hCtx.folio.geo.scale : 1;
+  const len = px / (scale);
+  // console.log(`[utils.pxToMm] px:${px} len:${len}`);
+  return len;
+}
+
+export function pxSTopxL(pxS) {
+  // Convert screen pixel to logical pixel
+  // Beware of hsm initialisation
+  const scale = hCtx?.folio?.geo.scale ? hCtx.folio.geo.scale : 1;
+  const pxL = pxS / (scale);
+  // console.log(`[utils.pxToMm] px:${px} len:${len}`);
+  return pxL;
+}
+
+export function pxLTopxS(pxL) {
+  // Convert logical pixel to screen pixel
+  const pxS = pxL * hCtx.folio.geo.scale * mmInPx;
+  return pxS;
+}
+
 export function getScale() {
-  return hCtx.folio.Scale;
+  return hCtx.folio.geo.scale;
 }
 
 export function getElemById(id) {
