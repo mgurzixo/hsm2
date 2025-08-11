@@ -103,7 +103,7 @@ export function handleMouseUp(e) {
   // );
   if (button1Down && ~e.buttons & 1) {
     // Button 1 released
-    console.log(`[canvasListeners.handleMouseUp] isDragging:${isDragging}`);
+    // console.log(`[canvasListeners.handleMouseUp] isDragging:${isDragging}`);
     if (isDragging) {
       const [dxL, dyL] = [xL - mouseDown.x, yL - mouseDown.y];
       hsm.dragEnd(dxL - dragOffsetS[0], dyL - dragOffsetS[1]);

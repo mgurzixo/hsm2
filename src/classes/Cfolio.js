@@ -62,10 +62,10 @@ export class Cfolio extends CbaseRegion {
     const s = this.myElem.style;
     const g = this.geo;
     let l = this.geo.scale;
-    this.myElem.style.border = `solid 1px red`;
+    // this.myElem.style.border = `solid 1px red`;
     // g.xx0 = dCtx.xx0 + g.x0;
     // g.yy0 = dCtx.yy0 + g.y0;
-    console.log(`[Cfolio.draw] Drawing ${this.id} scale:${l}`);
+    // console.log(`[Cfolio.draw] Drawing ${this.id} scale:${l}`);
     s.top = (g.y0 * l) + "mm";
     s.left = (g.x0 * l) + "mm";
     s.width = (g.width * l) + "mm";
@@ -92,7 +92,7 @@ export class Cfolio extends CbaseRegion {
     hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M" });
     // Save the base translation at drag start
     this.dragBase = { x0S: this.prevTransform.x0S, y0S: this.prevTransform.y0S };
-    console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
+    // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
   }
 
   drag(dxS, dyS) {
@@ -108,7 +108,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.y0 = d.y0 + U.pxToMm(dyS);
     // this.geo.x0 = d.x0;
     // this.geo.y0 = d.y0;
-    console.log(`[Cfolio.makeIdz] dxS:${dxS} U.pxToMm(dxS):${U.pxToMm(dxS)}`);
+    // console.log(`[Cfolio.makeIdz] dxS:${dxS} U.pxToMm(dxS):${U.pxToMm(dxS)}`);
   }
 
   dragEnd(dxS, dyS) {

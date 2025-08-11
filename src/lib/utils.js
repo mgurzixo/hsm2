@@ -9,6 +9,8 @@ import html2canvas from 'html2canvas-pro';
 import markdownit from 'markdown-it';
 const md = markdownit();
 
+export const fText = V.ref("Coucou");
+
 export function RR(x, lineWidth = 1) {
   if (!lineWidth % 2) return Math.round(x);
   return Math.round(x) + 0.5;

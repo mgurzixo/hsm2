@@ -3,9 +3,9 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <div id="myViewport" class="my-viewport">
-      <div id="M1"></div>
-    </div>
+    <!-- <div id="myViewport" class="my-viewport"> -->
+    <div id="M1"></div>
+    <!-- </div> -->
     <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
     <div ref="contextAnchor" class="context-anchor">
       <popup-menu :menu="contextMenu"></popup-menu>
@@ -34,14 +34,15 @@
   /* background-color: chocolate; */
   width: 0px;
   height: 0px;
+  overflow: hidden;
   transform-origin: top left;
   /* transform: scale(0.5); */
 }
 
 .my-container {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
+  /* width: 100%;
+  height: 100%; */
+  overflow: hidden;
 }
 
 .context-anchor {
@@ -72,7 +73,7 @@ import doc from "pdfkit";
 
 let resizeObserver;
 let rootElem;
-let vpElem;
+// let vpElem;
 const canvasRef = V.ref(null);
 const contextAnchor = V.ref(null);
 const dialogToggle = V.ref(false);
@@ -116,13 +117,13 @@ function openElementDialog(myElement) {
 
 function adjustSizes() {
   const scale = 1;
-  const bb = vpElem.parentElement.getBoundingClientRect();
-  const v = vpElem.style;
+  const bb = rootElem.parentElement.getBoundingClientRect();
+  const v = rootElem.style;
   // console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
   v.left = bb.left + "px";
   v.top = bb.top + "px";
   v.width = bb.width + "px";
-  v.height = bb.height - bb.top + "px";
+  v.height = bb.height + "px";
 }
 
 V.onUnmounted(() => {
@@ -137,14 +138,14 @@ V.onUnmounted(() => {
 V.onMounted(async () => {
   await U.nextTick();
   rootElem = document.getElementById("M1");
-  vpElem = document.getElementById("myViewport");
+  // vpElem = document.getElementById("myViewport");
   adjustSizes();
   resizeObserver = new ResizeObserver(adjustSizes);
-  resizeObserver.observe(vpElem.parentElement);
+  resizeObserver.observe(rootElem.parentElement);
   const canvas = canvasRef.value;
   new Chsm(null, { name: "Hsm", elem: rootElem, canvas: canvas });
   await loadHsm(); // For devpt
-  setRootElemListeners(vpElem);
+  setRootElemListeners(rootElem);
   hsm.handleRightClick = handleRightClick;
   hsm.openDialog = openElementDialog;
 });
