@@ -1,7 +1,7 @@
 "use strict";
 
 export const inchInMm = 25.4;
-const mmInPx = 0.378;
+export const pxPerMm = 3.78;
 
 import * as V from "vue";
 import { hsm, hCtx, hElems, cCtx } from "src/classes/Chsm";
@@ -287,14 +287,14 @@ export function pToMmL(lP) {
 }
 
 export function mmToPx(len) {
-  const px = len * hCtx.folio.geo.scale * mmInPx;
+  const px = len * hCtx.folio.geo.scale * pxPerMm;
   return px;
 }
 
 export function pxToMm(px) {
   // Beware of hsm initialisation
   const scale = hCtx?.folio?.geo.scale ? hCtx.folio.geo.scale : 1;
-  const len = px / (scale * mmInPx);
+  const len = px / (scale * pxPerMm);
   // console.log(`[utils.pxToMm] px:${px} len:${len}`);
   return len;
 }
@@ -318,7 +318,7 @@ export function pxSTopxL(pxS) {
 
 export function pxLTopxS(pxL) {
   // Convert logical pixel to screen pixel
-  const pxS = pxL * hCtx.folio.geo.scale * mmInPx;
+  const pxS = pxL * hCtx.folio.geo.scale * pxPerMm;
   return pxS;
 }
 

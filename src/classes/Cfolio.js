@@ -10,7 +10,7 @@ import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
 
 let noteTo;
-const mmInPx = 0.378;
+const pxPerMm = 3.78;
 
 function deferredNotesUpdate() {
   if (noteTo) clearTimeout(noteTo);
@@ -61,57 +61,75 @@ export class Cfolio extends CbaseRegion {
     // console.log(`[Cfolio.draw] Drawing ${this.id} this.geo.xx0:${this.geo.xx0} dCtx.xx0: ${dCtx.xx0} ----------------------`);
     const s = this.myElem.style;
     const g = this.geo;
-    const l = this.scale;
+    let l = this.geo.scale;
     this.myElem.style.border = `solid 1px red`;
-    // this.myElem.style.transform = `scale(${this.geo.scale})`;
-    g.xx0 = dCtx.xx0 + g.x0;
-    g.yy0 = dCtx.yy0 + g.y0;
-    s.top = g.y0 + "mm";
-    s.left = g.x0 + "mm";
-    s.width = g.width + "mm";
-    s.height = g.height + "mm";
+    // g.xx0 = dCtx.xx0 + g.x0;
+    // g.yy0 = dCtx.yy0 + g.y0;
+    console.log(`[Cfolio.draw] Drawing ${this.id} scale:${l}`);
+    s.top = (g.y0 * l) + "mm";
+    s.left = (g.x0 * l) + "mm";
+    s.width = (g.width * l) + "mm";
+    s.height = (g.height * l) + "mm";
     s.background = hsm.settings.styles.folioBackground;
   }
 
-  // async wheelP(x, y, dyP) {
-  //   const deltas = -dyP / hsm.settings.deltaMouseWheel;
-  //   const s0 = this.geo.scale;
-  //   const x0 = this.geo.x0;
-  //   const y0 = this.geo.y0;
-  //   let s1 = s0 + deltas * hsm.settings.deltaScale;
-  //   if (s1 >= 1.5) s1 += deltas * hsm.settings.deltaScale;
-  //   s1 = Math.min(Math.max(0.1, s1), 5);
-  //   const k = s1 / s0;
-  //   const r = s0 / s1;
-  //   this.geo.x0 = r * x0;
-  //   console.log(`[Cfolio.wheelP] x0:${x0.toFixed(2)} x:${x.toFixed(2)} xx0:${this.geo.xx0.toFixed(2)} s1:${s1.toFixed(2)} k:${k.toFixed(2)} res:${this.geo.x0.toFixed(2)}`);
-  //   this.geo.y0 = y0 + ((k - 1) * y) / k;
-  //   // this.geo.x0 = (this.geo.x0 - (rScale - 1) * x) / rScale;
-  //   // this.geo.y0 = (this.geo.y0 - (r - 1) * y) / r;
-  //   // const r = (1 - (scale / this.geo.scale));
-  //   // this.geo.x0 += x * r;
-  //   // this.geo.y0 += y * r;
-  //   this.geo.scale = s1;
-  //   deferredNotesUpdate();
-  //   hsm.draw();
-  // }
+  async dragStart(xS, yS) {
+    const idz = this.idz();
+    // const [x, y] = [idz.x, idz.y];
+    const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+    switch (modeRef.value) {
+      case "inserting-state": {
+        this.insertState(x, y);
+        return;
+      }
+      case "inserting-note": {
+        await this.insertNote(x, y);
+        return;
+      }
+      default:
+        modeRef.value = "";
+    }
+    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M" });
+    // Save the base translation at drag start
+    this.dragBase = { x0S: this.prevTransform.x0S, y0S: this.prevTransform.y0S };
+    console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
+  }
 
-  // oldDraw() {
-  //   // console.log(`[Cfolio.draw] Drawing ${ this.id } ----------------------`);
-  //   this.drawFolioBackground();
-  //   this.geo.xx0 = this.geo.x0;
-  //   this.geo.yy0 = this.geo.y0;
-  //   // console.log(`[Cfolio.draw] Drawing ${ this.id } y0: ${ this.geo.y0 } geo.yy0: ${ this.geo.yy0 }`);
-  //   for (let note of this.notes) {
-  //     note.draw(this.geo.xx0, this.geo.yy0);
-  //   }
-  //   for (let child of this.children) {
-  //     child.draw(this.geo.xx0, this.geo.yy0);
-  //   }
-  //   for (let tr of this.trs) {
-  //     tr.draw(0, 0);
-  //   }
-  // }
+  drag(dxS, dyS) {
+    // dxS, dyS are in screen (pixel) space
+    const s = this.geo.scale;
+    const d = hCtx.getDragCtx();
+    // Use the base translation at drag start
+    // const base = this.dragBase || { x0S: 0, y0S: 0 };
+    // const newX0S = base.x0S + dxS;
+    // const newY0S = base.y0S + dyS;
+    // this.myElem.style.transform = `matrix(${s},0,0,${s},${newX0S},${newY0S})`;
+    this.geo.x0 = d.x0 + U.pxToMm(dxS);
+    this.geo.y0 = d.y0 + U.pxToMm(dyS);
+    // this.geo.x0 = d.x0;
+    // this.geo.y0 = d.y0;
+    console.log(`[Cfolio.makeIdz] dxS:${dxS} U.pxToMm(dxS):${U.pxToMm(dxS)}`);
+  }
+
+  dragEnd(dxS, dyS) {
+    // On drag end, commit the translation to geo.x0/y0 and update prevTransform
+    const s = this.geo.scale;
+    const d = hCtx.getDragCtx();
+
+    this.geo.x0 = d.x0 + U.pxToMm(dxS);
+    this.geo.y0 = d.y0 + U.pxToMm(dyS);
+
+    const base = this.dragBase || { x0S: 0, y0S: 0 };
+    const newX0S = base.x0S + U.pxToMm(dxS);
+    const newY0S = base.y0S + U.pxToMm(dyS);
+    // Commit logical translation in mm (screen delta divided by scale)
+    // this.geo.y0 = d.x0 + 0.1 * U.pxToMm(dyS);
+    // Set DOM transform to new base
+    this.myElem.style.transform = `matrix(${s},0,0,${s},${newX0S},${newY0S})`;
+    this.prevTransform = { x0S: newX0S, y0S: newY0S };
+    this.dragBase = undefined;
+    return true;
+  }
 
   makeIdz(x, y, idz) {
     // console.warn(`[Cfolio.makeIdz] [xP:${xP?.toFixed()}, yP: ${yP?.toFixed()}] xx0:${this.geo.xx0}`);
@@ -198,19 +216,6 @@ export class Cfolio extends CbaseRegion {
     }
   }
 
-  // drawFolioBackground() {
-  //   cCtx.fillStyle = hsm.settings.styles.folioBackground;
-  //   cCtx.beginPath();
-  //   const s = this.scalePhy();
-  //   cCtx.rect(
-  //     Math.round(this.geo.x0 * s) + 0.5,
-  //     Math.round(this.geo.y0 * s) + 0.5,
-  //     Math.round(this.geo.width * s) + 0.5,
-  //     Math.round(this.geo.height * s) + 0.5,
-  //   );
-  //   cCtx.fill();
-  // }
-
   async insertState(x, y) {
     return; // ICI
     // console.log(`[Cfolio.insertState] Inserting state x:${ x.toFixed(); } `);
@@ -274,49 +279,6 @@ export class Cfolio extends CbaseRegion {
     await myNote.dragStart(); // Will create dragCtx
   }
 
-  async dragStart(xS, yS) {
-    const idz = this.idz();
-    // const [x, y] = [idz.x, idz.y];
-    const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
-    // console.log(`[Cfolio.dragStart] idz:${ JSON.stringify(idz)} `);
-    switch (modeRef.value) {
-      case "inserting-state": {
-        this.insertState(x, y);
-        return;
-      }
-      case "inserting-note": {
-        await this.insertNote(x, y);
-        return;
-      }
-      default:
-        modeRef.value = "";
-    }
-    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M" });
-    console.log(`[Cfolio.dragStart] matrix:${this.myElem.style.transform} `);
-  }
-
-  drag(dxS, dyS) {
-    // dxS, dyS are in screen (pixel) space
-    const t = this.prevTransform;
-    const s = this.geo.scale;
-    // Only update DOM transform for visual feedback
-    const newX0S = t.x0S + dxS;
-    const newY0S = t.y0S + dyS;
-    this.myElem.style.transform = `matrix(${s},0,0,${s},${newX0S},${newY0S})`;
-  }
-
-  dragEnd(dxS, dyS) {
-    // On drag end, commit the translation to geo.x0/y0 and reset DOM transform
-    const t = this.prevTransform;
-    const s = this.geo.scale;
-    // Commit logical translation in mm (screen delta divided by scale)
-    this.geo.x0 += U.pxToMm(dxS) / s;
-    this.geo.y0 += U.pxToMm(dyS) / s;
-    // Reset DOM transform to new base (no translation, just scale)
-    this.myElem.style.transform = `matrix(${s},0,0,${s},0,0)`;
-    this.prevTransform = { ...t, x0S: 0, y0S: 0 };
-    return true;
-  }
 
   raiseChildR(id) {
     super.raiseChildR(id);
