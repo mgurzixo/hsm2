@@ -67,24 +67,6 @@ export class Cfolio extends CbaseRegion {
   }
 
   draw(dCtx) {
-    // // console.log(`[Cfolio.draw] Drawing ${this.id} this.geo.xx0:${this.geo.xx0} dCtx.xx0: ${dCtx.xx0} ----------------------`);
-    // const s = this.myElem.style;
-    // const g = this.geo;
-    // let l = this.geo.scale;
-    // if (this.isDirty) {
-    //   // g.mat = fromString(getComputedStyle(this.myElem).transform);
-    //   // this.myElem.style.border = `solid 1px red`;
-    //   // g.xx0 = dCtx.xx0 + g.x0;
-    //   // g.yy0 = dCtx.yy0 + g.y0;
-    //   // console.log(`[Cfolio.draw] Drawing ${this.id} scale:${l}`);
-    //   s.top = (g.y0 * l) + "mm";
-    //   s.left = (g.x0 * l) + "mm";
-    //   s.width = (g.width * l) + "mm";
-    //   s.height = (g.height * l) + "mm";
-    //   s.background = hsm.settings.styles.folioBackground;
-    //   this.isDirty = false;
-    // }
-    // return;
   }
 
   async dragStart(xS, yS) {
@@ -320,20 +302,13 @@ export class Cfolio extends CbaseRegion {
   }
 
   makeIdz(x, y, idz) {
-    // console.warn(`[Cfolio.makeIdz] [x:${x?.toFixed()}, y: ${y?.toFixed()}]`);
-    // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
+    // [x,y] in mm in this.geo.[x0,y0] frame
     // console.warn(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
     const g = this.geo;
-    if (!g.mat) {
-      //  g.mat = fromString(getComputedStyle(this.myElem).transform);
-      let s = getComputedStyle(this.myElem).transform;
-      if (s) g.mat = fromString(s);
-      // console.log(`[Cfolio.makeIdz] myElem:${this.myElem} s:"${s}"`);
-    }
-    if (x < g.x0 || y < g.y0) return idz;
-    if (x > g.x0 + g.width || y > g.y0 + g.height) return idz;
+    if (x < 0 || y < 0) return idz;
+    if (x > g.width || y > g.height) return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
-    // // TODO xP
+    // TODO
     // for (let note of this.notes) {
     //   idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     // }

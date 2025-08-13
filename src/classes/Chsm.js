@@ -244,14 +244,11 @@ export class Chsm extends CbaseElem {
     const el = this.hCtx?.folio.myElem;
     const mat = fromString(getComputedStyle(el).transform);
     const matR = inverse(mat);
-    const [x, y] = applyToPoint(mat, [xP / U.pxPerMm, yP / U.pxPerMm]);
-    // const [x, y] = applyToPoint(mat, [xP, yP]);
-    // console.log(`[Chsm.makeIdzP] (xP:${xP.toFixed(2)}, yP:${yP.toFixed(2)})=>(x:${x.toFixed(2)}, y:${yP.toFixed(2)})`);
-    const TSR = decomposeTSR(mat);
-    // console.log(`[Chsm.makeIdzP] TSR:${JSON.stringify(decomposeTSR(mat))}`);
-    console.log(`[Chsm.makeIdzP] Mat:${JSON.stringify(mat)}`);
+    let [x, y] = applyToPoint(matR, [xP, yP]);
+    [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
+    console.log(`[Chsm.makeIdzP] MatR:${JSON.stringify(matR)}`);
     const idz = this.makeIdz(x, y, myIdz);
-    fText.value = `${idz.id} "${idz.zone}" (xP:${xP.toFixed(0)}, yP:${yP.toFixed(0)}) => (x:${idz.x.toFixed(0)}, y:${idz.y.toFixed(0)}) e*:${(mat.e / U.pxPerMm).toFixed()} TransX:${(TSR.translate.tx / U.pxPerMm).toFixed()} x0:${g.x0.toFixed()}`;
+    fText.value = `${idz.id} "${idz.zone}" (xP:${xP.toFixed(0)}, yP:${yP.toFixed(0)}) => (x:${x.toFixed(0)}, y:${y.toFixed(0)}) e*:${(mat.e).toFixed()} `;
     return idz;
   }
 }
