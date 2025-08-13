@@ -26,23 +26,25 @@ export class Cfolio extends CbaseRegion {
     super(parent, options, "F");
     this.trs = [];
     this.notes = [];
-    this.myOldScale = 0;
     this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
-    this.myElem.style.transformOrigin = `0px 0px`;
     this.myElem.style.overflow = `hidden`;
-    this.prevTransform = { scale: 1, xT: 0, yT: 0 };
-    this.geo.xT = 0;
-    this.geo.yT = 0;
-    this.geo.xTO = 0;
-    this.geo.yTO = 0;
-    this.doTransform();
     // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
   }
 
-  doTransform() {
-    const g = this.geo;
-    this.myElem.style.transformOrigin = `${g.xTO}px ${g.yTO}px`;
-    this.myElem.style.transform = `matrix(${g.scale},0,0,${g.scale},${g.xT},${g.yT})`;
+  setMat(mat) {
+    this.geo.mat = mat;
+    const matR = inverse(mat);
+    this.geo.matR = matR;
+    this.geo.x0 = mat.e;
+    this.geo.y0 = mat.f;
+    this.geo.scale = mat.a;
+    this.myElem.style.transform = toCSS(this.geo.mat);
+    console.log(`[Cfolio.setMat] geo:${this.geo}`);
+  }
+
+  setFolioDisplay(isActive) {
+    if (isActive) this.myElem.style.display = "block";
+    else this.myElem.style.display = "none";
   }
 
   async wheelP(xS, yS, dyS) {
@@ -63,10 +65,11 @@ export class Cfolio extends CbaseRegion {
     const matW = { a: k, b: 0, c: 0, d: k, e: xS * (1 - k), f: yS * (1 - k) };
     // console.log(`[Cfolio.wheelP] k:${k} xS:${xS} dxP:${dxP}`);
     const mat1 = compose(matW, mat0);
-    this.myElem.style.transform = toCSS(mat1);
+    this.setMat(mat1);
   }
 
   draw(dCtx) {
+    for (let child of this.children) child.draw(dCtx);
   }
 
   async dragStart(xS, yS) {
@@ -95,24 +98,16 @@ export class Cfolio extends CbaseRegion {
     // dxS, dyS are in screen (pixel) space
     const g = this.geo;
     const d = hCtx.getDragCtx();
-    let mat = {};
-    Object.assign(mat, d.mat);
-    mat.e += dxS;
-    mat.f += dyS;
+    const mat = {};
+    Object.assign(mat, this.geo.mat);
+    mat.e = d.mat.e + dxS;
+    mat.f = d.mat.f + dyS;
     // console.log(`[Cfolio.drag] mat1:${JSON.stringify(mat)}`);
-    this.myElem.style.transform = toCSS(mat);
+    this.setMat(mat);
   }
 
   dragEnd(dxS, dyS) {
     this.drag(dxS, dyS);
-    const g = this.geo;
-    const d = hCtx.getDragCtx();
-    g.x0 += dxS / U.pxPerMm;
-    g.y0 += dyS / U.pxPerMm;
-    // this.myElem.style.transform = toCSS(d.mat);
-    // this.isDirty = true;
-    // this.draw();
-    return true;
   }
 
   setSelected(val) {
@@ -142,14 +137,18 @@ export class Cfolio extends CbaseRegion {
   }
 
   async load(folioOptions) {
-    // console.log(`[Cfolio.load] xx0:${this.geo.xx0}`);
+    console.log(`[Cfolio.load]`);
+    this.setFolioDisplay(false);
+    // Set initial values
     const s = this.myElem.style;
     const g = this.geo;
+    s.top = "0px";
+    s.left = "0px";
     s.width = g.width + "mm";
     s.height = g.height + "mm";
-    const mat = { a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm };
     s.background = hsm.settings.styles.folioBackground;
-    this.myElem.style.transform = toCSS(mat);
+    s.transformOrigin = "top left";
+    this.setMat({ a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm }, false);
     return; // ICI
     for (let stateOption of folioOptions.states) {
       const myState = new Cstate(this, stateOption);

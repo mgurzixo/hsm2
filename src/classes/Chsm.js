@@ -81,6 +81,7 @@ export class Chsm extends CbaseElem {
       await this.addFolio(folioOptions);
     }
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
+    hCtx.folio.setFolioDisplay(true);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
     this.makeIdz(this.idz().x, this.idz().y);
     await hCtx.folio.onLoaded();
@@ -173,8 +174,6 @@ export class Chsm extends CbaseElem {
 
   drag(dxS, dyS) {
     if (modeRef.value != "") return;
-    const [dx, dy] = [dxS * U.getScale(), dyS * U.getScale()];
-    // console.log(`[Chsm.drag]  (dx:${dx}, dy:${dy})`);
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
     // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
@@ -203,7 +202,7 @@ export class Chsm extends CbaseElem {
     if (dragCtx.id == this.id) hCtx.folio.dragEnd(dxS, dyS);
     else {
       const elem = this.hElems.getElemById(dragCtx.id);
-      const dragEnded = elem.dragEnd(dx, dy);
+      const dragEnded = elem.dragEnd(dxS, dyS);
       if (dragEnded) hCtx.dragEnd();
       // else elem.resetDrag() will reset it
     }
@@ -238,17 +237,18 @@ export class Chsm extends CbaseElem {
     return idz;
   }
 
-  makeIdzP(xP, yP, myIdz) {
-    const g = hCtx?.folio?.geo;
-    const s = g.scale;
-    const el = this.hCtx?.folio.myElem;
-    const mat = fromString(getComputedStyle(el).transform);
-    const matR = inverse(mat);
+  pxToMm(xP, yP) {
+    const matR = this.hCtx.folio.geo.matR;
     let [x, y] = applyToPoint(matR, [xP, yP]);
     [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
-    console.log(`[Chsm.makeIdzP] MatR:${JSON.stringify(matR)}`);
+    return [x, y];
+  }
+
+  makeIdzP(xP, yP, myIdz) {
+    const [x, y] = this.pxToMm(xP, yP);
     const idz = this.makeIdz(x, y, myIdz);
-    fText.value = `${idz.id} "${idz.zone}" (xP:${xP.toFixed(0)}, yP:${yP.toFixed(0)}) => (x:${x.toFixed(0)}, y:${y.toFixed(0)}) e*:${(mat.e).toFixed()} `;
+    fText.value = `${idz.id} "${idz.zone}" (x:${x.toFixed()}, yz:${y.toFixed()}) (xz:${idz.x.toFixed()}, yz:${idz.y.toFixed()})`;
+    console.log(`[Chsm.makeIdz] matR:${JSON.stringify(this.hCtx.folio.geo.mat)}`);
     return idz;
   }
 }
