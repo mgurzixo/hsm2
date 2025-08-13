@@ -26,6 +26,7 @@ export class CbaseElem {
     this.myElem = obj.elem;
     this.myElem.textContent = '';
     this.myElem.style.position = "absolute";
+    this.myElem.style.overflow = "hidden";
     this.myElem.id = this.id;
     this.geo = { x0: 0, y0: 0, scale: 1 }; // Offset from parent
     if (obj.geo) this.geo = Object.assign(this.geo, obj.geo);
@@ -295,5 +296,5 @@ export class CbaseElem {
       child.updateNotes();
     }
   }
-
+  setGeometry() { }
 }

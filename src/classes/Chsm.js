@@ -8,7 +8,7 @@ import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
 import { setDoubleClickTimeout, mousePos } from "src/lib/rootElemListeners";
-import { applyToPoint, fromString, decomposeTSR, inverse } from 'transformation-matrix';
+import { applyToPoint } from 'transformation-matrix';
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -112,10 +112,9 @@ export class Chsm extends CbaseElem {
     hCtx.folio.setSelected(null);
   }
 
-  click(xDown, yDown) {
+  handleClick(xDown, yDown) {
     console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
-    const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
-    let idz = this.makeIdzP(xP, yP);
+    let idz = this.makeIdzP(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const newElem = this.hElems.getElemById(idz.id);
@@ -148,7 +147,7 @@ export class Chsm extends CbaseElem {
     // console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
     // const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
     let idz = this.makeIdzP(xP, yP);
-    console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
+    // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     // if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
@@ -248,7 +247,7 @@ export class Chsm extends CbaseElem {
     const [x, y] = this.pxToMm(xP, yP);
     const idz = this.makeIdz(x, y, myIdz);
     fText.value = `${idz.id} "${idz.zone}" (x:${x.toFixed()}, yz:${y.toFixed()}) (xz:${idz.x.toFixed()}, yz:${idz.y.toFixed()})`;
-    console.log(`[Chsm.makeIdz] matR:${JSON.stringify(this.hCtx.folio.geo.mat)}`);
+    // console.log(`[Chsm.makeIdz] matR:${JSON.stringify(this.hCtx.folio.geo.mat)}`);
     return idz;
   }
 }

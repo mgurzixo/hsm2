@@ -3,40 +3,21 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <!-- <div id="myViewport" class="my-viewport"> -->
-    <div id="M1"></div>
-    <!-- </div> -->
-    <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
-    <div ref="contextAnchor" class="context-anchor">
-      <popup-menu :menu="contextMenu"></popup-menu>
+    <div id="M1">
     </div>
+    <div style="position:absolute;">
+      <div ref="contextAnchor" class="context-anchor">
+        <popup-menu :menu="contextMenu"></popup-menu>
+      </div>
+    </div>
+    <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
+
   </div>
 </template>
 
 <style>
 .invisible {
   display: none;
-}
-
-.my-viewport {
-  left: 0px;
-  top: 0px;
-  width: 100px;
-  height: 100px;
-  overflow: hidden;
-  position: absolute;
-  background-color: transparent;
-  transform-origin: top left;
-
-}
-
-#M1 {
-  /* background-color: chocolate; */
-  width: 0px;
-  height: 0px;
-  overflow: hidden;
-  transform-origin: top left;
-  /* transform: scale(0.5); */
 }
 
 .my-container {
@@ -47,9 +28,10 @@
 
 .context-anchor {
   position: absolute;
+  transform-origin: top left;
   z-index: 100;
-  top: 10px;
-  left: 20px;
+  /* top: 10px;
+  left: 20px; */
 }
 
 .canvas-cursor {
@@ -67,9 +49,10 @@ import NoteDialog from "src/components/NoteDialog.vue";
 import FolioDialog from "src/components/FolioDialog.vue";
 import contextMenu from "src/menus/contextMenu";
 import { setRootElemListeners, removeRootElemListeners } from "src/lib/rootElemListeners";
-import { Chsm, hsm, cursor } from "src/classes/Chsm";
+import { Chsm, hsm, cursor, hCtx } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
-import doc from "pdfkit";
+// import doc from "pdfkit";
+import { applyToPoint } from 'transformation-matrix';
 
 let resizeObserver;
 let rootElem;
@@ -83,10 +66,14 @@ const element = V.ref(null);
 const elementId = V.ref(null);
 
 // mouseX: from start of canvas
-function handleRightClick(mouseX, mouseY, rawMouseX, rawMouseY) {
-  console.log(`[HsmCanvas.handleRightClick] mouseX:${mouseX}`);
-  contextAnchor.value.style.left = rawMouseX + "px";
-  contextAnchor.value.style.top = rawMouseY + "px";
+function handleRightClick(xP, yP) {
+  console.log(`[HsmCanvas.handleRightClick] mouseX:${xP}`);
+  const folio = hCtx.folio;
+  contextAnchor.value.style.transformOrigin = "top left";
+  contextAnchor.value.style.position = "absolute";
+  let [x, y] = applyToPoint(folio.geo.matR, [xP, yP]);
+  contextAnchor.value.style.left = xP + "px";
+  contextAnchor.value.style.top = yP + "px";
   const e = new Event("click"); // Received by q-menu of popup-menu
   contextAnchor.value.dispatchEvent(e);
 }
@@ -100,19 +87,14 @@ V.watch(dialogToggle, (newToggle) => {
   }
 });
 
-function openElementDialog(myElement) {
-  element.value = myElement;
-  elementId.value = myElement.id;
-  console.log(`[HsmCanvas.openElementDialog] elemId:${myElement.id}`);
-  if (myElement.id.startsWith("S")) dialogComponent.value = StateDialog;
-  else if (myElement.id.startsWith("F")) dialogComponent.value = FolioDialog;
-  else if (myElement.id.startsWith("T")) dialogComponent.value = TrDialog;
-  else if (myElement.id.startsWith("N")) dialogComponent.value = NoteDialog;
-  else dialogComponent.value = null;
-  if (dialogComponent.value) dialogToggle.value = true;
-
-  // const e = new Event("click");
-  // contextAnchor.value.dispatchEvent(e);
+function openElementDialog(myDialog, myElement) {
+  console.log(`[HsmCanvas.openElementDialog]`);
+  dialogComponent.value = myDialog;
+  if (dialogComponent.value) {
+    element.value = myElement;
+    elementId.value = myElement.id;
+    dialogToggle.value = true;
+  }
 }
 
 function adjustSizes() {

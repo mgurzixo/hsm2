@@ -70,7 +70,7 @@ const props = defineProps({
 
 V.watch(props.element, (el) => {
   console.log(`[trDialog.watch.element] id:${el.id}`);
-
+  props.element.setGeometry();
 });
 
 V.onMounted(() => {

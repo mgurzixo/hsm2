@@ -9,6 +9,7 @@ import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
 import { applyToPoint, fromString, decomposeTSR, inverse, toCSS, transform, compose } from 'transformation-matrix';
+import FolioDialog from "src/components/FolioDialog.vue";
 
 let noteTo;
 const pxPerMm = 3.78;
@@ -39,7 +40,7 @@ export class Cfolio extends CbaseRegion {
     this.geo.y0 = mat.f;
     this.geo.scale = mat.a;
     this.myElem.style.transform = toCSS(this.geo.mat);
-    console.log(`[Cfolio.setMat] geo:${this.geo}`);
+    // console.log(`[Cfolio.setMat] geo:${this.geo}`);
   }
 
   setFolioDisplay(isActive) {
@@ -89,7 +90,7 @@ export class Cfolio extends CbaseRegion {
         modeRef.value = "";
     }
     const mat = fromString(getComputedStyle(this.myElem).transform);
-    console.log(`[Cfolio.dragStart] e:${mat.e}`);
+    // console.log(`[Cfolio.dragStart] e:${mat.e}`);
     hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: mat });
     // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
   }
@@ -136,10 +137,8 @@ export class Cfolio extends CbaseRegion {
     return myTr;
   }
 
-  async load(folioOptions) {
-    console.log(`[Cfolio.load]`);
-    this.setFolioDisplay(false);
-    // Set initial values
+  setGeometry() {
+    console.log(`[Cfolio.setGeometry]`);
     const s = this.myElem.style;
     const g = this.geo;
     s.top = "0px";
@@ -147,6 +146,15 @@ export class Cfolio extends CbaseRegion {
     s.width = g.width + "mm";
     s.height = g.height + "mm";
     s.background = hsm.settings.styles.folioBackground;
+  }
+
+  async load(folioOptions) {
+    // console.log(`[Cfolio.load]`);
+    this.setFolioDisplay(false);
+    // Set initial values
+    const s = this.myElem.style;
+    const g = this.geo;
+    this.setGeometry();
     s.transformOrigin = "top left";
     this.setMat({ a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm }, false);
     return; // ICI
@@ -326,5 +334,9 @@ export class Cfolio extends CbaseRegion {
     // }
     // console.log(`[Cfolio.makeIdz] T id: ${ bestTIdz.id; } dist2P: ${ bestTIdz.dist2P.toFixed(); } zone: ${ bestTIdz.zone; } type: ${ bestTIdz.type; } `);
     return idz;
+  }
+
+  openDialog() {
+    hsm.openDialog(FolioDialog, this);
   }
 }

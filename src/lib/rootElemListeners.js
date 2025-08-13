@@ -109,7 +109,6 @@ export function handleMouseUp(e) {
       hsm.dragEnd(dxL - dragOffsetS[0], dyL - dragOffsetS[1]);
       isDragging = false;
     } else {
-      const [x, y] = [U.pToMmL(xL), U.pToMmL(yL)];
       // console.log(`[canvasListeners.handleMouseUp] x:${x} y:${y} Got click`);
       // console.log(`[canvasListeners.handleMouseUp] inDoubleClick:${inDoubleClick}`);
       if (inDoubleClick) {
@@ -118,14 +117,14 @@ export function handleMouseUp(e) {
         clickTimeoutId = null;
         // console.log(`[canvasListeners.handleMouseUp] doubleClick`);
         // hsm.doubleClick(x, y);
-        hsm.handleDoubleClick(x, y);
+        hsm.handleDoubleClick(xL, yL);
       }
       else {
         console.log(`[canvasListeners.handleMouseUp] Starting clickTimeout`);
         clickTimeoutId = setTimeout(() => {
           clickTimeoutId = null;
           inDoubleClick = false;
-          hsm.click(x, y);
+          hsm.handleClick(xL, yL);
         }, doubleClickTimeout);
       }
     }
