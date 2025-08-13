@@ -84,7 +84,8 @@
     {
       id: "F1",
       name: "Main Folio",
-      geo: { x0: 0, y0: 0, width: 210, height: 297, scale: 1 },
+      // geo: { x0: 0, y0: 0, width: 210, height: 297, scale: 1 },
+      geo: { x0: 10, y0: 0, width: 100, height: 100, scale: 0.5 },
       notes: [
         {
           geo: { x0: 20, y0: 5, width: 100, height: 20 },

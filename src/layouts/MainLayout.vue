@@ -10,7 +10,7 @@
       </q-tabs>
       <hsm-canvas id="myCanvas" class="col-grow"></hsm-canvas>
       <div class="my-footer col-auto q-px-xs">
-        {{ fText }}
+        {{ fText }}&nbsp;
       </div>
     </div>
   </div>
@@ -22,7 +22,6 @@
 }
 
 .my-footer {
-  /* height: 2em; */
   border-top: solid 1px black;
   margin-top: 1px;
   overflow: hidden;

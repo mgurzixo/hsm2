@@ -5,8 +5,6 @@ import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 const inchInMm = 25.4;
-const pxPerMm = 0.378;
-
 
 export class CbaseElem {
   constructor(parent, obj, type) {

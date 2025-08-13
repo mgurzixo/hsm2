@@ -28,6 +28,7 @@
     "pako": "^2.1.0",
     "pdfkit": "^0.17.1",
     "quasar": "^2.16.0",
+    "transformation-matrix": "^3.0.0",
     "vue": "^3.4.18",
     "vue-router": "^4.0.0"
   },

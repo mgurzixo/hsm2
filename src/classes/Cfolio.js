@@ -8,6 +8,7 @@ import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
+import { applyToPoint, fromString, decomposeTSR, inverse, toCSS, transform, compose } from 'transformation-matrix';
 
 let noteTo;
 const pxPerMm = 3.78;
@@ -27,50 +28,63 @@ export class Cfolio extends CbaseRegion {
     this.notes = [];
     this.myOldScale = 0;
     this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
-    this.myElem.style.transformOrigin = `top left`;
+    this.myElem.style.transformOrigin = `0px 0px`;
     this.myElem.style.overflow = `hidden`;
-    this.prevTransform = { scale: 1, x0S: 0, y0S: 0 };
-    // this.parent.myElem.style.transform = "scale(0.2)";
+    this.prevTransform = { scale: 1, xT: 0, yT: 0 };
+    this.geo.xT = 0;
+    this.geo.yT = 0;
+    this.geo.xTO = 0;
+    this.geo.yTO = 0;
+    this.doTransform();
     // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
+  }
+
+  doTransform() {
+    const g = this.geo;
+    this.myElem.style.transformOrigin = `${g.xTO}px ${g.yTO}px`;
+    this.myElem.style.transform = `matrix(${g.scale},0,0,${g.scale},${g.xT},${g.yT})`;
   }
 
   async wheelP(xS, yS, dyS) {
     const deltas = -dyS / hsm.settings.deltaMouseWheel;
-    const s0 = this.geo.scale;
+    const g = this.geo;
+    const mat0 = fromString(getComputedStyle(this.myElem).transform);
+    const s0 = mat0.a;
     let s1 = s0 + deltas * hsm.settings.deltaScale;
     if (s1 >= 1.5) s1 += deltas * hsm.settings.deltaScale;
     s1 = Math.min(Math.max(0.1, s1), 5);
     const k = s1 / s0;
-
-    // Compute the new translation to keep (xP, yP) fixed in screen coords
-    const t = this.prevTransform;
+    // Compute the new translation to keep (xS, yS) fixed in screen coords
+    // const t = this.prevTransform;
     // The translation part of a homothetic transform at (xP, yP):
     // [s1 0 0 s1 tx ty] where
-    // tx = (1 - k) * xP + k * t.x0S
-    // ty = (1 - k) * yP + k * t.y0S
-    const txP = (1 - k) * xS + k * t.x0S;
-    const tyP = (1 - k) * yS + k * t.y0S;
-
-    this.myElem.style.transform = `matrix(${s1},0,0,${s1},${txP},${tyP})`;
-    this.prevTransform = { x0S: txP, y0S: tyP };
-    this.geo.scale = s1;
-    hsm.draw();
+    // tx = (1 - k) * xP + k * t.xT
+    // ty = (1 - k) * yP + k * t.yT
+    const matW = { a: k, b: 0, c: 0, d: k, e: xS * (1 - k), f: yS * (1 - k) };
+    // console.log(`[Cfolio.wheelP] k:${k} xS:${xS} dxP:${dxP}`);
+    const mat1 = compose(matW, mat0);
+    this.myElem.style.transform = toCSS(mat1);
   }
 
   draw(dCtx) {
-    // console.log(`[Cfolio.draw] Drawing ${this.id} this.geo.xx0:${this.geo.xx0} dCtx.xx0: ${dCtx.xx0} ----------------------`);
-    const s = this.myElem.style;
-    const g = this.geo;
-    let l = this.geo.scale;
-    // this.myElem.style.border = `solid 1px red`;
-    // g.xx0 = dCtx.xx0 + g.x0;
-    // g.yy0 = dCtx.yy0 + g.y0;
-    // console.log(`[Cfolio.draw] Drawing ${this.id} scale:${l}`);
-    s.top = (g.y0 * l) + "mm";
-    s.left = (g.x0 * l) + "mm";
-    s.width = (g.width * l) + "mm";
-    s.height = (g.height * l) + "mm";
-    s.background = hsm.settings.styles.folioBackground;
+    // // console.log(`[Cfolio.draw] Drawing ${this.id} this.geo.xx0:${this.geo.xx0} dCtx.xx0: ${dCtx.xx0} ----------------------`);
+    // const s = this.myElem.style;
+    // const g = this.geo;
+    // let l = this.geo.scale;
+    // if (this.isDirty) {
+    //   // g.mat = fromString(getComputedStyle(this.myElem).transform);
+    //   // this.myElem.style.border = `solid 1px red`;
+    //   // g.xx0 = dCtx.xx0 + g.x0;
+    //   // g.yy0 = dCtx.yy0 + g.y0;
+    //   // console.log(`[Cfolio.draw] Drawing ${this.id} scale:${l}`);
+    //   s.top = (g.y0 * l) + "mm";
+    //   s.left = (g.x0 * l) + "mm";
+    //   s.width = (g.width * l) + "mm";
+    //   s.height = (g.height * l) + "mm";
+    //   s.background = hsm.settings.styles.folioBackground;
+    //   this.isDirty = false;
+    // }
+    // return;
   }
 
   async dragStart(xS, yS) {
@@ -89,74 +103,34 @@ export class Cfolio extends CbaseRegion {
       default:
         modeRef.value = "";
     }
-    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M" });
-    // Save the base translation at drag start
-    this.dragBase = { x0S: this.prevTransform.x0S, y0S: this.prevTransform.y0S };
+    const mat = fromString(getComputedStyle(this.myElem).transform);
+    console.log(`[Cfolio.dragStart] e:${mat.e}`);
+    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: mat });
     // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
   }
 
   drag(dxS, dyS) {
     // dxS, dyS are in screen (pixel) space
-    const s = this.geo.scale;
+    const g = this.geo;
     const d = hCtx.getDragCtx();
-    // Use the base translation at drag start
-    // const base = this.dragBase || { x0S: 0, y0S: 0 };
-    // const newX0S = base.x0S + dxS;
-    // const newY0S = base.y0S + dyS;
-    // this.myElem.style.transform = `matrix(${s},0,0,${s},${newX0S},${newY0S})`;
-    this.geo.x0 = d.x0 + U.pxToMm(dxS);
-    this.geo.y0 = d.y0 + U.pxToMm(dyS);
-    // this.geo.x0 = d.x0;
-    // this.geo.y0 = d.y0;
-    // console.log(`[Cfolio.makeIdz] dxS:${dxS} U.pxToMm(dxS):${U.pxToMm(dxS)}`);
+    let mat = {};
+    Object.assign(mat, d.mat);
+    mat.e += dxS;
+    mat.f += dyS;
+    // console.log(`[Cfolio.drag] mat1:${JSON.stringify(mat)}`);
+    this.myElem.style.transform = toCSS(mat);
   }
 
   dragEnd(dxS, dyS) {
-    // On drag end, commit the translation to geo.x0/y0 and update prevTransform
-    const s = this.geo.scale;
+    this.drag(dxS, dyS);
+    const g = this.geo;
     const d = hCtx.getDragCtx();
-
-    this.geo.x0 = d.x0 + U.pxToMm(dxS);
-    this.geo.y0 = d.y0 + U.pxToMm(dyS);
-
-    const base = this.dragBase || { x0S: 0, y0S: 0 };
-    const newX0S = base.x0S + U.pxToMm(dxS);
-    const newY0S = base.y0S + U.pxToMm(dyS);
-    // Commit logical translation in mm (screen delta divided by scale)
-    // this.geo.y0 = d.x0 + 0.1 * U.pxToMm(dyS);
-    // Set DOM transform to new base
-    this.myElem.style.transform = `matrix(${s},0,0,${s},${newX0S},${newY0S})`;
-    this.prevTransform = { x0S: newX0S, y0S: newY0S };
-    this.dragBase = undefined;
+    g.x0 += dxS / U.pxPerMm;
+    g.y0 += dyS / U.pxPerMm;
+    // this.myElem.style.transform = toCSS(d.mat);
+    // this.isDirty = true;
+    // this.draw();
     return true;
-  }
-
-  makeIdz(x, y, idz) {
-    // console.warn(`[Cfolio.makeIdz] [xP:${xP?.toFixed()}, yP: ${yP?.toFixed()}] xx0:${this.geo.xx0}`);
-    // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
-    // console.warn(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
-    if (x < this.geo.x0 || y < this.geo.y0) return idz;
-    if (x < this.geo.x0 || y < this.geo.y0) return idz;
-    idz = { id: this.id, zone: "M", x: x, y: y };
-    // // TODO xP
-    // for (let note of this.notes) {
-    //   idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    // }
-    // for (let child of this.children) {
-    //   idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    // }
-    // // console.log(`[Cfolio.makeIdz] S id: ${ idz.id; } zone: ${ idz.zone; } `);
-    // let bestTIdz = { dist2P: Number.MAX_VALUE };
-    // for (let tr of this.trs) {
-    //   const tIdz = tr.makeIdz(x, y, idz);
-    //   if (tIdz.dist2P <= bestTIdz.dist2P) bestTIdz = tIdz;
-    //   // if (tr.id == "T9") console.log(`[Cfolio.makeIdz](${ tIdz.id }) dist2P: ${ tIdz.dist2P.toFixed(); } zone: ${ tIdz.zone; } type: ${ tIdz.type; } `);
-    // }
-    // if (bestTIdz.dist2P < hsm.settings.cursorMarginP) {
-    //   idz = bestTIdz;
-    // }
-    // // console.log(`[Cfolio.makeIdz] T id: ${ bestTIdz.id; } dist2P: ${ bestTIdz.dist2P.toFixed(); } zone: ${ bestTIdz.zone; } type: ${ bestTIdz.type; } `);
-    return idz;
   }
 
   setSelected(val) {
@@ -187,6 +161,13 @@ export class Cfolio extends CbaseRegion {
 
   async load(folioOptions) {
     // console.log(`[Cfolio.load] xx0:${this.geo.xx0}`);
+    const s = this.myElem.style;
+    const g = this.geo;
+    s.width = g.width + "mm";
+    s.height = g.height + "mm";
+    const mat = { a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm };
+    s.background = hsm.settings.styles.folioBackground;
+    this.myElem.style.transform = toCSS(mat);
     return; // ICI
     for (let stateOption of folioOptions.states) {
       const myState = new Cstate(this, stateOption);
@@ -204,6 +185,7 @@ export class Cfolio extends CbaseRegion {
 
   async onLoaded() {
     // console.log(`[Cfolio.onLoaded] xx0:${this.geo.xx0}`);
+    this.isDirty = true;
     return; // ICI
     for (let child of this.children) {
       await child.onLoaded();
@@ -336,4 +318,39 @@ export class Cfolio extends CbaseRegion {
     if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
     return true;
   }
-};;;
+
+  makeIdz(x, y, idz) {
+    // console.warn(`[Cfolio.makeIdz] [x:${x?.toFixed()}, y: ${y?.toFixed()}]`);
+    // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
+    // console.warn(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
+    const g = this.geo;
+    if (!g.mat) {
+      //  g.mat = fromString(getComputedStyle(this.myElem).transform);
+      let s = getComputedStyle(this.myElem).transform;
+      if (s) g.mat = fromString(s);
+      // console.log(`[Cfolio.makeIdz] myElem:${this.myElem} s:"${s}"`);
+    }
+    if (x < g.x0 || y < g.y0) return idz;
+    if (x > g.x0 + g.width || y > g.y0 + g.height) return idz;
+    idz = { id: this.id, zone: "M", x: x, y: y };
+    // // TODO xP
+    // for (let note of this.notes) {
+    //   idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+    // }
+    // for (let child of this.children) {
+    //   idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+    // }
+    // // console.log(`[Cfolio.makeIdz] S id: ${ idz.id; } zone: ${ idz.zone; } `);
+    // let bestTIdz = { dist2P: Number.MAX_VALUE };
+    // for (let tr of this.trs) {
+    //   const tIdz = tr.makeIdz(x, y, idz);
+    //   if (tIdz.dist2P <= bestTIdz.dist2P) bestTIdz = tIdz;
+    //   // if (tr.id == "T9") console.log(`[Cfolio.makeIdz](${ tIdz.id }) dist2P: ${ tIdz.dist2P.toFixed(); } zone: ${ tIdz.zone; } type: ${ tIdz.type; } `);
+    // }
+    // if (bestTIdz.dist2P < hsm.settings.cursorMarginP) {
+    //   idz = bestTIdz;
+    // }
+    // console.log(`[Cfolio.makeIdz] T id: ${ bestTIdz.id; } dist2P: ${ bestTIdz.dist2P.toFixed(); } zone: ${ bestTIdz.zone; } type: ${ bestTIdz.type; } `);
+    return idz;
+  }
+}

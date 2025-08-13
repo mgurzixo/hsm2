@@ -2,12 +2,13 @@
 
 import * as V from "vue";
 import * as U from "src/lib/utils";
+import { fText } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
 import { setDoubleClickTimeout, mousePos } from "src/lib/rootElemListeners";
-import { XYZ_D50 } from "colorjs.io/fn";
+import { applyToPoint, fromString, decomposeTSR, inverse } from 'transformation-matrix';
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -113,7 +114,7 @@ export class Chsm extends CbaseElem {
   click(xDown, yDown) {
     console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
     const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
-    let idz = this.makeIdz(xP, yP);
+    let idz = this.makeIdzP(xP, yP);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const newElem = this.hElems.getElemById(idz.id);
@@ -129,13 +130,13 @@ export class Chsm extends CbaseElem {
       hCtx.setSelectedId(newElem.id);
       newElem.setSelected(true);
     }
-    idz = this.makeIdz(xDown, yDown);
+    idz = this.makeIdzP(xDown, yDown);
     this.draw();
     this.setCursor();
   }
 
   handleDoubleClick(xDown, yDown, rawMouseX, rawMouseY) {
-    let idz = this.makeIdz(xDown, yDown);
+    let idz = this.makeIdzP(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
@@ -145,17 +146,18 @@ export class Chsm extends CbaseElem {
   async dragStart(xP, yP) {
     // console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
     // const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
-    let idz = this.makeIdz(xP, yP);
-
+    let idz = this.makeIdzP(xP, yP);
     console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
-    if (idz.id == this.id) return;
+    // if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
     // console.log(`[Chsm.dragStart] elem:${elem?.id} Mode:'${modeRef.value}'`);
     const mode = modeRef.value;
     switch (mode) {
       case "":
-        await elem.dragStart();
+        // folio is responsible when dragging background
+        if (idz.id == this.id) await hCtx.folio.dragStart(xP, yP);
+        else await elem.dragStart();
         break;
       case "inserting-state":
         if (elem.canInsertState(idz)) await elem.dragStart();
@@ -176,17 +178,19 @@ export class Chsm extends CbaseElem {
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
     // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
-    if (dragCtx.id == this.id) return;
-    const elem = this.hElems.getElemById(dragCtx.id);
-    elem.drag(dxS, dyS);
+    // if (dragCtx.id == this.id) return;
+    if (dragCtx.id == this.id) hCtx.folio.drag(dxS, dyS);
+    else {
+      const elem = this.hElems.getElemById(dragCtx.id);
+      elem.drag(dxS, dyS);
+    }
     this.draw();
     // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()} zone:${this.idz().zone}`);
     this.setCursor();
   }
 
-  dragEnd(dx0, dy0) {
-    const [dx, dy] = [dx0 * U.getScale(), dy0 * U.getScale()];
-    const idz = this.idz();
+  dragEnd(dxS, dyS) {
+    const [dx, dy] = [dxS * U.getScale(), dyS * U.getScale()];
     // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
     if (modeRef.value != "") {
       modeRef.value = "";
@@ -194,17 +198,22 @@ export class Chsm extends CbaseElem {
       this.setCursor();
       return;
     }
-    if (idz.id == this.id) return;
-    const elem = this.hElems.getElemById(idz.id);
-    const dragEnded = elem.dragEnd(dx, dy);
-    if (dragEnded) hCtx.dragEnd();
-    // else elem.resetDrag() will reset it
+    const dragCtx = hCtx.getDragCtx();
+    if (!dragCtx) return;
+    if (dragCtx.id == this.id) hCtx.folio.dragEnd(dxS, dyS);
+    else {
+      const elem = this.hElems.getElemById(dragCtx.id);
+      const dragEnded = elem.dragEnd(dx, dy);
+      if (dragEnded) hCtx.dragEnd();
+      // else elem.resetDrag() will reset it
+    }
     this.draw();
     this.setCursor();
   }
 
-  mouseMove(x, y) {
-    const idz = this.makeIdz(x, y);
+  mouseMove(xL, yL) {
+    // console.log(`[Chsm.mouseMove] xL:${xL.toFixed()} yL:${yL.toFixed()}`);
+    const idz = this.makeIdzP(xL, yL);
     hCtx.setIdz(idz);
     this.setCursor();
   }
@@ -219,13 +228,30 @@ export class Chsm extends CbaseElem {
     hCtx.folio.draw(dCtx);
   }
 
-  wheelP(x, y, dyP) {
-    hCtx.folio.wheelP(x, y, dyP);
+  wheelP(xS, yS, dyP) {
+    hCtx.folio.wheelP(xS, yS, dyP);
   }
 
-  makeIdz(x, y, idz = { id: hsm.id, zone: "M", x: x, y: y }) {
+  makeIdz(x, y, idz = { id: this.id, zone: "M", x: x, y: y }) {
     idz = hCtx.folio?.makeIdz(x, y, idz);
-    // console.log(`[Chsm.makeIdz] id:${idz.id} (x:${x.toFixed(2)}, y:${y.toFixed(2)}) zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
+    // console.warn(`[Chsm.makeIdz] id:${idz.id} (x:${x.toFixed(2)}, y:${y.toFixed(2)}) zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
+    return idz;
+  }
+
+  makeIdzP(xP, yP, myIdz) {
+    const g = hCtx?.folio?.geo;
+    const s = g.scale;
+    const el = this.hCtx?.folio.myElem;
+    const mat = fromString(getComputedStyle(el).transform);
+    const matR = inverse(mat);
+    const [x, y] = applyToPoint(mat, [xP / U.pxPerMm, yP / U.pxPerMm]);
+    // const [x, y] = applyToPoint(mat, [xP, yP]);
+    // console.log(`[Chsm.makeIdzP] (xP:${xP.toFixed(2)}, yP:${yP.toFixed(2)})=>(x:${x.toFixed(2)}, y:${yP.toFixed(2)})`);
+    const TSR = decomposeTSR(mat);
+    // console.log(`[Chsm.makeIdzP] TSR:${JSON.stringify(decomposeTSR(mat))}`);
+    console.log(`[Chsm.makeIdzP] Mat:${JSON.stringify(mat)}`);
+    const idz = this.makeIdz(x, y, myIdz);
+    fText.value = `${idz.id} "${idz.zone}" (xP:${xP.toFixed(0)}, yP:${yP.toFixed(0)}) => (x:${idz.x.toFixed(0)}, y:${idz.y.toFixed(0)}) e*:${(mat.e / U.pxPerMm).toFixed()} TransX:${(TSR.translate.tx / U.pxPerMm).toFixed()} x0:${g.x0.toFixed()}`;
     return idz;
   }
 }
