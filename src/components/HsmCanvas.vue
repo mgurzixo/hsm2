@@ -109,18 +109,22 @@ function adjustSizes() {
 }
 
 V.onUnmounted(() => {
+  console.log(`[HsmCanvas.onUnmounted]`);
+  rootElem.innerHTML = ''; // Avoid previous vals with HMR
   removeRootElemListeners(rootElem);
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;;
+    console.log(`[HsmCanvas.onUnmounted] destroying`);
     if (hsm) hsm.destroy();
   }
 });
 
 V.onMounted(async () => {
   await U.nextTick();
+  console.warn(`[HsmCanvas.onMounted] hello`);
   rootElem = document.getElementById("M1");
-  // vpElem = document.getElementById("myViewport");
+  rootElem.innerHTML = ''; // Avoid previous vals with HMR
   adjustSizes();
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(rootElem.parentElement);

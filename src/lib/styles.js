@@ -44,7 +44,7 @@ export function stateStyles(baseColor) {
 
   const n = hsm.settings.styles.tag;
   return {
-    bg: bg.to("srgb") + "",
+    bg: bg + "",
     border: border.to("srgb") + "",
     borderWidth: s.border.lineWidth,
     borderSelectedWidth: s.borderSelected.lineWidth,

@@ -7,9 +7,9 @@ import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 const inchInMm = 25.4;
 
 export class CbaseElem {
-  constructor(parent, obj, type) {
-    // console.log(`[CbaseElem.constructor] type:${type}`);
-    let id = obj?.id;
+  constructor(parent, options, type) {
+    // console.log(`[CbaseElem.constructor] type:${type} elem:${options.elem}`);
+    let id = options?.id;
     if (type == "M") id = "M1";
     else {
       if (!id) {
@@ -20,28 +20,31 @@ export class CbaseElem {
     }
     this.id = id;
     hsm?.hElems?.insertElem(this);
-    this.name = obj?.name || `S${id}`;
+    this.name = options?.name || `S${id}`;
     this.parent = parent;
     this.children = [];
-    this.myElem = obj.elem;
-    this.myElem.textContent = '';
+    if (options.elem) this.myElem = options.elem;
+    else {
+      this.myElem = document.createElement("div");
+      this.parent.myElem.append(this.myElem);
+    }
     this.myElem.style.position = "absolute";
     this.myElem.style.overflow = "hidden";
     this.myElem.id = this.id;
     this.geo = { x0: 0, y0: 0, scale: 1 }; // Offset from parent
-    if (obj.geo) this.geo = Object.assign(this.geo, obj.geo);
+    if (options.geo) this.geo = Object.assign(this.geo, options.geo);
     const bb = this.myElem.getBoundingClientRect();
     // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} bb.left:${bb.left}`);
     // [xx0,yy0] coords in mm from viewport
     this.geo.xx0 = U.pxToMm(bb.left);
     this.geo.yy0 = U.pxToMm(bb.top);
     // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${this.geo.x0.toFixed(2)}, y0:${this.geo.y0.toFixed(2)}] [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
-    if (obj.color) this.color = obj.color;
-    else if (obj.settings?.styles?.defaultColor) this.color = obj.settings.styles.defaultColor;
+    if (options.color) this.color = options.color;
+    else if (options.settings?.styles?.defaultColor) this.color = options.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
     else this.color = "grey";
     this.isSelected = false;
-    if (obj.justCreated) this.justCreated = obj.justCreated;
+    if (options.justCreated) this.justCreated = options.justCreated;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 

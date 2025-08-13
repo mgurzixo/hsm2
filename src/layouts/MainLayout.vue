@@ -80,7 +80,7 @@ function adjustSizes() {
   const scale = 1;
   const bb = canvasElem.value.getBoundingClientRect();
   const v = canvasElem.value.style;
-  // console.log(`[HsmCanvas.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
+  // console.log(`[MainLayout.adjustSizes] bb.left:${bb.left.toFixed()} bb.top:${bb.top.toFixed()}`);
   v.left = bb.left + "px";
   v.top = bb.top + "px";
   v.width = bb.width + "px";
@@ -90,12 +90,13 @@ function adjustSizes() {
 V.onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect();
-    resizeObserver = null;;
+    resizeObserver = null;
   }
 });
 
 V.onMounted(async () => {
   await U.nextTick();
+  // console.log(`[MainLayout.onMounted] Hello0`);
   canvasElem.value = document.getElementById("myCanvas");
   adjustSizes();
   resizeObserver = new ResizeObserver(adjustSizes);

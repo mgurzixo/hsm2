@@ -16,12 +16,9 @@ class CbaseState extends CbaseElem {
     this.isRevertingDrag = false;
     this.parentElem = options.parentElem;
     // console.log(`[Cstate.constructor] parentElem:${this.parentElem}`);
-    this.myElem = document.createElement("div");
-    // this.parentElem.append(this.myElem); //ICI
     this.myElem.id = this.id;
     // console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
   }
-
 
   isSubstate(superstateId) {
     for (let state = this; state.parent; state = state.parent) {
@@ -89,12 +86,54 @@ export class Cstate extends CbaseState {
     myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateTitleHeightMm;
   }
 
+  setGeometry() {
+    const se = this.myElem.style;
+    const g = this.geo;
+    se.top = g.y0 + "mm";
+    se.left = g.x0 + "mm";
+    se.width = g.width + "mm";
+    se.height = g.height + "mm";
+    se.borderRadius = hsm.settings.stateRadiusMm + "mm";
+    const s = this.styles;
+    // Draw border
+    let borderWidth = s.borderWidth;
+    if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
+    else if (this.isSelected) borderWidth = s.borderSelectedWidth;
+    let borderColor = s.border;
+    if (hCtx.getErrorId() == this.id) borderColor = s.borderError;
+    se.border = `solid ${borderWidth}px  ${borderColor}`;
+    // Draw state background
+    se.background = s.bg;
+    console.log(`[Cstate.setGeometry] bg:${s.bg} background:${se.backgroundColor}`);
+    // Title elem
+    let th = hsm.settings.stateTitleHeightMm;
+    if (th < hsm.settings.stateRadiusMm) th = hsm.settings.stateRadiusMm;
+    const te = document.createElement("div");
+    this.titleElem = te;
+    this.myElem.append(te);
+    te.style.width = "100%";
+    te.style.height = th + "mm";
+    te.style.borderBottom = `solid ${s.titleLineWidth}px ${s.titleLine}`;
+    // Draw state title background
+    const tbg = `linear-gradient(${s.titleBgs[0]}, ${s.titleBgs[1]}`;
+    console.log(`[Cstate.draw] tbg:${tbg}`);
+    te.style.backgroundImage = tbg;
+    // Draw title text
+    te.style.font = s.titleTextFont;
+    te.style.fontSize = (s.titleTextSizePc / 100) * th + "mm";
+    te.style.color = s.titleText;
+    te.innerHTML = `<div style="height:100%; display:flex; align-items: center; justify-content:center;">${this.id}: ${this.name}</div></div>`;
+    for (let child of this.children) child.setGeometry();
+  }
+
   async load(stateOptions) {
-    // console.log(`[Cstate.load] regions:${stateOptions?.regions}`);
+    console.log(`[Cstate.load] regions:${stateOptions?.regions
+      } `);
     this.setStyles();
+    this.setGeometry();
     if (!stateOptions?.regions) return;
     for (let id of Object.keys(stateOptions.regions)) {
-      // console.log(`[Cstate.load] RegionId:${id}`);
+      // console.log(`[Cstate.load] RegionId:${ id; } `);
       const regionOptions = stateOptions.regions[id];
       this.addRegion(regionOptions);
     }
@@ -125,12 +164,12 @@ export class Cstate extends CbaseState {
     for (let child of this.children) {
       bb = child.getChildrenBB(bb);
     }
-    // console.log(`[Cstate.getGrandchildrenBB] id:${this.id} bb:${JSON.stringify(bb)}`);
+    // console.log(`[Cstate.getGrandchildrenBB] id:${ this.id; } bb:${ JSON.stringify(bb); } `);
     return bb;
   }
 
   async insertState(x, y) {
-    // console.log(`[Cstate.insertState] Inserting state x:${x.toFixed()}`);
+    // console.log(`[Cstate.insertState] Inserting state x:${ x.toFixed(); } `);
     if (!this.children[0]) {
       const rid = "R" + hsm.newSernum();
       const regionOptions = {
@@ -163,7 +202,7 @@ export class Cstate extends CbaseState {
       justCreated: true,
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
-    // console.log(`[Cstate.insertState] New state id:${myState?.id} parent:${myState.parent}`);
+    // console.log(`[Cstate.insertState] New state id:${ myState?.id; } parent:${ myState.parent; } `);
 
     this.children[0].children.push(myState);
     modeRef.value = "";
@@ -177,7 +216,7 @@ export class Cstate extends CbaseState {
   }
 
   async insertNote(x, y) {
-    // console.log(`[Cstate.insertState] Inserting note x:${x.toFixed()}`);
+    // console.log(`[Cstate.insertState] Inserting note x:${ x.toFixed(); } `);
     const id = "N" + hsm.newSernum();
     const w = hsm.settings.noteMinWidth;
     const h = hsm.settings.noteMinHeight;
@@ -196,7 +235,7 @@ export class Cstate extends CbaseState {
     };
     setDragOffset([w, h]);
     const myNote = await this.addNote(noteOptions);
-    console.log(`[Cfolio.insertNote] New note id:${myNote?.id}`);
+    console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
     hsm.draw();
     modeRef.value = "";
@@ -222,7 +261,8 @@ export class Cstate extends CbaseState {
       x = r + len * pos;
       if (side == "B") y += this.geo.height;
     }
-    // console.log(`[Cstate.makeTrXY] side:${side} pos:${pos.toFixed(2)} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
+    // console.log(`[Cstate.makeTrXY] side:${ side; } pos:${ pos.toFixed(2); } (x: ${ x.toFixed(1);
+    // } y: ${ y.toFixed(1)})`);
     return [x, y];
   }
 
@@ -241,17 +281,17 @@ export class Cstate extends CbaseState {
   }
 
   async insertTr(x, y) {
-    // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
-    // console.log(`[Cstate.insertTr] idz:${JSON.stringify(this.idz())}`);
+    // console.log(`[Cstate.insertTr] Inserting tr x:${ x.toFixed(); } y:${ y.toFixed(); } `);
+    // console.log(`[Cstate.insertTr] idz:${ JSON.stringify(this.idz()); } `);
     const idz = this.idz();
     const side = idz.zone;
     const pos2 = this.makeTrPos(side, x, y);
-    // console.log(`[Cstate.insertTr] pos2:${pos2.toFixed(2)}`);
+    // console.log(`[Cstate.insertTr] pos2:${ pos2.toFixed(2); } `);
     let [xp, yp] = [x, y];
     if (side == "L" || side == "R") yp -= hsm.settings.initialTransLength;
     else xp -= hsm.settings.initialTransLength;
     const pos1 = this.makeTrPos(side, xp, yp);
-    // console.log(`[Cstate.insertTr] (x:${(x - this.geo.x0).toFixed(1)} y:${(y - this.geo.y0).toFixed(1)})`);
+    // console.log(`[Cstate.insertTr](x: ${(x - this.geo.x0).toFixed(1)} y: ${(y - this.geo.y0).toFixed(1)})`);
     const trOptions = {
       segments: [],
       from: {
@@ -273,7 +313,7 @@ export class Cstate extends CbaseState {
       xx0 += parent.geo.x0;
       yy0 += parent.geo.y0;
     }
-    console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id}`);
+    console.log(`[Cstate.insertTr](${this.id}) it.id:${myTr?.id} `);
     const trDragCtx = {
       id: myTr.id,
       zone: "TO",
@@ -286,7 +326,7 @@ export class Cstate extends CbaseState {
         segments: structuredClone(myTr.segments)
       }
     };
-    console.log(`[Cstate.insertTr] trDragCtx:${JSON.stringify(trDragCtx)}`);
+    console.log(`[Cstate.insertTr] trDragCtx:${JSON.stringify(trDragCtx)} `);
     hCtx.setDragCtx(trDragCtx);
 
 
@@ -306,9 +346,9 @@ export class Cstate extends CbaseState {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // [x,y] in mm in this.geo.x/y frame
-    // console.log(`[Cstate.dragStart] (${this.id}) x:${x?.toFixed()}`);
+    // console.log(`[Cstate.dragStart](${ this.id }) x:${ x?.toFixed(); } `);
     // console.log(
-    //   `[Cstate.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
+    //   `[Cstate.dragStart] ${ this.id; } yy:${ yy?.toFixed(); } y:${ y?.toFixed(); } y0:${ this.geo.y0; } `,
     // );
     switch (modeRef.value) {
       case "inserting-state": {
@@ -339,10 +379,10 @@ export class Cstate extends CbaseState {
     for (let tr of hCtx.folio.trs) {
       if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
         dragCtx.segments0[tr.id] = structuredClone(tr.segments);
-        // console.log(`[Cstate.dragStart] trId:${tr.id} segments:${dragCtx.segments0[tr.id]}`);
+        // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.segments0[tr.id]; } `);
       }
     }
-    // console.log(`[Cstate.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
+    // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
     this.parent.raiseChildR(this.id);
     hsm.adjustChange(this.id);
@@ -351,15 +391,15 @@ export class Cstate extends CbaseState {
 
   drag(dx, dy) {
     const idz = this.idz();
-    // console.log(`[Cstate.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
+    // console.log(`[Cstate.drag](${ this.id }) dx:${ dx.toFixed(); } dy:${ dy.toFixed(); } `);
     const dragCtx = hCtx.getDragCtx();
     let x0 = dragCtx.x0;
     let y0 = dragCtx.y0;
     let width = dragCtx.width;
     let height = dragCtx.height;
-    // console.log(`[Cstate.drag] dragCtx:${JSON.stringify(dragCtx)}`);
+    // console.log(`[Cstate.drag] dragCtx:${ JSON.stringify(dragCtx); } `);
     if (idz.zone == "M") {
-      // console.log(`[Cstate.drag] id:${this.id} idz.zone:${idz.zone}`);
+      // console.log(`[Cstate.drag] id:${ this.id; } idz.zone:${ idz.zone; } `);
       dx = U.myClamp(
         dx,
         x0,
@@ -381,7 +421,7 @@ export class Cstate extends CbaseState {
         if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
         if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
         // console.log(
-        //   `[Cstate.drag] id:${this.id} y0:${y0} dy:${dy} BB.y0:${this.grandchildrenBB.y0}`,
+        //   `[Cstate.drag] id:${ this.id; } y0:${ y0; } dy:${ dy; } BB.y0:${ this.grandchildrenBB.y0; } `,
         // );
         if (this.grandchildrenBB.y0 && dy > this.grandchildrenBB.y0 - hsm.settings.minDistanceMm)
           dy = this.grandchildrenBB.y0 - hsm.settings.minDistanceMm;
@@ -425,9 +465,9 @@ export class Cstate extends CbaseState {
     }
 
     // console.log(
-    //   `[Cstate.drag] (${this.id}) type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
+    //   `[Cstate.drag](${ this.id }) type:${ idz.zone; } Cx0:${ dragCtx.x0.toFixed(); } dx:${ dx.toFixed(); } x0:${ x0.toFixed(); } `,
     // );
-    // console.log(`[Cstate.drag] (${this.id}) Parent id:${this.parent.id}`);
+    // console.log(`[Cstate.drag](${ this.id }) Parent id:${ this.parent.id; } `);
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
@@ -444,7 +484,7 @@ export class Cstate extends CbaseState {
   }
 
   checkOpenDialogAndEndDrag() {
-    // console.log(`[Cstate.checkOpenDialogAndEndDrag] (${this.id}) justCreated:${this.justCreated}`);
+    // console.log(`[Cstate.checkOpenDialogAndEndDrag](${ this.id }) justCreated:${ this.justCreated; } `);
     if (this.justCreated == true) {
       hsm.openDialog(this);
       delete this.justCreated;
@@ -457,13 +497,13 @@ export class Cstate extends CbaseState {
     const dragCtx = hCtx.getDragCtx();
     const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const totalIterations = Math.ceil(dist / hsm.settings.dragResetSpeed);
-    // console.log(`[Cstate.dragRevert] dist:${dist.toFixed()} totalIterations:${totalIterations}`);
+    // console.log(`[Cstate.dragRevert] dist:${ dist.toFixed(); } totalIterations:${ totalIterations; } `);
     let currentIteration = 0;
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
     // Restore original segments
     function myCb() {
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
-      // console.log(`[Cstate.dragRevert] #${currentIteration} ease:${ease.toFixed(2)}`);
+      // console.log(`[Cstate.dragRevert] #${ currentIteration; } ease:${ ease.toFixed(2); } `);
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       hsm.drag(dx, dy);
@@ -510,21 +550,16 @@ export class Cstate extends CbaseState {
     cCtx.closePath();
   }
 
-  draw(xx0, yy0) {
-    const s = this.myElem.style;
-    const g = this.geo;
-    s.position = "absolute";
-    s.top = "0mm"; s.left = "0mm";
-    s.width = g.width + "mm"; s.height = g.height + "mm";
-    s.background = hsm.settings.styles.folioBackground;
+  draw(dCtx) {
+    for (let child of this.children) child.draw(dCtx);
   }
 
   oldDraw(xx0, yy0) {
-    // console.log(`[Cstate.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
-    // console.log(`[canvas.drawState] State:${state.name}`);
+    // console.log(`[Cstate.draw] Drawing ${ this.id; } xx0:${ xx0; } yy0:${ yy0; } `);
+    // console.log(`[canvas.drawState] State:${ state.name; } `);
     this.geo.xx0 = xx0 + this.geo.x0;
     this.geo.yy0 = yy0 + this.geo.y0;
-    // console.log(`[Cstate.draw] Drawing ${this.id} yy0:${yy0} geo.y0:${this.geo.y0} geo.yy0:${this.geo.yy0}`);
+    // console.log(`[Cstate.draw] Drawing ${ this.id; } yy0:${ yy0; } geo.y0:${ this.geo.y0; } geo.yy0:${ this.geo.yy0; } `);
     const s = this.styles;
     let borderWidth = s.borderWidth;
     if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
@@ -543,7 +578,7 @@ export class Cstate extends CbaseState {
     U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
     cCtx.fill();
     // Draw state title background
-    // console.log(`[Cstate.draw] titleBgs[0]:${s.titleBgs[0]} titleBgs[1]:${s.titleBgs[1]}`);
+    // console.log(`[Cstate.draw] titleBgs[0]:${ s.titleBgs[0]; } titleBgs[1]:${ s.titleBgs[1]; } `);
     const titleGradient = cCtx.createLinearGradient(x0P, y0P, x0P, y0P + titleHeightP);
     titleGradient.addColorStop(1, s.titleBgs[0]);
     titleGradient.addColorStop(0, s.titleBgs[1]);
@@ -564,12 +599,12 @@ export class Cstate extends CbaseState {
     cCtx.lineTo(x0P + widthP, y0P + titleHeightP);
     cCtx.stroke();
     // Draw title text
-    cCtx.font = `${Math.round((s.titleTextSizePc / 100) * titleHeightP)}px ${s.titleTextFont}`;
+    cCtx.font = `${Math.round((s.titleTextSizePc / 100) * titleHeightP)}px ${s.titleTextFont} `;
     cCtx.fillStyle = s.titleText;
     cCtx.textBaseline = "middle";
     cCtx.textAlign = "center";
     cCtx.fillText(
-      `${this.id}: ${this.name}`,
+      `${this.id}: ${this.name} `,
       x0P + widthP / 2,
       y0P + titleHeightP / 2,
       widthP - 1 * stateRadiusP,
@@ -584,7 +619,7 @@ export class Cstate extends CbaseState {
 
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
-    // console.log(`[Cstate.makeIdz] (${this.id}) x:${x} y:${y}`);
+    // console.log(`[Cstate.makeIdz](${ this.id }) x:${ x; } y:${ y; } `);
     const m = U.pToMmL(hsm.settings.cursorMarginP);
     const r = hsm.settings.stateRadiusMm;
     if (
@@ -613,7 +648,7 @@ export class Cstate extends CbaseState {
     for (let child of this.children) {
       idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     }
-    // console.log(`[Cstate.makeIdz] (${this.id}) id:${id} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
+    // console.log(`[Cstate.makeIdz](${ this.id }) id:${ id; } zone:${ zone; } (x: ${ x.toFixed(1)} y:${ y.toFixed(1); })`);
     return idz;
   }
 
@@ -623,7 +658,7 @@ export class Cstate extends CbaseState {
     const h = hsm.settings.stateMinHeight + m;
     const w = hsm.settings.stateMinWidth + m;
     const t = hsm.settings.stateTitleHeightMm;
-    // console.log(`[Cstate.canInsertState] (${this.id}) idz.y:${idz.y}`);
+    // console.log(`[Cstate.canInsertState](${ this.id }) idz.y:${ idz.y; } `);
     const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
     if (x0 < w || x0 >= this.geo.width - m) return false;
     if (y0 < h + t || y0 >= this.geo.height - m) return false;
@@ -635,7 +670,7 @@ export class Cstate extends CbaseState {
           width: w,
           height: h,
         };
-        // console.log(`[Cstate.canInsertState] (${this.id}) gCId:${child.id}`);
+        // console.log(`[Cstate.canInsertState](${ this.id }) gCId:${ child.id; } `);
         if (U.rectsIntersect(grandChild.geo, geo)) return false;
       }
     }
@@ -648,7 +683,7 @@ export class Cstate extends CbaseState {
     const h = hsm.settings.noteMinHeight + m;
     const w = hsm.settings.noteMinWidth + m;
     const t = hsm.settings.stateTitleHeightMm;
-    // console.log(`[Cstate.canInsertNote] (${this.id}) idz.y:${idz.y}`);
+    // console.log(`[Cstate.canInsertNote](${ this.id }) idz.y:${ idz.y; } `);
     const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
     if (x0 < m || x0 >= this.geo.width - w - m) return false;
     if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
@@ -660,7 +695,7 @@ export class Cstate extends CbaseState {
           width: w,
           height: h,
         };
-        console.log(`[Cstate.canInsertNote] (${this.id}) gCId:${child.id}`);
+        console.log(`[Cstate.canInsertNote](${this.id}) gCId:${child.id} `);
         if (U.rectsIntersect(grandChild.geo, geo)) return false;
       }
     }
@@ -697,4 +732,4 @@ export class Cstate extends CbaseState {
   }
 
 
-}
+};;;;

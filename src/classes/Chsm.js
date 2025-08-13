@@ -33,7 +33,7 @@ export class Chsm extends CbaseElem {
     hElems = this.hElems;
     this.geo.xx0 = 0;
     this.geo.yy0 = 0;
-    // console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
 
   checkSernum(num) {
@@ -60,9 +60,6 @@ export class Chsm extends CbaseElem {
   }
 
   async addFolio(folioOptions) {
-    const folioElem = document.createElement("div");
-    this.myElem.append(folioElem);
-    folioOptions.elem = folioElem;
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
     await myFolio.load(folioOptions);
@@ -113,7 +110,7 @@ export class Chsm extends CbaseElem {
   }
 
   handleClick(xDown, yDown) {
-    console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
+    console.log(`[Chsm.click] (xDown:${xDown}, yDown:${yDown})`);
     let idz = this.makeIdzP(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;

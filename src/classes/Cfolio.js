@@ -27,7 +27,7 @@ export class Cfolio extends CbaseRegion {
     super(parent, options, "F");
     this.trs = [];
     this.notes = [];
-    this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
+    // this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
     this.myElem.style.overflow = `hidden`;
     // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
   }
@@ -138,7 +138,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   setGeometry() {
-    console.log(`[Cfolio.setGeometry]`);
+    // console.log(`[Cfolio.setGeometry]`);
     const s = this.myElem.style;
     const g = this.geo;
     s.top = "0px";
@@ -157,12 +157,12 @@ export class Cfolio extends CbaseRegion {
     this.setGeometry();
     s.transformOrigin = "top left";
     this.setMat({ a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm }, false);
-    return; // ICI
-    for (let stateOption of folioOptions.states) {
-      const myState = new Cstate(this, stateOption);
+    for (let stateOptions of folioOptions.states) {
+      const myState = new Cstate(this, stateOptions);
       this.children.push(myState);
-      await myState.load(stateOption);
+      await myState.load(stateOptions);
     }
+    return; // ICI
     for (let trOptions of folioOptions.trs) {
       await this.addTr(trOptions);
     }
@@ -175,10 +175,10 @@ export class Cfolio extends CbaseRegion {
   async onLoaded() {
     // console.log(`[Cfolio.onLoaded] xx0:${this.geo.xx0}`);
     this.isDirty = true;
-    return; // ICI
     for (let child of this.children) {
       await child.onLoaded();
     }
+    return; // ICI
     for (let tr of this.trs) {
       await tr.onLoaded();
     }
@@ -188,7 +188,6 @@ export class Cfolio extends CbaseRegion {
   }
 
   async insertState(x, y) {
-    return; // ICI
     // console.log(`[Cfolio.insertState] Inserting state x:${ x.toFixed(); } `);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
