@@ -410,6 +410,7 @@ export class Cstate extends CbaseState {
     const idz = this.idz();
     const s0 = hCtx.folio.geo.mat.a;
     let [dx, dy] = [dxS / U.pxPerMm / s0, dyS / U.pxPerMm / s0];
+    let [de, df] = [0, 0];
     const d = hCtx.getDragCtx();
     const m = hsm.settings.minDistanceMm;
     const g = this.geo;
@@ -435,13 +436,9 @@ export class Cstate extends CbaseState {
         m,
         this.parent.geo.height - m,
       );
-      const d = hCtx.getDragCtx();
-      const mat = {};
-      Object.assign(mat, this.geo.mat);
-      mat.e = d.mat.e + dx * U.pxPerMm;
-      mat.f = d.mat.f + dy * U.pxPerMm;
-      // console.log(`[Cfolio.drag] mat1:${ JSON.stringify(mat) } `);
-      this.setMat(mat);
+      x0 = d.x0 + dx;
+      y0 = d.y0 + dy;
+      [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
     } else {
       if (idz.zone.includes("T")) {
         if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
@@ -453,6 +450,7 @@ export class Cstate extends CbaseState {
           dy = this.grandchildrenBB.y0 - hsm.settings.minDistanceMm;
         y0 += dy;
         height -= dy;
+        df = dy * U.pxPerMm;
         for (let child of this.children) {
           child.patchChildrenOrigin(null, dy);
         }
@@ -465,7 +463,8 @@ export class Cstate extends CbaseState {
           height + dy < this.grandchildrenBB.y1 + hsm.settings.minDistanceMm
         )
           dy = this.grandchildrenBB.y1 + hsm.settings.minDistanceMm - height;
-        height += dy;
+        height += dy * s0;
+        y0 -= dy * s0;
       }
       if (idz.zone.includes("L")) {
         if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
@@ -474,6 +473,7 @@ export class Cstate extends CbaseState {
           dx = this.grandchildrenBB.x0 - hsm.settings.minDistanceMm;
         x0 += dx;
         width -= dx;
+        de = dx * U.pxPerMm;
         for (let child of this.children) {
           child.patchChildrenOrigin(dx, null);
         }
@@ -488,21 +488,31 @@ export class Cstate extends CbaseState {
           dx = this.grandchildrenBB.x1 + hsm.settings.minDistanceMm - width;
         width += dx;
       }
+      x0;
     }
 
     // console.log(
     //   `[Cstate.drag](${ this.id }) type:${ idz.zone; } Cx0:${ dragCtx.x0.toFixed(); } dx:${ dx.toFixed(); } x0:${ x0.toFixed(); } `,
     // );
     // console.log(`[Cstate.drag](${ this.id }) Parent id:${ this.parent.id; } `);
+
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
     this.geo.width = width;
+    // console.log(`[Cstate.drag](${this.id}) width:${width} `);
     if (!this.isRevertingDrag) {
       if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
       else hCtx.setErrorId(null);
     }
+    const mat = {};
+    Object.assign(mat, this.geo.mat);
+    mat.e = d.mat.e + de;
+    mat.f = d.mat.f + df;
+    // console.log(`[Cfolio.drag] mat1:${ JSON.stringify(mat) } `);
+    this.setMat(mat);
     hsm.adjustChange(this.id);
+    this.setGeometry();
   }
 
   openDialog() {

@@ -38,6 +38,7 @@ export function getPxFromMouseEvent(e) {
 }
 
 export async function handleMouseMove(e) {
+  e.preventDefault();
   let [xS, yS] = getPxFromMouseEvent(e); // px from rootElem
   const [x, y] = [U.pToMmL(xS), U.pToMmL(yS)]; // mm from rootElem
   mousePos.value = { xP: xS, yP: yS, x: x, y: y, buttons: e.buttons };
@@ -77,6 +78,7 @@ export function patchMouseDown() {
 }
 
 export function handleMouseDown(e) {
+  e.preventDefault();
   const [xP, yP] = getPxFromMouseEvent(e);
   if (e.buttons & 1) {
     button1Down = true;
@@ -97,6 +99,7 @@ export function handleMouseDown(e) {
 }
 
 export function handleMouseUp(e) {
+  e.preventDefault();
   const [xL, yL] = getPxFromMouseEvent(e);
   // console.log(
   //   `[canvasListeners.handleMouseUp] x:${x} y:${y} buttons:${e.buttons} button1Down:${button1Down} button2Down:${button2Down}`,
