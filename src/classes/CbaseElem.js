@@ -3,6 +3,7 @@
 import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
+import { inverse, toCSS, applyToPoint } from 'transformation-matrix';
 
 const inchInMm = 25.4;
 
@@ -28,11 +29,15 @@ export class CbaseElem {
       this.myElem = document.createElement("div");
       this.parent.myElem.append(this.myElem);
     }
-    this.myElem.style.position = "absolute";
-    this.myElem.style.overflow = "hidden";
+    const s = this.myElem.style;
+    s.position = "absolute";
+    s.overflow = "hidden";
+    s.transformOrigin = "top left";
     this.myElem.id = this.id;
     this.geo = { x0: 0, y0: 0, scale: 1 }; // Offset from parent
     if (options.geo) this.geo = Object.assign(this.geo, options.geo);
+    const g = this.geo;
+    this.setMat({ a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm }, false);
     const bb = this.myElem.getBoundingClientRect();
     // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} bb.left:${bb.left}`);
     // [xx0,yy0] coords in mm from viewport
@@ -46,6 +51,17 @@ export class CbaseElem {
     this.isSelected = false;
     if (options.justCreated) this.justCreated = options.justCreated;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
+  }
+
+  setMat(mat) {
+    this.geo.mat = mat;
+    const matR = inverse(mat);
+    this.geo.matR = matR;
+    this.geo.x0 = mat.e;
+    this.geo.y0 = mat.f;
+    this.geo.scale = mat.a;
+    this.myElem.style.transform = toCSS(this.geo.mat);
+    // console.warn(`[CbaseElem.setMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
   }
 
   async load(options) {
@@ -185,10 +201,9 @@ export class CbaseElem {
     return val;
   }
 
-  defineCursor(idz) {
+  myDefineCursor(idz) {
     let cursor;
     // console.log(`[CbaseElem.defineCursor] (${this.id}) mode:'${modeRef.value}' zone:${idz.zone}`);
-    // TODO adjust...
 
     if (modeRef.value == "inserting-state") {
       // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
@@ -233,7 +248,8 @@ export class CbaseElem {
         cursor = this.assets("anchor16x16.png", "default");
         break;
       case "M":
-        cursor = "move";
+        if (this.id.startsWith("F")) cursor = "default";
+        else cursor = "move";
         break;
       case "TL":
         cursor = "nw-resize";
@@ -269,6 +285,13 @@ export class CbaseElem {
     return cursor;
   }
 
+  defineCursor(idz) {
+    const cursor = this.myDefineCursor(idz);
+    this.myElem.style.cursor = cursor;
+    // The pointer can be a little away (cursorMarginP) from the element
+    if (this.myElem.parentElement) this.myElem.parentElement.style.cursor = cursor;
+  }
+
   idz() {
     return hCtx.getIdz();
   }
@@ -300,4 +323,11 @@ export class CbaseElem {
     }
   }
   setGeometry() { }
+
+  pxToMm(xP, yP) {
+    let [x, y] = applyToPoint(this.geo.matR, [xP, yP]);
+    [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
+    return [x, y];
+  }
+
 }

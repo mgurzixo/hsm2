@@ -379,3 +379,10 @@ export function camelize(str) {
 export function underscorize(str) {
   return str.replace(/ /g, "_");
 }
+
+// export function matToMm(mat) {
+//   return {
+//     a: mat.a, b: mat.b, c: mat.c, d: mat.d,
+//     e: mat.e * pxPerMm, f: mat.f * pxPerMm
+//   };
+// }

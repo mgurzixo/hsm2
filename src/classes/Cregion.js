@@ -93,19 +93,19 @@ export class Cregion extends CbaseRegion {
   }
 
   draw(xx0, yy0) {
-    // console.log(`[Cregion.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
-    this.geo.xx0 = xx0 + this.geo.x0;
-    this.geo.yy0 = yy0 + this.geo.y0;
-    // console.log(`[Cregion.draw] Drawing ${this.id} y0:${this.geo.y0} yy0:${yy0} geo.yy0:${this.geo.yy0}`);
-    // For now, no region background
-    // console.log(`[Cregion.draw]`);
-    // Sync with a modified state size
-    this.geo.y0 = hsm.settings.stateTitleHeightMm;
-    this.geo.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
-    this.geo.width = this.parent.geo.width;
-    for (let child of this.children) {
-      child.draw(this.geo.xx0, this.geo.yy0);
-    }
+    // // console.log(`[Cregion.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0}`);
+    // this.geo.xx0 = xx0 + this.geo.x0;
+    // this.geo.yy0 = yy0 + this.geo.y0;
+    // // console.log(`[Cregion.draw] Drawing ${this.id} y0:${this.geo.y0} yy0:${yy0} geo.yy0:${this.geo.yy0}`);
+    // // For now, no region background
+    // // console.log(`[Cregion.draw]`);
+    // // Sync with a modified state size
+    // this.geo.y0 = hsm.settings.stateTitleHeightMm;
+    // this.geo.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
+    // this.geo.width = this.parent.geo.width;
+    // for (let child of this.children) {
+    //   child.draw(this.geo.xx0, this.geo.yy0);
+    // }
   }
 
   async load(regionOptions) {
@@ -122,16 +122,13 @@ export class Cregion extends CbaseRegion {
     const bak = Object.assign({}, idz);
     const m = U.pToMmL(hsm.settings.cursorMarginP);
     if (
-      x < this.geo.x0 - m ||
-      x > this.geo.x0 + this.geo.width + m ||
-      y < this.geo.y0 - m ||
-      y > this.geo.y0 + this.geo.height + m
+      x < - m ||
+      x > this.geo.width + m ||
+      y < - m ||
+      y > this.geo.height + m
     )
       return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
-    for (let child of this.children) {
-      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    }
     if (idz.id == this.id) {
       // It is for us.
       // In fact, the parent state has setup a correct idz
@@ -141,4 +138,15 @@ export class Cregion extends CbaseRegion {
     // console.log(`[Cregion.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
     return idz;
   }
+
+  makeIdzP(xP, yP, myIdz) {
+    const [x, y] = this.pxToMm(xP, yP);
+    let idz = this.makeIdz(x, y, myIdz);
+    // for (let child of this.children) {
+    //   idz = child.makeIdzP(xP, yP, idz);
+    // }
+    return idz;
+  }
+
+
 }

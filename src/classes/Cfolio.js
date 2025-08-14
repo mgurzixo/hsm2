@@ -8,7 +8,7 @@ import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
-import { applyToPoint, fromString, decomposeTSR, inverse, toCSS, transform, compose } from 'transformation-matrix';
+import { fromString, applyToPoint, toCSS, compose } from 'transformation-matrix';
 import FolioDialog from "src/components/FolioDialog.vue";
 
 let noteTo;
@@ -23,24 +23,30 @@ function deferredNotesUpdate() {
 }
 
 export class Cfolio extends CbaseRegion {
-  constructor(parent, options) {
-    super(parent, options, "F");
+  constructor(parent, folioOptions) {
+    super(parent, folioOptions, "F");
     this.trs = [];
     this.notes = [];
     // this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
     this.myElem.style.overflow = `hidden`;
     // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
-  }
-
-  setMat(mat) {
-    this.geo.mat = mat;
-    const matR = inverse(mat);
-    this.geo.matR = matR;
-    this.geo.x0 = mat.e;
-    this.geo.y0 = mat.f;
-    this.geo.scale = mat.a;
-    this.myElem.style.transform = toCSS(this.geo.mat);
-    // console.log(`[Cfolio.setMat] geo:${this.geo}`);
+    this.setFolioDisplay(false);
+    // Set initial values
+    const s = this.myElem.style;
+    const g = this.geo;
+    this.setGeometry();
+    for (let stateOptions of folioOptions.states) {
+      const myState = new Cstate(this, stateOptions);
+      this.children.push(myState);
+    }
+    return; // ICI
+    for (let trOptions of folioOptions.trs) {
+      this.addTr(trOptions); // BEWARE async
+    }
+    for (let noteOptions of folioOptions.notes) {
+      this.addNote(noteOptions); // BEWARE async
+    }
+    return true;
   }
 
   setFolioDisplay(isActive) {
@@ -89,9 +95,8 @@ export class Cfolio extends CbaseRegion {
       default:
         modeRef.value = "";
     }
-    const mat = fromString(getComputedStyle(this.myElem).transform);
     // console.log(`[Cfolio.dragStart] e:${mat.e}`);
-    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: mat });
+    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
     // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
   }
 
@@ -123,7 +128,7 @@ export class Cfolio extends CbaseRegion {
     return; // ICI
     // console.log(`[Cfolio.addNote] noteOptions:${ JSON.stringify(noteOptions); } `);
     const myNote = new Cnote(this, noteOptions, "N");
-    await myNote.load(noteOptions);
+    // await myNote.load(noteOptions);
     this.notes.push(myNote);
     // console.log(`[Cfolio.addNote] id:${ myNote.id; } `);
     return myNote;
@@ -133,7 +138,7 @@ export class Cfolio extends CbaseRegion {
     return; // ICI
     const myTr = new Ctr(this, trOptions, "T");
     this.trs.push(myTr);
-    await myTr.load(trOptions);
+    // await myTr.load(trOptions);
     return myTr;
   }
 
@@ -146,30 +151,6 @@ export class Cfolio extends CbaseRegion {
     s.width = g.width + "mm";
     s.height = g.height + "mm";
     s.background = hsm.settings.styles.folioBackground;
-  }
-
-  async load(folioOptions) {
-    // console.log(`[Cfolio.load]`);
-    this.setFolioDisplay(false);
-    // Set initial values
-    const s = this.myElem.style;
-    const g = this.geo;
-    this.setGeometry();
-    s.transformOrigin = "top left";
-    this.setMat({ a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm }, false);
-    for (let stateOptions of folioOptions.states) {
-      const myState = new Cstate(this, stateOptions);
-      this.children.push(myState);
-      await myState.load(stateOptions);
-    }
-    return; // ICI
-    for (let trOptions of folioOptions.trs) {
-      await this.addTr(trOptions);
-    }
-    for (let noteOptions of folioOptions.notes) {
-      await this.addNote(noteOptions);
-    }
-    return true;
   }
 
   async onLoaded() {
@@ -309,7 +290,7 @@ export class Cfolio extends CbaseRegion {
 
   makeIdz(x, y, idz) {
     // [x,y] in mm in this.geo.[x0,y0] frame
-    // console.warn(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
+    // console.log(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
     const g = this.geo;
     if (x < 0 || y < 0) return idz;
     if (x > g.width || y > g.height) return idz;
@@ -318,9 +299,7 @@ export class Cfolio extends CbaseRegion {
     // for (let note of this.notes) {
     //   idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     // }
-    // for (let child of this.children) {
-    //   idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    // }
+
     // // console.log(`[Cfolio.makeIdz] S id: ${ idz.id; } zone: ${ idz.zone; } `);
     // let bestTIdz = { dist2P: Number.MAX_VALUE };
     // for (let tr of this.trs) {
@@ -332,6 +311,17 @@ export class Cfolio extends CbaseRegion {
     //   idz = bestTIdz;
     // }
     // console.log(`[Cfolio.makeIdz] T id: ${ bestTIdz.id; } dist2P: ${ bestTIdz.dist2P.toFixed(); } zone: ${ bestTIdz.zone; } type: ${ bestTIdz.type; } `);
+    for (let child of this.children) {
+      idz = child.makeIdzInParentCoordinates(idz.x, idz.y, idz);
+    }
+    return idz;
+  }
+
+  makeIdzInParentCoordinates(xp, yp, myIdz) {
+    [xp, yp] = [xp * U.pxPerMm, yp * U.pxPerMm];
+    let [x, y] = applyToPoint(this.geo.matR, [xp, yp]);
+    [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
+    const idz = this.makeIdz(x, y, myIdz);
     return idz;
   }
 

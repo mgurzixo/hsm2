@@ -16,7 +16,7 @@ export let hCtx = null; // hsm context
 export let hElems = null;
 export let modeRef = V.ref(""); // "inserting-state", "inserting-trans"...
 
-export let cursor = V.ref("default");
+// export let cursor = V.ref("default");
 export let ctxMenu = V.ref(null);
 
 export class Chsm extends CbaseElem {
@@ -31,9 +31,7 @@ export class Chsm extends CbaseElem {
     this.setCanvas(this.canvas);
     hsm = this;
     hElems = this.hElems;
-    this.geo.xx0 = 0;
-    this.geo.yy0 = 0;
-    console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    // console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
 
   checkSernum(num) {
@@ -53,16 +51,15 @@ export class Chsm extends CbaseElem {
     // console.log(`[Chsm.setCursor] idz.id:${idz?.id}`);
     const elem = this.hElems.getElemById(idz.id);
     if (elem) {
-      let val = elem.defineCursor(idz);
+      elem.defineCursor(idz);
       // console.log(`[Chsm.setCursor] cursor:${val}`);
-      cursor.value = val;
     }
   }
 
   async addFolio(folioOptions) {
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
-    await myFolio.load(folioOptions);
+    // await myFolio.load(folioOptions);
   }
 
   async load(hsmOptions) {
@@ -210,7 +207,7 @@ export class Chsm extends CbaseElem {
     // console.log(`[Chsm.mouseMove] xL:${xL.toFixed()} yL:${yL.toFixed()}`);
     const idz = this.makeIdzP(xL, yL);
     hCtx.setIdz(idz);
-    this.setCursor();
+    this.setCursor(idz);
   }
 
   draw() {
@@ -227,23 +224,27 @@ export class Chsm extends CbaseElem {
     hCtx.folio.wheelP(xS, yS, dyP);
   }
 
-  makeIdz(x, y, idz = { id: this.id, zone: "M", x: x, y: y }) {
-    idz = hCtx.folio?.makeIdz(x, y, idz);
-    // console.warn(`[Chsm.makeIdz] id:${idz.id} (x:${x.toFixed(2)}, y:${y.toFixed(2)}) zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
-    return idz;
-  }
 
   pxToMm(xP, yP) {
-    const matR = this.hCtx.folio.geo.matR;
-    let [x, y] = applyToPoint(matR, [xP, yP]);
+    let [x, y] = applyToPoint(this.geo.matR, [xP, yP]);
     [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
     return [x, y];
   }
 
-  makeIdzP(xP, yP, myIdz) {
-    const [x, y] = this.pxToMm(xP, yP);
-    const idz = this.makeIdz(x, y, myIdz);
-    fText.value = `${idz.id} "${idz.zone}" (x:${x.toFixed()}, yz:${y.toFixed()}) (xz:${idz.x.toFixed()}, yz:${idz.y.toFixed()})`;
+  makeIdz(x, y, idz = { id: this.id, zone: "M", x: x, y: y }) {
+    // console.warn(`[Chsm.makeIdz] id:${idz.id} (x:${x.toFixed(2)}, y:${y.toFixed(2)}) zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
+    idz = hCtx.folio.makeIdzInParentCoordinates(x, y, idz); // We are identity
+    return idz;
+  }
+
+
+  makeIdzP(xP, yP) {
+    const [xa, ya] = applyToPoint(this.geo.matR, [xP, yP]);
+    const [x, y] = [xa / U.pxPerMm, ya / U.pxPerMm];
+    let myIdz = { id: this.id, zone: "M", x: x, y: y };
+    let idz = this.makeIdz(x, y, myIdz);
+    fText.value = `${idz.id} "${idz.zone}" (x:${x.toFixed()}, y${y.toFixed()}) (xz:${idz.x.toFixed()}, yz:${idz.y.toFixed()})`;
+    // fText.value = `${idz.id} "${idz.zone}" (xz:${idz.x.toFixed()}, yz:${idz.y.toFixed()})`;
     // console.log(`[Chsm.makeIdz] matR:${JSON.stringify(this.hCtx.folio.geo.mat)}`);
     return idz;
   }

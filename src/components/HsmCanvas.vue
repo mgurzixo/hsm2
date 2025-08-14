@@ -33,10 +33,6 @@
   /* top: 10px;
   left: 20px; */
 }
-
-.canvas-cursor {
-  cursor: v-bind(cursor);
-}
 </style>
 
 <script setup>
@@ -49,7 +45,7 @@ import NoteDialog from "src/components/NoteDialog.vue";
 import FolioDialog from "src/components/FolioDialog.vue";
 import contextMenu from "src/menus/contextMenu";
 import { setRootElemListeners, removeRootElemListeners } from "src/lib/rootElemListeners";
-import { Chsm, hsm, cursor, hCtx } from "src/classes/Chsm";
+import { Chsm, hsm, hCtx } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
 // import doc from "pdfkit";
 import { applyToPoint } from 'transformation-matrix';
@@ -109,13 +105,13 @@ function adjustSizes() {
 }
 
 V.onUnmounted(() => {
-  console.log(`[HsmCanvas.onUnmounted]`);
+  // console.log(`[HsmCanvas.onUnmounted]`);
   rootElem.innerHTML = ''; // Avoid previous vals with HMR
   removeRootElemListeners(rootElem);
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;;
-    console.log(`[HsmCanvas.onUnmounted] destroying`);
+    // console.log(`[HsmCanvas.onUnmounted] destroying`);
     if (hsm) hsm.destroy();
   }
 });
