@@ -15,10 +15,7 @@ class CbaseState extends CbaseElem {
     super(parent, options, type);
     this.isBaseState = true;
     this.isRevertingDrag = false;
-    this.parentElem = options.parentElem;
-    // console.log(`[Cstate.constructor] parentElem:${this.parentElem}`);
-    this.myElem.id = this.id;
-    // console.log(`[Cstate] New state id:${this.id} parent:${this.parent.id}`);
+    // console.warn(`[Cstate.constructor] New state id:${this.id} parent:${this.parent.id}`);
     const g = this.geo;
     this.setGeometry();
     this.setStyles();
@@ -36,7 +33,7 @@ class CbaseState extends CbaseElem {
     }
   }
 
-  setMat(mat) {
+  setGeoFromMat(mat = this.geo.mat) {
     this.geo.mat = mat;
     const matR = inverse(mat);
     this.geo.matR = matR;
@@ -44,7 +41,7 @@ class CbaseState extends CbaseElem {
     this.geo.y0 = mat.f / U.pxPerMm;
     this.geo.scale = mat.a;
     this.myElem.style.transform = toCSS(this.geo.mat);
-    // console.log(`[Cstate.setMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
+    // console.log(`[Cstate.setGeoFromMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
   }
 
   isSubstate(superstateId) {
@@ -108,9 +105,6 @@ export class Cstate extends CbaseState {
   async addRegion(regionOptions) {
     const myRegion = new Cregion(this, regionOptions);
     this.children.push(myRegion);
-    await myRegion.load(regionOptions);
-    myRegion.geo.y0 = hsm.settings.stateTitleHeightMm;
-    myRegion.geo.height = myRegion.parent.geo.height - hsm.settings.stateTitleHeightMm;
   }
 
   setGeometry() {
@@ -171,7 +165,7 @@ export class Cstate extends CbaseState {
 
   setGrandchildrenDragOrigin() {
     for (let child of this.children) {
-      child.setChildrenDragOrigin();
+      child.setGrandChildrenDragOrigin();
     }
   }
 
@@ -220,14 +214,12 @@ export class Cstate extends CbaseState {
     const myState = new Cstate(this.children[0], stateOptions, "S");
     // console.log(`[Cstate.insertState] New state id:${ myState?.id; } parent:${ myState.parent; } `);
 
-    this.children[0].children.push(myState);
+    this.children.push(myState);
     modeRef.value = "";
-    hsm.draw();
     const m = U.pToMmL(hsm.settings.cursorMarginP);
 
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz());
     hCtx.setIdz(newIdz);
-    hsm.setCursor(newIdz);
     await myState.dragStart();
   }
 
@@ -253,12 +245,10 @@ export class Cstate extends CbaseState {
     const myNote = await this.addNote(noteOptions);
     console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
-    hsm.draw();
     modeRef.value = "";
     const m = U.pToMmL(hsm.settings.cursorMarginP);
     const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
-    hsm.setCursor(newIdz);
     await myNote.dragStart(); // Will create dragCtx
   }
 
@@ -329,7 +319,7 @@ export class Cstate extends CbaseState {
       xx0 += parent.geo.x0;
       yy0 += parent.geo.y0;
     }
-    console.log(`[Cstate.insertTr](${this.id}) it.id:${myTr?.id} `);
+    console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id} `);
     const trDragCtx = {
       id: myTr.id,
       zone: "TO",
@@ -352,10 +342,8 @@ export class Cstate extends CbaseState {
       id: myTr.id,
       zone: "TO", x: x, y: y
     };
-    hCtx.setIdz(newIdz);
     modeRef.value = "";
-    hsm.draw();
-    hsm.setCursor(newIdz);
+    hCtx.setIdz(newIdz);
   }
 
   async dragStart(xS, yS) {
@@ -402,8 +390,23 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
     this.parent.raiseChildR(this.id);
-    hsm.adjustChange(this.id);
+    hsm.adjustTrAnchors(this.id);
     return this;
+  }
+
+  setDragOrigin() {
+    // console.log(`[Cstate.setDragOrigin] myId:${this.id}`);
+    let mat = {};
+    Object.assign(mat, this.geo.mat);
+    this.dragOrigin = { x0: this.geo.x0, y0: this.geo.y0, mat: mat };
+  }
+
+  patchSelfFromDragOrigin(dx0, dy0) {
+    const g = this.geo;
+    // console.log(`[Cstate.patchSelfFromDragOrigin] (${this.id}) (dx0:${dx0?.toFixed(2)}, dy0:${dy0?.toFixed(2)}) mat:${g.mat}`);
+    if (dx0 != null) g.mat.e = this.dragOrigin.mat.e - dx0 * U.pxPerMm;
+    if (dy0 != null) g.mat.f = this.dragOrigin.mat.f - dy0 * U.pxPerMm;
+    this.setGeoFromMat();
   }
 
   drag(dxS, dyS) {
@@ -422,20 +425,12 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.drag] dragCtx:${ JSON.stringify(dragCtx); } `);
     // console.log(`[Cstate.drag] id:${this.id} s0:${s0} x0:${x0} dx:${dx.toFixed()}`);
     if (idz.zone == "M") {
-      dx = U.myClamp(
-        dx,
-        x0,
-        this.geo.width + m,
-        m,
-        this.parent.geo.width - m,
-      );
-      dy = U.myClamp(
-        dy,
-        y0,
-        this.geo.height + m,
-        m,
-        this.parent.geo.height - m,
-      );
+      if (x0 + dx < m) dx = m - x0;
+      if (x0 + dx + this.geo.width > this.parent.geo.width - m) dx = this.parent.geo.width - m - x0 - this.geo.width;
+      if (y0 + dy < m) dy = m - y0;
+      if (y0 + dy + this.geo.height > this.parent.geo.height - m) dy = this.parent.geo.height - m - y0 - this.geo.height;
+      // dx = U.myClamp(dx, x0, this.geo.width + m, m, this.parent.geo.width - m);
+      // dy = U.myClamp(dy, y0, this.geo.height + m, m, this.parent.geo.height - m);
       x0 = d.x0 + dx;
       y0 = d.y0 + dy;
       [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
@@ -451,9 +446,7 @@ export class Cstate extends CbaseState {
         y0 += dy;
         height -= dy;
         df = dy * U.pxPerMm;
-        for (let child of this.children) {
-          child.patchChildrenOrigin(null, dy);
-        }
+        this.children.forEach(child => child.patchRegionGeometry(null, dy));
       } else if (idz.zone.includes("B")) {
         if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
         if (y0 + height + dy > this.parent.geo.height - hsm.settings.minDistanceMm)
@@ -463,8 +456,9 @@ export class Cstate extends CbaseState {
           height + dy < this.grandchildrenBB.y1 + hsm.settings.minDistanceMm
         )
           dy = this.grandchildrenBB.y1 + hsm.settings.minDistanceMm - height;
-        height += dy * s0;
-        y0 -= dy * s0;
+        height += dy;
+        y0 -= dy;
+        this.children.forEach(child => child.setGeometry());
       }
       if (idz.zone.includes("L")) {
         if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
@@ -474,9 +468,7 @@ export class Cstate extends CbaseState {
         x0 += dx;
         width -= dx;
         de = dx * U.pxPerMm;
-        for (let child of this.children) {
-          child.patchChildrenOrigin(dx, null);
-        }
+        this.children.forEach(child => child.patchRegionGeometry(dx, null));
       } else if (idz.zone.includes("R")) {
         if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
         if (x0 + width + dx > this.parent.geo.width - hsm.settings.minDistanceMm)
@@ -487,8 +479,9 @@ export class Cstate extends CbaseState {
         )
           dx = this.grandchildrenBB.x1 + hsm.settings.minDistanceMm - width;
         width += dx;
+        x0 -= dx;
+        this.children.forEach(child => child.setGeometry());
       }
-      x0;
     }
 
     // console.log(
@@ -510,8 +503,8 @@ export class Cstate extends CbaseState {
     mat.e = d.mat.e + de;
     mat.f = d.mat.f + df;
     // console.log(`[Cfolio.drag] mat1:${ JSON.stringify(mat) } `);
-    this.setMat(mat);
-    hsm.adjustChange(this.id);
+    this.setGeoFromMat(mat);
+    hsm.adjustTrAnchors(this.id);
     this.setGeometry();
   }
 
@@ -556,9 +549,8 @@ export class Cstate extends CbaseState {
         currentIteration++;
         window.requestIdleCallback(myCb);
       }
-      hsm.draw();
       const idz = hCtx.getIdz(); // This is not defined...
-      hsm.setCursor(idz);
+      // hsm.setCursor(idz); // TODO !
     }
     window.requestAnimationFrame(myCb);
   }
@@ -566,7 +558,19 @@ export class Cstate extends CbaseState {
   dragEnd(dxS, dyS) {
     // console.log(`[Cstate.dragEnd]`);
     this.drag(dxS, dyS);
-
+    const dragCtx = hCtx.getDragCtx();
+    // if (this.children[0]) {
+    //   if (this.geo.height != dragCtx.height || this.geo.width != dragCtx.width) {
+    //     this.children[0].geo.width += this.geo.width - dragCtx.width;
+    //     this.children[0].geo.height += this.geo.height - dragCtx.height;
+    //     this.children[0].setGeometry();
+    //   }
+    //   if (this.geo.height != dragCtx.height || this.geo.width != dragCtx.width) {
+    //     this.children[0].geo.width += this.geo.width - dragCtx.width;
+    //     this.children[0].geo.height += this.geo.height - dragCtx.height;
+    //     this.children[0].setGeometry();
+    //   }
+    // }
     // ICI
     // if (hCtx.getErrorId() == this.id) {
     //   this.dragRevert(dx, dy);
@@ -592,74 +596,11 @@ export class Cstate extends CbaseState {
     for (let child of this.children) child.draw(dCtx);
   }
 
-  // oldDraw(xx0, yy0) {
-  //   // console.log(`[Cstate.draw] Drawing ${ this.id; } xx0:${ xx0; } yy0:${ yy0; } `);
-  //   // console.log(`[canvas.drawState] State:${ state.name; } `);
-  //   this.geo.xx0 = xx0 + this.geo.x0;
-  //   this.geo.yy0 = yy0 + this.geo.y0;
-  //   // console.log(`[Cstate.draw] Drawing ${ this.id; } yy0:${ yy0; } geo.y0:${ this.geo.y0; } geo.yy0:${ this.geo.yy0; } `);
-  //   const s = this.styles;
-  //   let borderWidth = s.borderWidth;
-  //   if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
-  //   else if (this.isSelected) borderWidth = s.borderSelectedWidth;
-  //   const x0P = RR(U.mmToPL(this.geo.xx0), borderWidth);
-  //   const y0P = RR(U.mmToPL(this.geo.yy0));
-  //   const widthP = R(U.mmToPL(this.geo.width));
-  //   const heightP = R(U.mmToPL(this.geo.height));
-  //   let th = hsm.settings.stateTitleHeightMm;
-  //   if (th < hsm.settings.stateRadiusMm) th = hsm.settings.stateRadiusMm;
-  //   let titleHeightP = R(U.mmToPL(th));
-  //   const stateRadiusP = R(U.mmToPL(hsm.settings.stateRadiusMm));
-  //   if (titleHeightP < hsm.settings.stateRadiusMm) titleHeightP = hsm.settings.stateRadiusMm;
-  //   // Draw state background
-  //   cCtx.fillStyle = s.bg;
-  //   U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
-  //   cCtx.fill();
-  //   // Draw state title background
-  //   // console.log(`[Cstate.draw] titleBgs[0]:${ s.titleBgs[0]; } titleBgs[1]:${ s.titleBgs[1]; } `);
-  //   const titleGradient = cCtx.createLinearGradient(x0P, y0P, x0P, y0P + titleHeightP);
-  //   titleGradient.addColorStop(1, s.titleBgs[0]);
-  //   titleGradient.addColorStop(0, s.titleBgs[1]);
-  //   cCtx.fillStyle = titleGradient;
-  //   this.pathTitle(x0P, y0P, widthP, titleHeightP, stateRadiusP);
-  //   cCtx.fill();
-  //   // Draw border
-  //   cCtx.lineWidth = borderWidth;
-  //   cCtx.strokeStyle = s.border;
-  //   if (hCtx.getErrorId() == this.id) cCtx.strokeStyle = s.borderError;
-  //   U.pathRoundedRectP(x0P, y0P, widthP, heightP, stateRadiusP);
-  //   cCtx.stroke();
-  //   // Draw title line
-  //   cCtx.lineWidth = s.titleLineWidth;
-  //   cCtx.strokeStyle = s.titleLine;
-  //   cCtx.beginPath();
-  //   cCtx.moveTo(x0P, y0P + titleHeightP);
-  //   cCtx.lineTo(x0P + widthP, y0P + titleHeightP);
-  //   cCtx.stroke();
-  //   // Draw title text
-  //   cCtx.font = `${ Math.round((s.titleTextSizePc / 100) * titleHeightP); }px ${ s.titleTextFont; } `;
-  //   cCtx.fillStyle = s.titleText;
-  //   cCtx.textBaseline = "middle";
-  //   cCtx.textAlign = "center";
-  //   cCtx.fillText(
-  //     `${ this.id; }: ${ this.name; } `,
-  //     x0P + widthP / 2,
-  //     y0P + titleHeightP / 2,
-  //     widthP - 1 * stateRadiusP,
-  //   );
-  //   for (let note of this.notes) {
-  //     note.draw(this.geo.xx0, this.geo.yy0);
-  //   }
-  //   for (let child of this.children) {
-  //     child.draw(this.geo.xx0, this.geo.yy0);
-  //   }
-  // }
-
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     // console.log(`[Cstate.makeIdz](${ this.id }) x:${ x; } y:${ y; } `);
     // console.log(`[Cstate.makeIdz](${ this.id })[x: ${ x.toFixed(); }, y: ${ y.toFixed(); }]`);
-    const m = (hsm.settings.cursorMarginP / U.pxPerMm) * hCtx.folio.geo.scale;
+    const m = (hsm.settings.cursorMarginP / U.pxPerMm) / hCtx.folio.geo.scale;
     // console.log(`[Cstate.makeIdz](${ this.id }) m:${ m; } `);
     // const m = hsm.settings.cursorMarginP;
     const r = hsm.settings.stateRadiusMm;
@@ -687,6 +628,7 @@ export class Cstate extends CbaseState {
       // idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz); // TODO
     }
     for (let child of this.children) {
+      // console.log(`[Cstate.makeIdz](${this.id}) calling ${child.id} y:${y.toFixed()}`);
       idz = child.makeIdzInParentCoordinates(x, y, idz);
     }
     // console.log(`[Cstate.makeIdz](${ this.id }) id:${ id; } zone:${ zone; } (x: ${ x.toFixed(1)  } y: ${ y.toFixed(1) })`);

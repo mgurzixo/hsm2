@@ -401,9 +401,9 @@ export class Ctr extends CbaseElem {
     }
   }
 
-  adjustChange(changedId) {
+  adjustTrAnchors(changedId) {
     // if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
-    // console.log(`[Ctr.adjustChange](${this.id}) changedId:${changedId}`);
+    // console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
     this.adjustSegments();
     // }
   }

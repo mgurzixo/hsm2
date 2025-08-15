@@ -9,6 +9,7 @@ import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
 import { setDoubleClickTimeout, mousePos } from "src/lib/rootElemListeners";
 import { applyToPoint } from 'transformation-matrix';
+import { setCursor } from "src/lib/cursor";
 
 export let hsm = null;
 export let cCtx = null; // canvas context
@@ -47,15 +48,6 @@ export class Chsm extends CbaseElem {
     cCtx = this.canvas.getContext("2d");
   }
 
-  setCursor(idz = this.idz()) {
-    // console.log(`[Chsm.setCursor] idz.id:${idz?.id}`);
-    const elem = this.hElems.getElemById(idz.id);
-    if (elem) {
-      elem.defineCursor(idz);
-      // console.log(`[Chsm.setCursor] cursor:${val}`);
-    }
-  }
-
   async addFolio(folioOptions) {
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
@@ -77,9 +69,8 @@ export class Chsm extends CbaseElem {
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     hCtx.folio.setFolioDisplay(true);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
-    this.makeIdz(this.idz().x, this.idz().y);
     await hCtx.folio.onLoaded();
-    this.draw();
+    this.makeIdzP();
     return null;
   }
 
@@ -96,9 +87,6 @@ export class Chsm extends CbaseElem {
   save() { }
 
   async draw2() {
-    this.draw();
-    await V.nextTick();
-    this.draw();
   }
 
   clearSelections() {
@@ -125,8 +113,6 @@ export class Chsm extends CbaseElem {
       newElem.setSelected(true);
     }
     idz = this.makeIdzP(xDown, yDown);
-    this.draw();
-    this.setCursor();
   }
 
   handleDoubleClick(xDown, yDown, rawMouseX, rawMouseY) {
@@ -176,9 +162,7 @@ export class Chsm extends CbaseElem {
       const elem = this.hElems.getElemById(dragCtx.id);
       elem.drag(dxS, dyS);
     }
-    this.draw();
     // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()} zone:${this.idz().zone}`);
-    this.setCursor();
   }
 
   dragEnd(dxS, dyS) {
@@ -186,8 +170,6 @@ export class Chsm extends CbaseElem {
     // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
     if (modeRef.value != "") {
       modeRef.value = "";
-      this.draw();
-      this.setCursor();
       return;
     }
     const dragCtx = hCtx.getDragCtx();
@@ -199,31 +181,27 @@ export class Chsm extends CbaseElem {
       if (dragEnded) hCtx.dragEnd();
       // else elem.resetDrag() will reset it
     }
-    this.draw();
-    this.setCursor();
   }
 
   mouseMove(xL, yL) {
     // console.log(`[Chsm.mouseMove] xL:${xL.toFixed()} yL:${yL.toFixed()}`);
     const idz = this.makeIdzP(xL, yL);
     hCtx.setIdz(idz);
-    this.setCursor(idz);
   }
 
   draw() {
-    if (!hCtx.folio) return;
-    // console.log(`[Chsm.draw] this.geo.xx0:${this.geo.xx0}`);
-    const dCtx = {
-      xx0: this.geo.xx0,
-      yy0: this.geo.yy0,
-    };
-    hCtx.folio.draw(dCtx);
+    // if (!hCtx.folio) return;
+    // // console.log(`[Chsm.draw] this.geo.xx0:${this.geo.xx0}`);
+    // const dCtx = {
+    //   xx0: this.geo.xx0,
+    //   yy0: this.geo.yy0,
+    // };
+    // hCtx.folio.draw(dCtx);
   }
 
   wheelP(xS, yS, dyP) {
     hCtx.folio.wheelP(xS, yS, dyP);
   }
-
 
   pxToMm(xP, yP) {
     let [x, y] = applyToPoint(this.geo.matR, [xP, yP]);
@@ -234,11 +212,11 @@ export class Chsm extends CbaseElem {
   makeIdz(x, y, idz = { id: this.id, zone: "M", x: x, y: y }) {
     // console.warn(`[Chsm.makeIdz] id:${idz.id} (x:${x.toFixed(2)}, y:${y.toFixed(2)}) zone:${idz.zone} draggedId:${hCtx.getDraggedId()}`);
     idz = hCtx.folio.makeIdzInParentCoordinates(x, y, idz); // We are identity
+    setCursor(idz);
     return idz;
   }
 
-
-  makeIdzP(xP, yP) {
+  makeIdzP(xP = mousePos.xP, yP = mousePos.yP) {
     const [xa, ya] = applyToPoint(this.geo.matR, [xP, yP]);
     const [x, y] = [xa / U.pxPerMm, ya / U.pxPerMm];
     let myIdz = { id: this.id, zone: "M", x: x, y: y };
@@ -249,3 +227,4 @@ export class Chsm extends CbaseElem {
     return idz;
   }
 }
+

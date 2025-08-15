@@ -10,6 +10,7 @@
         <popup-menu :menu="contextMenu"></popup-menu>
       </div>
     </div>
+    <!-- <div id="cursorPlane" class="cursor-plane">XXX</div> -->
     <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
 
   </div>
@@ -20,7 +21,24 @@
   display: none;
 }
 
-.my-container {
+#M1 {
+  z-index: auto;
+}
+
+.Xcursor-plane {
+  position: absolute;
+  transform-origin: top left;
+  /* z-index: 100; */
+  /* background: transparent; */
+  /* background: #ff000060; */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  cursor: no-drop;
+}
+
+*/ .my-container {
   /* width: 100%;
   height: 100%; */
   overflow: hidden;
@@ -47,6 +65,7 @@ import contextMenu from "src/menus/contextMenu";
 import { setRootElemListeners, removeRootElemListeners } from "src/lib/rootElemListeners";
 import { Chsm, hsm, hCtx } from "src/classes/Chsm";
 import { loadHsm } from "src/lib/hsmIo";
+import { setCursor } from "src/lib/cursor";
 // import doc from "pdfkit";
 import { applyToPoint } from 'transformation-matrix';
 
@@ -76,11 +95,7 @@ function handleRightClick(xP, yP) {
 
 V.watch(dialogToggle, (newToggle) => {
   // console.log(`[HsmCanvas.watch.element] newToggle:${newToggle}`);
-  if (newToggle == false) {
-    hsm.makeIdz();
-    hsm.draw();
-    hsm.setCursor();
-  }
+  if (newToggle == false) hsm.makeIdzP();
 });
 
 function openElementDialog(myDialog, myElement) {

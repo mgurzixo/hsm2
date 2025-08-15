@@ -33,17 +33,20 @@ export class CbaseElem {
     s.position = "absolute";
     s.overflow = "hidden";
     s.transformOrigin = "top left";
+    s.zIndex = "auto";
     this.myElem.id = this.id;
     this.geo = { x0: 0, y0: 0, scale: 1 }; // Offset from parent
     if (options.geo) this.geo = Object.assign(this.geo, options.geo);
     const g = this.geo;
-    this.setMat({ a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm }, false);
+    g.mat = { a: g.scale, b: 0, c: 0, d: g.scale, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm };
+    g.matR = inverse(g.mat);
+    this.myElem.style.transform = toCSS(g.mat);
     const bb = this.myElem.getBoundingClientRect();
     // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} bb.left:${bb.left}`);
     // [xx0,yy0] coords in mm from viewport
-    this.geo.xx0 = U.pxToMm(bb.left);
-    this.geo.yy0 = U.pxToMm(bb.top);
-    // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${this.geo.x0.toFixed(2)}, y0:${this.geo.y0.toFixed(2)}] [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    g.xx0 = U.pxToMm(bb.left);
+    g.yy0 = U.pxToMm(bb.top);
+    // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${g.x0.toFixed(2)}, y0:${g.y0.toFixed(2)}] [xx0:${g.xx0.toFixed(2)}, yy0:${g.yy0.toFixed(2)}]`);
     if (options.color) this.color = options.color;
     else if (options.settings?.styles?.defaultColor) this.color = options.settings.styles.defaultColor;
     else if (hsm) this.color = hsm.settings.styles.defaultColor;
@@ -51,17 +54,6 @@ export class CbaseElem {
     this.isSelected = false;
     if (options.justCreated) this.justCreated = options.justCreated;
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
-  }
-
-  setMat(mat) {
-    this.geo.mat = mat;
-    const matR = inverse(mat);
-    this.geo.matR = matR;
-    this.geo.x0 = mat.e;
-    this.geo.y0 = mat.f;
-    this.geo.scale = mat.a;
-    this.myElem.style.transform = toCSS(this.geo.mat);
-    // console.warn(`[CbaseElem.setMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
   }
 
   async load(options) {
@@ -129,10 +121,10 @@ export class CbaseElem {
   async dragStart() { }
   drag(dx, dy) { }
 
-  adjustChange(changedId) {
-    // console.log(`[CbaseElem.adjustChange] id:${this.id}`);
+  adjustTrAnchors(changedId) {
+    // console.log(`[CbaseElem.adjustTrAnchors] id:${this.id}`);
     for (let child of this.children) {
-      child.adjustChange(changedId);
+      child.adjustTrAnchors(changedId);
     }
   }
 
@@ -193,105 +185,6 @@ export class CbaseElem {
     return idz;
   }
 
-  assets(icon, defVal) {
-    // return `url(../assets/${icon}) 8 8, ${defVal}`;
-    const assetsDir = new URL(`../assets`, import.meta.url).href;
-    const val = `url(${assetsDir}/cursors/${icon}) 8 8, ${defVal}`;
-    // console.log(`[CbaseElem.assets] val:${val}`);
-    return val;
-  }
-
-  myDefineCursor(idz) {
-    let cursor;
-    // console.log(`[CbaseElem.defineCursor] (${this.id}) mode:'${modeRef.value}' zone:${idz.zone}`);
-
-    if (modeRef.value == "inserting-state") {
-      // console.log(`[CbaseElem.defineCursor] in IS (${this.id}) id:${idz.id} zone:${idz.zone}`);
-      if (this.id.startsWith("F") || this.id.startsWith("S")) {
-        if (this.canInsertState(idz)) return this.assets("state16x16.png", "default");
-        // if (this.canInsertState(idz)) return "grabbing";
-        else return this.assets("no-drop16x16.png", "no-drop");
-      }
-      return this.assets("no-drop16x16.png", "no-drop");
-    }
-    else if (modeRef.value == "inserting-trans") {
-      // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
-      if (this.id.startsWith("S")) {
-        if (this.canInsertTr(idz)) return this.assets("anchor16x16.png", "default");
-        // if (this.canInsertState(idz)) return "grabbing";
-        else return this.assets("no-drop16x16.png", "no-drop");
-      }
-      return this.assets("no-drop16x16.png", "no-drop");
-    }
-    else if (modeRef.value == "inserting-note") {
-      // console.log(`[CbaseElem.defineCursor] in IT (${this.id}) id:${idz.id} zone:${idz.zone}`);
-      if (this.id.startsWith("F") || this.id.startsWith("S")) {
-        if (this.canInsertNote(idz)) return this.assets("note16x16.png", "default");
-        // if (this.canInsertState(idz)) return "grabbing";
-        else return this.assets("no-drop16x16.png", "no-drop");
-      }
-      return this.assets("no-drop16x16.png", "no-drop");
-    }
-
-    if (hCtx.getErrorId() == this.id) {
-      cursor = this.assets("no-drop16x16.png", "no-drop");
-      return cursor;
-    }
-    // console.log(`[CbaseElem.defineCursor] in Default (${this.id}) id:${idz.id} zone:${idz.zone} type:${idz.type}`);
-    if (Number.isInteger(idz.zone)) {
-      if (idz.type == "V") cursor = "col-resize";
-      else cursor = "row-resize";
-    }
-    else switch (idz.zone) {
-      case "FROM":
-      case "TO":
-        cursor = this.assets("anchor16x16.png", "default");
-        break;
-      case "M":
-        if (this.id.startsWith("F")) cursor = "default";
-        else cursor = "move";
-        break;
-      case "TL":
-        cursor = "nw-resize";
-        break;
-      case "BL":
-        cursor = "sw-resize";
-        break;
-      case "TR":
-        cursor = "ne-resize";
-        break;
-      case "BR":
-        cursor = "se-resize";
-        break;
-      case "T":
-        cursor = "n-resize";
-        break;
-      case "B":
-        cursor = "s-resize";
-        break;
-      case "L":
-        cursor = "w-resize";
-        break;
-      case "R":
-        cursor = "e-resize";
-        break;
-      case "E":
-        cursor = "text";
-        break;
-      default:
-        cursor = "default";
-    }
-    // console.log(`[CbaseElem.defineCursor] res (${this.id}) zone:${idz.zone} cursor:${cursor}`);
-    return cursor;
-  }
-
-  defineCursor(idz) {
-    const cursor = this.myDefineCursor(idz);
-    this.myElem.style.cursor = cursor;
-    // The pointer can be a little away (cursorMarginP) from the element
-    if (this.myElem.parentElement) this.myElem.parentElement.style.cursor = cursor;
-  }
-
   idz() {
     return hCtx.getIdz();
   }
@@ -322,7 +215,6 @@ export class CbaseElem {
       child.updateNotes();
     }
   }
-  setGeometry() { }
 
   pxToMm(xP, yP) {
     let [x, y] = applyToPoint(this.geo.matR, [xP, yP]);

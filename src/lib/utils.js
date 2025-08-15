@@ -39,28 +39,12 @@ export function rect2InRect1(r1, r2) {
 }
 
 export function pointInRect(x, y, r) {
-  if (x < r.x0 || x > r.x0 + r.width || y < r.y0 || y > r.y0 + r.height) {
-    // console.log(
-    //   `[Chsm.pointInRect] (${x.toFixed()}, ${y.toFixed()}) in (${r.x0.toFixed()}, ${r.y0.toFixed()}) w:${r.width} h:${r.height} FALSE`,
-    // );
-    return false;
-  }
-  // console.log(
-  //   `[Chsm.pointInRect] (${x.toFixed()}, ${y.toFixed()}) in (${r.x0.toFixed()}, ${r.y0.toFixed()}) w:${r.width} h:${r.height} TRUE`,
-  // );
+  if (x < r.x0 || x > r.x0 + r.width || y < r.y0 || y > r.y0 + r.height) return false;
   return true;
 }
 
 export function pointInWH(x, y, r) {
-  if (x < 0 || x > r.width || y < 0 || y > r.height) {
-    //   console.log(
-    //     `[Chsm.pointInWH] (${x.toFixed()}, ${y.toFixed()}) in (${r.x0.toFixed()}, ${r.y0.toFixed()}) w:${r.width} h:${r.height} FALSE`,
-    // );
-    return false;
-  }
-  // console.log(
-  //   `[Chsm.pointInWH] (${x.toFixed()}, ${y.toFixed()}) in (${r.x0.toFixed()}, ${r.y0.toFixed()}) w:${r.width} h:${r.height} TRUE`,
-  // );
+  if (x < 0 || x > r.width || y < 0 || y > r.height) return false;
   return true;
 }
 

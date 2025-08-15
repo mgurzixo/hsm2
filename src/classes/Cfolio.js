@@ -8,7 +8,7 @@ import { Cstate } from "src/classes/Cstate";
 import { Ctr } from "src/classes/Ctr";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
-import { fromString, applyToPoint, toCSS, compose } from 'transformation-matrix';
+import { fromString, applyToPoint, inverse, toCSS, compose } from 'transformation-matrix';
 import FolioDialog from "src/components/FolioDialog.vue";
 
 let noteTo;
@@ -18,7 +18,6 @@ function deferredNotesUpdate() {
   if (noteTo) clearTimeout(noteTo);
   noteTo = setTimeout(async () => {
     await hCtx.folio.updateNotes();
-    hsm.draw();
   }, 100);
 }
 
@@ -35,10 +34,6 @@ export class Cfolio extends CbaseRegion {
     const s = this.myElem.style;
     const g = this.geo;
     this.setGeometry();
-    for (let stateOptions of folioOptions.states) {
-      const myState = new Cstate(this, stateOptions);
-      this.children.push(myState);
-    }
     return; // ICI
     for (let trOptions of folioOptions.trs) {
       this.addTr(trOptions); // BEWARE async
@@ -52,6 +47,25 @@ export class Cfolio extends CbaseRegion {
   setFolioDisplay(isActive) {
     if (isActive) this.myElem.style.display = "block";
     else this.myElem.style.display = "none";
+  }
+
+  setMat(mat) {
+    this.geo.mat = mat;
+    const matR = inverse(mat);
+    this.geo.matR = matR;
+    this.myElem.style.transform = toCSS(this.geo.mat);
+    // console.log(`[Cfolio.setMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
+  }
+
+  setGeometry() {
+    // console.log(`[Cfolio.setGeometry]`);
+    const s = this.myElem.style;
+    const g = this.geo;
+    s.top = "0px";
+    s.left = "0px";
+    s.width = g.width + "mm";
+    s.height = g.height + "mm";
+    s.background = hsm.settings.styles.folioBackground;
   }
 
   async wheelP(xS, yS, dyS) {
@@ -72,6 +86,7 @@ export class Cfolio extends CbaseRegion {
     const matW = { a: k, b: 0, c: 0, d: k, e: xS * (1 - k), f: yS * (1 - k) };
     // console.log(`[Cfolio.wheelP] k:${k} xS:${xS} dxP:${dxP}`);
     const mat1 = compose(matW, mat0);
+    this.geo.scale = mat1.a;
     this.setMat(mat1);
   }
 
@@ -142,17 +157,6 @@ export class Cfolio extends CbaseRegion {
     return myTr;
   }
 
-  setGeometry() {
-    // console.log(`[Cfolio.setGeometry]`);
-    const s = this.myElem.style;
-    const g = this.geo;
-    s.top = "0px";
-    s.left = "0px";
-    s.width = g.width + "mm";
-    s.height = g.height + "mm";
-    s.background = hsm.settings.styles.folioBackground;
-  }
-
   async onLoaded() {
     // console.log(`[Cfolio.onLoaded] xx0:${this.geo.xx0}`);
     this.isDirty = true;
@@ -189,13 +193,11 @@ export class Cfolio extends CbaseRegion {
     const myState = new Cstate(this, stateOptions, "S");
     // console.log(`[Cfolio.insertState] New state id:${ myState?.id; } `);
     this.children.push(myState);
-    hsm.draw();
     modeRef.value = "";
     const m = U.pToMmL(hsm.settings.cursorMarginP);
 
     const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
-    hsm.setCursor(newIdz);
     await myState.dragStart(); // Will create dragCtx
   }
 
@@ -221,27 +223,23 @@ export class Cfolio extends CbaseRegion {
     const myNote = await this.addNote(noteOptions);
     console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
-    hsm.draw();
     modeRef.value = "";
     const m = U.pToMmL(hsm.settings.cursorMarginP);
     const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
-    hsm.setCursor(newIdz);
     await myNote.dragStart(); // Will create dragCtx
   }
 
-
   raiseChildR(id) {
     super.raiseChildR(id);
-    hsm.draw();
   }
 
-  adjustChange(changedId) {
+  adjustTrAnchors(changedId) {
     for (let child of this.children) {
-      child.adjustChange(changedId);
+      child.adjustTrAnchors(changedId);
     }
     for (let tr of this.trs) {
-      tr.adjustChange(changedId);
+      tr.adjustTrAnchors(changedId);
     }
   }
 
@@ -256,7 +254,6 @@ export class Cfolio extends CbaseRegion {
     for (let tr of hCtx.folio.trs) {
       tr.updateNotes();
     }
-    hsm.draw2();
   }
 
   canInsertState(idz) {
