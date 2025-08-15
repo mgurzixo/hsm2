@@ -176,7 +176,7 @@ function hsl2Hex(h, s, l) {
 V.onMounted(async () => {
   await V.nextTick();
   const sharpColor = U.standardize_color(mycolor.value);
-  console.log(`[HueSlider.onMounted] color:${mycolor.value} sharpColor:${sharpColor}`);
+  // console.log(`[HueSlider.onMounted] color:${mycolor.value} sharpColor:${sharpColor}`);
   const rgb = colors.textToRgb(sharpColor);
   // console.log(`[HueSlider.onMounted] rgb:${JSON.stringify(rgb)}`);
   const hsv = colors.rgbToHsv(rgb);

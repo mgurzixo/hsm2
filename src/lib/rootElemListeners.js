@@ -123,7 +123,7 @@ export function handleMouseUp(e) {
         hsm.handleDoubleClick(xL, yL);
       }
       else {
-        console.log(`[canvasListeners.handleMouseUp] Starting clickTimeout`);
+        // console.log(`[canvasListeners.handleMouseUp] Starting clickTimeout`);
         clickTimeoutId = setTimeout(() => {
           clickTimeoutId = null;
           inDoubleClick = false;

@@ -107,7 +107,7 @@ const props = defineProps({
 });
 
 function onChange() {
-  console.log(`[stateDialog.onChange]`);
+  // console.log(`[stateDialog.onChange]`);
   // eslint-disable-next-line vue/no-mutating-props
   props.element.name = U.underscorize(props.element.name);
   props.element.paintInterior();
@@ -133,7 +133,7 @@ V.watch(stateHue, (baseColor) => {
 
 V.onMounted(async () => {
   bgColor.value = hsm.settings.styles.folioBackground;
-  console.log(`[StateDialog.onMounted] elementId:${props.element.id} Color:${props.element.color}`);
+  // console.log(`[StateDialog.onMounted] elementId:${props.element.id} Color:${props.element.color}`);
   stateHue.value = props.element.color;
 });
 </script>

@@ -118,19 +118,32 @@ export class Cstate extends CbaseState {
     s.height = g.height + "mm";
   }
 
-  paintInterior() {
-    this.myElem.replaceChildren();
-    const se = this.myElem.style;
-    const g = this.geo;
-    se.borderRadius = hsm.settings.stateRadiusMm + "mm";
+  paintBorder() {
     const s = this.styles;
+    const se = this.myElem.style;
     // Draw border
     let borderWidth = s.borderWidth;
     if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
     else if (this.isSelected) borderWidth = s.borderSelectedWidth;
     let borderColor = s.border;
     if (hCtx.getErrorId() == this.id) borderColor = s.borderError;
-    se.border = `solid ${borderWidth}px  ${borderColor}`;
+    se.border = `solid ${borderWidth}px ${borderColor}`;
+  }
+
+  paintInterior() {
+    this.myElem.replaceChildren();
+    const se = this.myElem.style;
+    // const g = this.geo;
+    se.borderRadius = hsm.settings.stateRadiusMm + "mm";
+    const s = this.styles;
+    this.paintBorder();
+    // // Draw border
+    // let borderWidth = s.borderWidth;
+    // if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
+    // else if (this.isSelected) borderWidth = s.borderSelectedWidth;
+    // let borderColor = s.border;
+    // if (hCtx.getErrorId() == this.id) borderColor = s.borderError;
+    // se.border = `solid ${borderWidth}px  ${borderColor}`;
     // Draw state background
     se.background = s.bg;
     // console.log(`[Cstate.setGeometry] bg:${s.bg} background:${se.backgroundColor}`);
@@ -207,7 +220,7 @@ export class Cstate extends CbaseState {
       color: "blue",
       geo: {
         x0: x - this.geo.x0 - w,
-        y0: y - this.geo.y0 - t - h,
+        y0: y - this.geo.y0 - h - t,
         width: w,
         height: h,
       },
@@ -215,14 +228,14 @@ export class Cstate extends CbaseState {
     };
     const myState = new Cstate(this.children[0], stateOptions, "S");
     // console.log(`[Cstate.insertState] New state id:${ myState?.id; } parent:${ myState.parent; } `);
-
-    this.children.push(myState);
+    this.children[0].children.push(myState);
     modeRef.value = "";
     const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const newIdz = { id: myState.id, zone: "BR", x: x - this.geo.x0, y: y - this.geo.y0 };
 
-    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz());
+    // const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - t - m, this.idz());
     hCtx.setIdz(newIdz);
-    await myState.dragStart();
+    await myState.dragStart(U.mmToPx(x), U.mmToPx(y)); // Will create dragCtx
   }
 
   async insertNote(x, y) {
@@ -500,6 +513,7 @@ export class Cstate extends CbaseState {
       if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
       else hCtx.setErrorId(null);
     }
+    this.paintBorder();
     const mat = {};
     Object.assign(mat, this.geo.mat);
     mat.e = d.mat.e + de;
@@ -677,14 +691,14 @@ export class Cstate extends CbaseState {
     const w = hsm.settings.stateMinWidth + m;
     const t = hsm.settings.stateTitleHeightMm;
     // console.log(`[Cstate.canInsertState](${ this.id }) idz.y:${ idz.y; } `);
-    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    const [x0, y0] = [idz.x, idz.y];
     if (x0 < w || x0 >= this.geo.width - m) return false;
     if (y0 < h + t || y0 >= this.geo.height - m) return false;
     for (let child of this.children) {
       for (let grandChild of child.children) {
         let geo = {
-          x0: idz.x - this.geo.x0 - w,
-          y0: idz.y - this.geo.y0 - t - h,
+          x0: idz.x - w,
+          y0: idz.y - h - t,
           width: w,
           height: h,
         };
@@ -702,7 +716,7 @@ export class Cstate extends CbaseState {
     const w = hsm.settings.noteMinWidth + m;
     const t = hsm.settings.stateTitleHeightMm;
     // console.log(`[Cstate.canInsertNote](${ this.id }) idz.y:${ idz.y; } `);
-    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    const [x0, y0] = [idz.x, idz.y];
     if (x0 < m || x0 >= this.geo.width - w - m) return false;
     if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
     for (let child of this.children) {

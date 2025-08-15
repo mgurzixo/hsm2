@@ -194,8 +194,6 @@ export class Cfolio extends CbaseRegion {
     this.children.push(myState);
     modeRef.value = "";
     const m = U.pToMmL(hsm.settings.cursorMarginP);
-
-    // const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     const newIdz = { id: myState.id, zone: "BR", x: x - this.geo.x0, y: y - this.geo.y0 };
     console.log(`[Cfolio.insertState] newIdz:${JSON.stringify(newIdz)} `);
     hCtx.setIdz(newIdz);

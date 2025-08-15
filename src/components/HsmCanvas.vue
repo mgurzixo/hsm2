@@ -99,7 +99,7 @@ V.watch(dialogToggle, (newToggle) => {
 });
 
 function openElementDialog(myDialog, myElement) {
-  console.log(`[HsmCanvas.openElementDialog]`);
+  // console.log(`[HsmCanvas.openElementDialog]`);
   dialogComponent.value = myDialog;
   if (dialogComponent.value) {
     element.value = myElement;
