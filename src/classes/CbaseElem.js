@@ -118,7 +118,7 @@ export class CbaseElem {
   }
 
   doubleClick(x, y) { }
-  async dragStart() { }
+  async dragStart(xP, yP) { }
   drag(dx, dy) { }
 
   adjustTrAnchors(changedId) {

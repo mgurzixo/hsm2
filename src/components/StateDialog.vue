@@ -10,19 +10,19 @@
     </q-bar>
 
     <div class="q-pa-sm my-region">
-      <div class="q-pa-sm q-mb-md">
+      <div class="q-pa-sm q-mb-md" spellcheck="false">
         <q-input dense outlined v-model="element.name" label="Name:" @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm">
+      <div class="q-pa-sm" spellcheck="false">
         <q-input dense v-model="element.entry" label="Entry:" outlined @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm">
+      <div class="q-pa-sm" spellcheck="false">
         <q-input dense v-model="element.exit" label="Exit:" outlined @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm">
+      <div class="q-pa-sm" spellcheck="false">
         <q-input dense v-model="element.include" label="Include:" outlined autogrow @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm">
+      <div class="q-pa-sm" spellcheck="false">
         <q-input dense v-model="element.comment" label="Comment:" outlined autogrow @update:model-value="onChange" />
       </div>
       <div class="q-pr-sm row no-wrap items-center">
@@ -107,10 +107,10 @@ const props = defineProps({
 });
 
 function onChange() {
-  console.log(`[trDialog.onChange]`);
+  console.log(`[stateDialog.onChange]`);
   // eslint-disable-next-line vue/no-mutating-props
   props.element.name = U.underscorize(props.element.name);
-  hsm.draw();
+  props.element.paintInterior();
 }
 
 V.watch(stateHue, (baseColor) => {
@@ -126,7 +126,7 @@ V.watch(stateHue, (baseColor) => {
   // eslint-disable-next-line vue/no-mutating-props
   props.element.color = baseColor;
   props.element.setStyles();
-  hsm.draw();
+  props.element.paintInterior();
   // console.log(`[StateDialog.watch.stateColor] msBg:${msBg.value}`);
 });
 

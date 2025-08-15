@@ -121,8 +121,10 @@ function adjustSizes() {
 
 V.onUnmounted(() => {
   // console.log(`[HsmCanvas.onUnmounted]`);
-  rootElem.innerHTML = ''; // Avoid previous vals with HMR
-  removeRootElemListeners(rootElem);
+  if (rootElem) {
+    rootElem.innerHTML = ''; // Avoid previous vals with HMR
+    removeRootElemListeners(rootElem);
+  }
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;;

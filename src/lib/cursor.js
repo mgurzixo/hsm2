@@ -14,13 +14,14 @@ function assets(icon, defVal) {
 
 export function defineCursor(idz) {
   let cursor;
+  let elem = U.getElemById(idz.id);
   // console.log(`[cursor.defineCursor] (${idz.id}) mode:'${modeRef.value}' zone:${idz.zone}`);
 
   if (modeRef.value == "inserting-state") {
     // console.log(`[cursor.defineCursor] in IS (${idz.id}) id:${idz.id} zone:${idz.zone}`);
     if (idz.id.startsWith("F") || idz.id.startsWith("S")) {
-      if (this.canInsertState(idz)) return assets("state16x16.png", "default");
-      // if (this.canInsertState(idz)) return "grabbing";
+      if (elem.canInsertState(idz)) return assets("state16x16.png", "default");
+      // if (elem.canInsertState(idz)) return "grabbing";
       else return assets("no-drop16x16.png", "no-drop");
     }
     return assets("no-drop16x16.png", "no-drop");
@@ -28,8 +29,8 @@ export function defineCursor(idz) {
   else if (modeRef.value == "inserting-trans") {
     // console.log(`[cursor.defineCursor] in IT (${idz.id}) id:${idz.id} zone:${idz.zone}`);
     if (idz.id.startsWith("S")) {
-      if (this.canInsertTr(idz)) return assets("anchor16x16.png", "default");
-      // if (this.canInsertState(idz)) return "grabbing";
+      if (elem.canInsertTr(idz)) return assets("anchor16x16.png", "default");
+      // if (elem.canInsertState(idz)) return "grabbing";
       else return assets("no-drop16x16.png", "no-drop");
     }
     return assets("no-drop16x16.png", "no-drop");
@@ -37,8 +38,8 @@ export function defineCursor(idz) {
   else if (modeRef.value == "inserting-note") {
     // console.log(`[cursor.defineCursor] in IT (${idz.id}) id:${idz.id} zone:${idz.zone}`);
     if (idz.id.startsWith("F") || idz.id.startsWith("S")) {
-      if (this.canInsertNote(idz)) return assets("note16x16.png", "default");
-      // if (this.canInsertState(idz)) return "grabbing";
+      if (elem.canInsertNote(idz)) return assets("note16x16.png", "default");
+      // if (elem.canInsertState(idz)) return "grabbing";
       else return assets("no-drop16x16.png", "no-drop");
     }
     return assets("no-drop16x16.png", "no-drop");

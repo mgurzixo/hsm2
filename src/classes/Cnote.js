@@ -6,6 +6,7 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { noteStyles } from "src/lib/styles";
 import { mdToCanvas } from "src/lib/md";
+import NoteDialog from "src/components/NoteDialog.vue";
 
 export class Cnote extends CbaseElem {
   constructor(parent, noteOptions, type = "N") {
@@ -38,7 +39,7 @@ export class Cnote extends CbaseElem {
 
   openDialog() {
     if (this.togetherSelected) this.parent.openDialog();
-    else hsm.openDialog(this);
+    else hsm.openDialog(NoteDialog, this);
   }
 
   async dragStart() {
@@ -131,7 +132,7 @@ export class Cnote extends CbaseElem {
   checkOpenDialogAndEndDrag() {
     // console.log(`[Cnote.checkOpenDialogAndEndDrag] (${this.id}) justCreated:${this.justCreated}`);
     if (this.justCreated == true) {
-      hsm.openDialog(this);
+      hsm.openDialog(NoteDialog, this);
       delete this.justCreated;
     }
     hCtx.dragEnd();

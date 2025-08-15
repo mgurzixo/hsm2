@@ -137,16 +137,16 @@ export class Chsm extends CbaseElem {
       case "":
         // folio is responsible when dragging background
         if (idz.id == this.id) await hCtx.folio.dragStart(xP, yP);
-        else await elem.dragStart();
+        else await elem.dragStart(xP, yP);
         break;
       case "inserting-state":
-        if (elem.canInsertState(idz)) await elem.dragStart();
+        if (elem.canInsertState(idz)) await elem.dragStart(xP, yP);
         break;
       case "inserting-trans":
-        if (elem.canInsertTr(idz)) await elem.dragStart();
+        if (elem.canInsertTr(idz)) await elem.dragStart(xP, yP);
         break;
       case "inserting-note":
-        if (elem.canInsertNote(idz)) await elem.dragStart();
+        if (elem.canInsertNote(idz)) await elem.dragStart(xP, yP);
         break;
     }
   }

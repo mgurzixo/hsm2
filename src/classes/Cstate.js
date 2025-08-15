@@ -9,6 +9,7 @@ import { stateStyles } from "src/lib/styles";
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
 import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
+import StateDialog from "src/components/StateDialog.vue";
 
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
@@ -118,6 +119,7 @@ export class Cstate extends CbaseState {
   }
 
   paintInterior() {
+    this.myElem.replaceChildren();
     const se = this.myElem.style;
     const g = this.geo;
     se.borderRadius = hsm.settings.stateRadiusMm + "mm";
@@ -509,13 +511,13 @@ export class Cstate extends CbaseState {
   }
 
   openDialog() {
-    hsm.openDialog(this);
+    hsm.openDialog(StateDialog, this);
   }
 
   checkOpenDialogAndEndDrag() {
     // console.log(`[Cstate.checkOpenDialogAndEndDrag](${ this.id }) justCreated:${ this.justCreated; } `);
     if (this.justCreated == true) {
-      hsm.openDialog(this);
+      hsm.openDialog(StateDialog, this);
       delete this.justCreated;
     }
     hCtx.dragEnd();

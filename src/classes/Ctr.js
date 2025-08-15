@@ -7,6 +7,7 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { Ctext } from "src/classes/Cnote";
 // import { Ctext } from "src/classes/Ctext";
 import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
+import TrDialog from "src/components/TrDialog.vue";
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -155,7 +156,7 @@ export class Ctr extends CbaseElem {
   }
 
   openDialog() {
-    hsm.openDialog(this);
+    hsm.openDialog(TrDialog, this);
   }
 
   dragEnd(dx, dy) {
@@ -170,7 +171,7 @@ export class Ctr extends CbaseElem {
     delete this.to.prevY;
     // console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
     if (this.justCreated == true) {
-      hsm.openDialog(this);
+      hsm.openDialog(TrDialog, this);
       delete this.justCreated;
     }
     if (hCtx.getErrorId() == this.id) {

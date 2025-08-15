@@ -12,7 +12,6 @@ import { fromString, applyToPoint, inverse, toCSS, compose } from 'transformatio
 import FolioDialog from "src/components/FolioDialog.vue";
 
 let noteTo;
-const pxPerMm = 3.78;
 
 function deferredNotesUpdate() {
   if (noteTo) clearTimeout(noteTo);
@@ -34,10 +33,10 @@ export class Cfolio extends CbaseRegion {
     const s = this.myElem.style;
     const g = this.geo;
     this.setGeometry();
-    return; // ICI
     for (let trOptions of folioOptions.trs) {
       this.addTr(trOptions); // BEWARE async
     }
+    return; // ICI
     for (let noteOptions of folioOptions.notes) {
       this.addNote(noteOptions); // BEWARE async
     }
@@ -98,6 +97,7 @@ export class Cfolio extends CbaseRegion {
     const idz = this.idz();
     // const [x, y] = [idz.x, idz.y];
     const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+    console.log(`[Cfolio.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
     switch (modeRef.value) {
       case "inserting-state": {
         this.insertState(x, y);
@@ -150,7 +150,6 @@ export class Cfolio extends CbaseRegion {
   }
 
   async addTr(trOptions) {
-    return; // ICI
     const myTr = new Ctr(this, trOptions, "T");
     this.trs.push(myTr);
     // await myTr.load(trOptions);
@@ -173,7 +172,7 @@ export class Cfolio extends CbaseRegion {
   }
 
   async insertState(x, y) {
-    // console.log(`[Cfolio.insertState] Inserting state x:${ x.toFixed(); } `);
+    // console.log(`[Cfolio.insertState] Inserting state x:${x.toFixed()} `);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
     const id = "S" + hsm.newSernum();
@@ -196,9 +195,11 @@ export class Cfolio extends CbaseRegion {
     modeRef.value = "";
     const m = U.pToMmL(hsm.settings.cursorMarginP);
 
-    const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
+    // const newIdz = myState.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
+    const newIdz = { id: myState.id, zone: "BR", x: x - this.geo.x0, y: y - this.geo.y0 };
+    console.log(`[Cfolio.insertState] newIdz:${JSON.stringify(newIdz)} `);
     hCtx.setIdz(newIdz);
-    await myState.dragStart(); // Will create dragCtx
+    await myState.dragStart(U.mmToPx(x), U.mmToPx(y)); // Will create dragCtx
   }
 
   async insertNote(x, y) {
