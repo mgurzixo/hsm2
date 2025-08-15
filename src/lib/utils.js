@@ -26,6 +26,7 @@ export function rectsIntersect(r1, r2) {
   if (r2.x0 + r2.width < r1.x0 - dl) return false;
   if (r1.y0 + r1.height < r2.y0 - dl) return false;
   if (r2.y0 + r2.height < r1.y0 - dl) return false;
+  // console.log(`[utils.rectsIntersect] They intersect!`);
   return true;
 }
 
@@ -176,6 +177,20 @@ export function pathRoundedRectP(px, py, pwidth, pheight, pradius) {
   cCtx.lineTo(px, py + pradius);
   cCtx.quadraticCurveTo(px, py, px + pradius, py);
   cCtx.closePath();
+}
+
+export function raiseElement(tabElements, myId) {
+  let iFound;
+  for (iFound in tabElements) {
+    if (tabElements[iFound].id == myId) break;
+  }
+  if (iFound >= tabElements.length - 1) return;
+  const elem = tabElements[iFound];
+  tabElements.splice(iFound, 1);
+  tabElements.push(elem);
+  const parentEl = elem.myElem.parentElement;
+  elem.myElem.remove;
+  parentEl.append(elem.myElem);
 }
 
 export function distToSegment(p, v, w) {

@@ -229,10 +229,6 @@ export class Cfolio extends CbaseRegion {
     await myNote.dragStart(); // Will create dragCtx
   }
 
-  raiseChildR(id) {
-    super.raiseChildR(id);
-  }
-
   adjustTrAnchors(changedId) {
     for (let child of this.children) {
       child.adjustTrAnchors(changedId);

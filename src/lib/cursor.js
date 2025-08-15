@@ -45,10 +45,10 @@ export function defineCursor(idz) {
     return assets("no-drop16x16.png", "no-drop");
   }
 
-  if (hCtx.getErrorId() == idz.id) {
-    cursor = assets("no-drop16x16.png", "no-drop");
-    return cursor;
-  }
+  // if (hCtx.getErrorId() == idz.id) {
+  //   cursor = assets("no-drop16x16.png", "no-drop");
+  //   return cursor;
+  // }
   // console.log(`[cursor.defineCursor] in Default (${idz.id}) id:${idz.id} zone:${idz.zone} type:${idz.type}`);
   if (Number.isInteger(idz.zone)) {
     if (idz.type == "V") cursor = "col-resize";

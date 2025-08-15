@@ -404,7 +404,7 @@ export class Cstate extends CbaseState {
     }
     // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
-    this.parent.raiseChildR(this.id);
+    this.parent.raiseChild(this.id);
     hsm.adjustTrAnchors(this.id);
     return this;
   }
@@ -509,10 +509,6 @@ export class Cstate extends CbaseState {
     this.geo.height = height;
     this.geo.width = width;
     // console.log(`[Cstate.drag](${this.id}) width:${width} `);
-    if (!this.isRevertingDrag) {
-      if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
-      else hCtx.setErrorId(null);
-    }
     this.paintBorder();
     const mat = {};
     Object.assign(mat, this.geo.mat);
@@ -520,6 +516,10 @@ export class Cstate extends CbaseState {
     mat.f = d.mat.f + df;
     // console.log(`[Cfolio.drag] mat1:${ JSON.stringify(mat) } `);
     this.setGeoFromMat(mat);
+    if (!this.isRevertingDrag) {
+      if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
+      else hCtx.setErrorId(null);
+    }
     hsm.adjustTrAnchors(this.id);
     this.setGeometry();
   }

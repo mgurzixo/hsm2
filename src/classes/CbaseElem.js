@@ -153,19 +153,15 @@ export class CbaseElem {
   }
 
   raiseChild(childId) {
-    const c = [];
-    let found;
-    for (let child of this.children) {
-      if (child.id != childId) c.push(child);
-      else found = child;
-    }
-    if (found) c.push(found);
-    this.children = c;
-  }
-
-  raiseChildR(childId) {
-    this.raiseChild(childId);
-    this.parent?.raiseChildR(this.id);
+    // const c = [];
+    // let found;
+    // for (let child of this.children) {
+    //   if (child.id != childId) c.push(child);
+    //   else found = child;
+    // }
+    // if (found) c.push(found);
+    // this.children = c;
+    U.raiseElement(this.children, childId);
   }
 
   makeIdz(x, y, idz) {

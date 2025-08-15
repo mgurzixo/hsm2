@@ -61,7 +61,7 @@ export class Cnote extends CbaseElem {
     };
     // console.log(`[Cnote.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
-    // this.parent.raiseChildR(this.id); // TODO
+    // this.parent.raiseChild(this.id); // TODO
     return this;
   }
 
