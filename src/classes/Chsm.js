@@ -91,7 +91,7 @@ export class Chsm extends CbaseElem {
   }
 
   clearSelections() {
-    console.log(`[Chsm.clearSelections]`);
+    // console.log(`[Chsm.clearSelections]`);
     hCtx.setSelectedId(null);
     hCtx.folio.setSelected(null);
   }
@@ -108,7 +108,7 @@ export class Chsm extends CbaseElem {
     let oldElem = null;
     if (hCtx.getSelectedId()) oldElem = U.getElemById(hCtx.getSelectedId());
     // console.log(`[Chsm.click] newElem:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
-    console.log(`[Chsm.click] got click on:${newElem?.id} SelectedId:${hCtx.getSelectedId()} oldElem:${oldElem}`);
+    // console.log(`[Chsm.click] got click on:${newElem?.id} SelectedId:${hCtx.getSelectedId()} oldElem:${oldElem}`);
     if (oldElem) {
       this.clearSelections();
     }

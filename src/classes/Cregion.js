@@ -127,7 +127,7 @@ export class CregionWithStates extends CbaseRegion {
     // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
-    console.log(`[Cregion.insertState] Inserting state x:${x.toFixed()} y:${y.toFixed()}`);
+    // console.log(`[Cregion.insertState] Inserting state x:${x.toFixed()} y:${y.toFixed()}`);
     const h = hsm.settings.stateMinHeight;
     const w = hsm.settings.stateMinWidth;
     const id = "S" + hsm.newSernum();
@@ -151,7 +151,7 @@ export class CregionWithStates extends CbaseRegion {
     modeRef.value = "";
     setDragOffset([U.mmToPx(w), U.mmToPx(h)]);
     const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
-    console.log(`[Cregion.insertState] newIdz:${JSON.stringify(newIdz)} `);
+    // console.log(`[Cregion.insertState] newIdz:${JSON.stringify(newIdz)} `);
     hCtx.setIdz(newIdz);
     await myState.dragStart(xS, yS); // Will create dragCtx
   }

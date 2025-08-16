@@ -86,7 +86,7 @@ export class Cfolio extends CregionWithStates {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
-    console.log(`[Cfolio.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
+    // console.log(`[Cfolio.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
     switch (modeRef.value) {
       case "inserting-state": {
         this.insertState(x, y);
