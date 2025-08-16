@@ -13,7 +13,7 @@
     stateMinWidth: 10,
     stateMinHeight: 10,
     minDistanceMm: 1,
-    dragResetSpeed: 3,
+    dragResetSpeed: 15,
     maxTransRadiusMm: 4,
     initialTransLength: 2,
     defaultSegmentLengthMm: 10,

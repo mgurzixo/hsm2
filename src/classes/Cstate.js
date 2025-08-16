@@ -17,7 +17,7 @@ class CbaseState extends CbaseElem {
     const g = this.geo;
     this.isBaseState = true;
     this.isRevertingDrag = false;
-    console.log(`[Cstate.constructor] New state id:${this.id} parent:${this.parent.id} pelId:${this.myElem.parentElement.id} x0:${g.x0} y0:${g.y0}`);
+    // console.log(`[Cstate.constructor] New state id:${this.id} parent:${this.parent.id} pelId:${this.myElem.parentElement.id} x0:${g.x0} y0:${g.y0}`);
     this.setGeometry();
   }
 
@@ -505,19 +505,20 @@ export class Cstate extends CbaseState {
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
     // Restore original segments
     function myCb() {
+      const elem = U.getElemById(hCtx.draggedId);
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
       // console.log(`[Cstate.dragRevert] #${ currentIteration; } ease:${ ease.toFixed(2); } `);
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       hsm.drag(dx, dy);
-      if (currentIteration >= totalIterations) {
-        const elem = U.getElemById(hCtx.draggedId);
+      if (!elem.parent.childIntersect(elem) || currentIteration > totalIterations) {
         elem.isRevertingDrag = false;
         for (const trId of Object.keys(dragCtx.segments0)) {
           const tr = U.getElemById(trId);
           tr.segments = dragCtx.segments0[trId.toString()];
         }
         hCtx.setErrorId(null);
+        elem.paintBorder();
         elem.checkOpenDialogAndEndDrag();
       } else {
         currentIteration++;
@@ -545,11 +546,10 @@ export class Cstate extends CbaseState {
     //     this.children[0].setGeometry();
     //   }
     // }
-    // ICI
-    // if (hCtx.getErrorId() == this.id) {
-    //   this.dragRevert(dx, dy);
-    //   return false;
-    // }
+    if (hCtx.getErrorId() == this.id) {
+      this.dragRevert(dxS, dyS);
+      return false;
+    }
     this.checkOpenDialogAndEndDrag();
     return true;
   }

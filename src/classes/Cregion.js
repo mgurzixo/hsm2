@@ -18,7 +18,7 @@ export class CregionWithStates extends CbaseRegion {
   constructor(parent, options, type) {
     super(parent, options, type);
     const g = this.geo;
-    console.log(`[CbaseRegion.constructor] New region (${this.id}) parent:${this.parent.id} x0:${g.x0} y0:${g.y0}`);
+    // console.log(`[CbaseRegion.constructor] New region (${this.id}) parent:${this.parent.id} x0:${g.x0} y0:${g.y0}`);
     // console.log(`[Cregion.constructor] (${this.id}) mat:${JSON.stringify(g.mat)}`);
     this.setGeometry();
     // this.myElem.innerHTML = `<div>${this.id} of state ${this.parent.id}</div>`;
@@ -51,8 +51,8 @@ export class CregionWithStates extends CbaseRegion {
     s.left = "0px";
     s.width = g.width + "mm";
     s.height = g.height + "mm";
-    s.background = "#ff000030";
-    // s.background = "transparent";
+    // s.background = "#ff000030";
+    s.background = "transparent";
   }
 
   setSelected(val) {

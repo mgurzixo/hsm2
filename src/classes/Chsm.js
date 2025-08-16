@@ -96,12 +96,12 @@ export class Chsm extends CbaseElem {
   }
 
   handleClick(xDown, yDown) {
-    console.log(`[Chsm.click] (xDown:${xDown}, yDown:${yDown})`);
+    // console.log(`[Chsm.click] (xDown:${xDown}, yDown:${yDown})`);
     let idz = this.makeIdzP(xDown, yDown);
     hCtx.setIdz(idz);
     if (idz.id == this.id) return;
     const newElem = this.hElems.getElemById(idz.id);
-    console.log(`[Chsm.click] got click on:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
+    // console.log(`[Chsm.click] got click on:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
     let oldElem = null;
     if (hCtx.getSelectedId()) oldElem = U.getElemById(hCtx.getSelectedId());
     // console.log(`[Chsm.click] newElem:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
