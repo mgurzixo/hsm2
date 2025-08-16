@@ -26,9 +26,13 @@ export class CbaseElem {
     this.children = [];
     if (options.elem) this.myElem = options.elem;
     else {
-      this.myElem = document.createElement("div");
-      this.parent.myElem.append(this.myElem);
+      if (type == "T") {
+        // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
+        this.myElem = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      }
+      else this.myElem = document.createElement("div");
     }
+    if (this.parent?.myElem) this.parent.myElem.append(this.myElem);
     const s = this.myElem.style;
     s.position = "absolute";
     s.overflow = "hidden";
@@ -121,12 +125,12 @@ export class CbaseElem {
   async dragStart(xP, yP) { }
   drag(dx, dy) { }
 
-  adjustTrAnchors(changedId) {
-    // console.log(`[CbaseElem.adjustTrAnchors] id:${this.id}`);
-    for (let child of this.children) {
-      child.adjustTrAnchors(changedId);
-    }
-  }
+  // adjustTrAnchors(changedId) {
+  //   // console.log(`[CbaseElem.adjustTrAnchors] id:${this.id} TODO`);
+  //   for (let child of this.children) {
+  //     child.adjustTrAnchors(changedId);
+  //   }
+  // }
 
   dragEnd(dx, dy) {
     console.warn(`[CbaseElem.dragEnd] id:${this.id}`);

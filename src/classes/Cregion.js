@@ -172,20 +172,8 @@ export class CregionWithStates extends CbaseRegion {
     return true;
   }
 
-}
-
-export class CExternalRegion extends CbaseRegion {
-  constructor(parent, options) {
-    super(parent, options, "E");
-  }
-}
-
-export class Cregion extends CregionWithStates {
-  constructor(parent, options) {
-    super(parent, options, "R");
-  }
-
   async dragStart(xS, yS) {
+    console.log(`[Cregion.dragStart]`);
     const idz = this.idz();
     // const [x, y] = [idz.x, idz.y];
     // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
@@ -203,8 +191,8 @@ export class Cregion extends CregionWithStates {
       default:
         modeRef.value = "";
     }
-    // console.log(`[Cregion.dragStart] e:${mat.e}`);
     hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
+    // console.log(`[Cregion.dragStart] dragCtx:${JSON.stringify(hCtx.getDragCtx())}`);
     // console.log(`[Cregion.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
   }
 
@@ -223,6 +211,7 @@ export class Cregion extends CregionWithStates {
   dragEnd(dxS, dyS) {
     this.drag(dxS, dyS);
   }
+
 
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
@@ -257,4 +246,18 @@ export class Cregion extends CregionWithStates {
     const idz = this.makeIdz(x, y, myIdz);
     return idz;
   }
+}
+
+export class CExternalRegion extends CbaseRegion {
+  constructor(parent, options) {
+    super(parent, options, "E");
+  }
+}
+
+export class Cregion extends CregionWithStates {
+  constructor(parent, options) {
+    super(parent, options, "R");
+  }
+
+
 }

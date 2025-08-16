@@ -12,13 +12,10 @@ export function anchorToXY(anchor, pos = anchor.pos) {
   const elem = hElems.getElemById(anchor.id);
   if (pos > 1) pos = 1;
   if (pos < 0) pos = 0;
-  let [x0, y0] = [elem.geo.x0, elem.geo.y0];
-  if (elem.geo.xx0 == undefined) {
-    for (let parent = elem.parent; parent; parent = parent.parent) {
-      x0 += parent.geo.x0;
-      y0 += parent.geo.y0;
-    }
-  } else[x0, y0] = [elem.geo.xx0, elem.geo.yy0];
+  const bb = elem.myElem.getBoundingClientRect();
+  const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
+  let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
+  [x0, y0] = [x0 / U.pxPerMm, y0 / U.pxPerMm];
   const r = hsm.settings.stateRadiusMm;
   const w = elem.geo.width;
   const h = elem.geo.height;

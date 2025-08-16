@@ -91,13 +91,13 @@ ipcMain.handle('doPdf', async (event, data) => {
   return null;
 });
 
-if (process.env.DEV) {
-  app.whenReady().then(() => {
-    installExtension([VUEJS_DEVTOOLS, CSS_STACKING_INSPECTOR])
-      .then(([redux, react]) => console.log(`Added Extensions:  ${redux.name}, ${react.name}`))
-      .catch((err) => console.log('An error occurred: ', err));
-  });
-}
+// if (process.env.DEV) {
+//   app.whenReady().then(() => {
+//     installExtension([VUEJS_DEVTOOLS, CSS_STACKING_INSPECTOR])
+//       .then(([redux, react]) => console.log(`Added Extensions:  ${redux.name}, ${react.name}`))
+//       .catch((err) => console.log('An error occurred: ', err));
+//   });
+// }
 
 app.whenReady().then(createWindow);
 

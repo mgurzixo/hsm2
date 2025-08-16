@@ -324,10 +324,11 @@ export class Cstate extends CbaseState {
     const idz = this.idz();
     const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
     // [x,y] in mm in this.geo.x/y frame
-    // console.log(`[Cstate.dragStart](${ this.id }) x:${ x?.toFixed(); } `);
+    // console.log(`[Cstate.dragStart](${this.id}) x:${x?.toFixed()} `);
     // console.log(
     //   `[Cstate.dragStart] ${ this.id; } yy:${ yy?.toFixed(); } y:${ y?.toFixed(); } y0:${ this.geo.y0; } `,
     // );
+    hsm.setSelected(this.id);
     switch (modeRef.value) {
       case "inserting-state": {
         await this.insertState(x, y);
@@ -355,12 +356,13 @@ export class Cstate extends CbaseState {
       segments0: {},
       mat: this.geo.mat,
     };
-    for (let tr of hCtx.folio.trs) {
-      if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
-        dragCtx.segments0[tr.id] = structuredClone(tr.segments);
-        // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.segments0[tr.id]; } `);
-      }
-    }
+    // ICI
+    // for (let tr of hCtx.folio.trs) {
+    //   if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
+    //     dragCtx.segments0[tr.id] = structuredClone(tr.segments);
+    //     // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.segments0[tr.id]; } `);
+    //   }
+    // }
     // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
     this.parent.raiseChild(this.id);

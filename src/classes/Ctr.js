@@ -15,26 +15,60 @@ export class Ctr extends CbaseElem {
     this.lineWidth = 1.5;
     this.isBaseTr = true;
     this.oldTagText = "";
-  }
-
-  async load(transOptions) {
-    this.segments = transOptions.segments;
-    this.from = transOptions.from;
-    this.to = transOptions.to;
-    this.isInternal = transOptions.isInternal || false;
-    if (transOptions.color) this.color = transOptions.color;
+    const l0 = 20;
+    const l1 = 20;
+    const r = 5;
+    const [x0, y0] = [20, 10];
+    const [x1, y1] = [50, 50];
+    const [dx, dy] = [x1 - x0, y1 - y0];
+    const [c1x, c1y] = [x0 + dx, y0];
+    this.segments = options.segments;
+    this.from = options.from;
+    this.to = options.to;
+    this.isInternal = options.isInternal || false;
+    if (options.color) this.color = options.color;
     else delete (this.color);
-    this.trigger = transOptions.trigger;
-    this.guard = transOptions.guard;
-    this.effect = transOptions.effect;
-    this.include = transOptions.include;
-    this.comment = transOptions.comment;
+    this.trigger = options.trigger;
+    this.guard = options.guard;
+    this.effect = options.effect;
+    this.include = options.include;
+    this.comment = options.comment;
   }
 
   async onLoaded() {
-    // console.log(`[Ctr.onLoaded] (${this.id})}`);
     if (this.segments.length == 0) this.segments = this.getInitialSegments();
     this.makeTag();
+    const el = this.myElem;
+    // const fx = [hCtx.folio.geo.width * U.pxPerMm, hCtx.folio.geo.height * U.pxPerMm];
+    const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
+    // console.log(`[Ctr.onLoaded] (${this.id}) width:${fx[0]}`);
+    el.setAttribute("width", fx[0] + "mm");
+    el.setAttribute("height", fx[1] + "mm");
+    // el.style.width = fx[0].toFixed(2);
+    // el.style.height = fx[0].toFixed(2);
+    this.paintSegments();
+  }
+
+  paintSegments() {
+    // console.log(`[Ctr.paintSegments] (${this.id}) segs:${JSON.stringify(this.segments)}`);
+    // return;
+
+    let svg = `<svg version="1.1"
+  xmlns="http://www.w3.org/2000/svg">
+  <path stroke="red" stroke-width="2" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
+    let [x0, y0] = T.anchorToXY(this.from);
+    [x0, y0] = [x0 * U.pxPerMm, y0 * U.pxPerMm];
+    let [x1, y1] = T.anchorToXY(this.to);
+    [x1, y1] = [x1 * U.pxPerMm, y1 * U.pxPerMm];
+    // console.log(`[Ctr.paintSegments] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()} `);
+    // console.log(`[Ctr.paintSegments] (${this.id}) x1:${x1} y1:${y1} `);
+
+    svg += `
+       "M ${x0} ${y0}
+        L ${x1} ${y1}
+        "`;
+    svg += `> </svg>`;
+    this.myElem.innerHTML = svg;
   }
 
   updateNotes() {
@@ -60,9 +94,8 @@ export class Ctr extends CbaseElem {
     else {
       if (this.text == text) return;
       this.tag.text = text;
-      this.tag.deleteCanvas();
-      // console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
     }
+    // console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
   }
 
   setSelected(val) {
@@ -181,7 +214,6 @@ export class Ctr extends CbaseElem {
     hsm.clearSelections();
     return true;
   }
-
 
   getInitialSegments() {
     let segments = [];
@@ -403,10 +435,10 @@ export class Ctr extends CbaseElem {
   }
 
   adjustTrAnchors(changedId) {
-    // if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
-    // console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
-    this.adjustSegments();
-    // }
+    if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
+      console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
+      this.adjustSegments();
+    }
   }
 
   makeIdz(x, y, idz) {

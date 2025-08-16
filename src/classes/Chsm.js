@@ -75,7 +75,6 @@ export class Chsm extends CbaseElem {
     return null;
   }
 
-
   destroy() { // TODO
     // super.destroy();
     // delete this.activeFolio;
@@ -87,13 +86,22 @@ export class Chsm extends CbaseElem {
 
   save() { }
 
-  async draw2() {
+  adjustTrAnchors(changedId) {
+    // console.log(`[CbaseElem.adjustTrAnchors] id:${this.id} TODO`);
+    hCtx.folio.adjustTrAnchors(changedId);
   }
 
   clearSelections() {
     // console.log(`[Chsm.clearSelections]`);
     hCtx.setSelectedId(null);
     hCtx.folio.setSelected(null);
+  }
+
+  setSelected(id) {
+    if (hCtx.getSelectedId()) this.clearSelections();
+    const newElem = this.hElems.getElemById(id);
+    newElem.setSelected(true);
+    hCtx.setSelectedId(newElem.id);
   }
 
   handleClick(xDown, yDown) {

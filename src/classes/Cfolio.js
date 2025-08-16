@@ -60,6 +60,13 @@ export class Cfolio extends CregionWithStates {
     s.background = hsm.settings.styles.folioBackground;
   }
 
+  adjustTrAnchors(changedId) {
+    // console.log(`[Cfolio.adjustTrAnchors] id:${this.id}
+    for (let tr of this.trs) {
+      if (tr.from.id == changedId || tr.to.id == changedId) tr.paintSegments();
+    }
+  }
+
   async wheelP(xS, yS, dyS) {
     const deltas = -dyS / hsm.settings.deltaMouseWheel;
     const g = this.geo;
@@ -82,27 +89,27 @@ export class Cfolio extends CregionWithStates {
     this.setMat(mat1);
   }
 
-  async dragStart(xS, yS) {
-    const idz = this.idz();
-    const [x, y] = [idz.x, idz.y];
-    // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
-    // console.log(`[Cfolio.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
-    switch (modeRef.value) {
-      case "inserting-state": {
-        this.insertState(x, y);
-        return;
-      }
-      case "inserting-note": {
-        await this.insertNote(x, y);
-        return;
-      }
-      default:
-        modeRef.value = "";
-    }
-    // console.log(`[Cfolio.dragStart] e:${mat.e}`);
-    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
-    // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
-  }
+  // async dragStart(xS, yS) {
+  //   const idz = this.idz();
+  //   const [x, y] = [idz.x, idz.y];
+  //   // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+  //   console.log(`[Cfolio.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
+  //   switch (modeRef.value) {
+  //     case "inserting-state": {
+  //       this.insertState(x, y);
+  //       return;
+  //     }
+  //     case "inserting-note": {
+  //       await this.insertNote(x, y);
+  //       return;
+  //     }
+  //     default:
+  //       modeRef.value = "";
+  //   }
+  //   // console.log(`[Cfolio.dragStart] e:${mat.e}`);
+  //   hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
+  //   // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
+  // }
 
   // drag(dxS, dyS) {
   //   // dxS, dyS are in screen (pixel) space
@@ -151,10 +158,10 @@ export class Cfolio extends CregionWithStates {
     for (let child of this.children) {
       await child.onLoaded();
     }
-    return; // ICI
     for (let tr of this.trs) {
       await tr.onLoaded();
     }
+    return; // ICI
     for (let note of this.notes) {
       await note.onLoaded();
     }
@@ -189,14 +196,15 @@ export class Cfolio extends CregionWithStates {
     await myNote.dragStart(); // Will create dragCtx
   }
 
-  adjustTrAnchors(changedId) {
-    for (let child of this.children) {
-      child.adjustTrAnchors(changedId);
-    }
-    for (let tr of this.trs) {
-      tr.adjustTrAnchors(changedId);
-    }
-  }
+  // adjustTrAnchors(changedId) {
+  //   // ICI
+  //   // for (let child of this.children) {
+  //   //   child.adjustTrAnchors(changedId);
+  //   // }
+  //   // for (let tr of this.trs) {
+  //   //   tr.adjustTrAnchors(changedId);
+  //   // }
+  // }
 
   updateNotes() {
     // console.log(`[Cfolio.updateNotes]`);

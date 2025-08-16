@@ -188,7 +188,17 @@ export function raiseElement(tabElements, myId) {
   const elem = tabElements[iFound];
   tabElements.splice(iFound, 1);
   tabElements.push(elem);
+  // In case of folio, insert before transitions
+  //
   const parentEl = elem.myElem.parentElement;
+  if (elem.parent.id.startsWith("F")) {
+    const firstTr = hCtx.folio.trs[0];
+    if (firstTr) {
+      parentEl.insertBefore(elem.myElem, firstTr.myElem);
+      return;
+    }
+  }
+  // Otherwise insert at end
   elem.myElem.remove;
   parentEl.append(elem.myElem);
 }
