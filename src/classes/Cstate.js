@@ -93,6 +93,7 @@ export class Cstate extends CbaseState {
   setSelected(val) {
     // console.log(`[Cstate.setSelected] (${this.id}) setSelected:${val}`);
     super.setSelected(val);
+    this.paintBorder();
     for (let note of this.notes) {
       note.setSelected(val);
     }

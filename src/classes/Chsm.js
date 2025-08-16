@@ -91,6 +91,7 @@ export class Chsm extends CbaseElem {
   }
 
   clearSelections() {
+    console.log(`[Chsm.clearSelections]`);
     hCtx.setSelectedId(null);
     hCtx.folio.setSelected(null);
   }
@@ -99,19 +100,21 @@ export class Chsm extends CbaseElem {
     // console.log(`[Chsm.click] (xDown:${xDown}, yDown:${yDown})`);
     let idz = this.makeIdzP(xDown, yDown);
     hCtx.setIdz(idz);
-    if (idz.id == this.id) return;
+    if (idz.id == this.id) {
+      this.clearSelections();
+      return;
+    }
     const newElem = this.hElems.getElemById(idz.id);
-    // console.log(`[Chsm.click] got click on:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
     let oldElem = null;
     if (hCtx.getSelectedId()) oldElem = U.getElemById(hCtx.getSelectedId());
     // console.log(`[Chsm.click] newElem:${newElem?.id} SelectedId:${hCtx.getSelectedId()}`);
+    console.log(`[Chsm.click] got click on:${newElem?.id} SelectedId:${hCtx.getSelectedId()} oldElem:${oldElem}`);
     if (oldElem) {
-      hCtx.setSelectedId(null);
-      oldElem.setSelected(false);
+      this.clearSelections();
     }
     else {
-      hCtx.setSelectedId(newElem.id);
       newElem.setSelected(true);
+      hCtx.setSelectedId(newElem.id);
     }
     idz = this.makeIdzP(xDown, yDown);
   }

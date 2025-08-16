@@ -58,9 +58,6 @@ export class CregionWithStates extends CbaseRegion {
   setSelected(val) {
     // console.log(`[Chsm.setSelected](${ this.id }) } setSelected: ${ val; } `);
     super.setSelected(val);
-    for (let state of this.children) {
-      state.setSelected(val);
-    }
     for (let note of this.notes) {
       note.setSelected(val);
     }
