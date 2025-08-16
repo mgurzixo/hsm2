@@ -19,7 +19,7 @@ export function defineCursor(idz) {
 
   if (modeRef.value == "inserting-state") {
     // console.log(`[cursor.defineCursor] in IS (${idz.id}) id:${idz.id} zone:${idz.zone}`);
-    if (idz.id.startsWith("F") || idz.id.startsWith("S")) {
+    if (idz.id.startsWith("F") || idz.id.startsWith("R")) {
       if (elem.canInsertState(idz)) return assets("state16x16.png", "default");
       // if (elem.canInsertState(idz)) return "grabbing";
       else return assets("no-drop16x16.png", "no-drop");

@@ -1,19 +1,85 @@
 "use strict";
 
 import * as U from "src/lib/utils";
-import { hsm, hCtx } from "src/classes/Chsm";
+import { hsm, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Cstate } from "src/classes/Cstate";
 import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
+import { Cnote } from "src/classes/Cnote";
+import { setDragOffset } from "src/lib/rootElemListeners";
 
 export class CbaseRegion extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
-    // console.log(`[CbaseRegion.constructor] New region (${this.id}) parent:${this.parent.id}`);
-    for (let stateOptions of options.states) {
-      const myState = new Cstate(this, stateOptions);
-      this.children.push(myState);
+  }
+}
+
+export class CregionWithStates extends CbaseRegion {
+  constructor(parent, options, type) {
+    super(parent, options, type);
+    const g = this.geo;
+    console.log(`[CbaseRegion.constructor] New region (${this.id}) parent:${this.parent.id} x0:${g.x0} y0:${g.y0}`);
+    // console.log(`[Cregion.constructor] (${this.id}) mat:${JSON.stringify(g.mat)}`);
+    this.setGeometry();
+    // this.myElem.innerHTML = `<div>${this.id} of state ${this.parent.id}</div>`;
+    this.notes = [];
+
+    if (options.states) {
+      for (let stateOptions of options.states) {
+        const myState = new Cstate(this, stateOptions);
+        this.children.push(myState);
+      }
     }
+    return; // ICI
+    for (let noteOptions of options.notes) {
+      this.addNote(noteOptions);
+    }
+  }
+
+  setGeometry() {
+    // console.log(`[Cregion.setGeometry] (${this.id})`);
+    const s = this.myElem.style;
+    const g = this.geo;
+    g.y0 = hsm.settings.stateTitleHeightMm;
+    g.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
+    g.width = this.parent.geo.width;
+    g.mat.f = g.y0 * U.pxPerMm;
+    this.geo.matR = inverse(g.mat);
+    this.myElem.style.transform = toCSS(this.geo.mat);
+    // console.warn(`[CbaseElem.setGeometry] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
+    s.top = "0px";
+    s.left = "0px";
+    s.width = g.width + "mm";
+    s.height = g.height + "mm";
+    s.background = "#ff000030";
+    // s.background = "transparent";
+  }
+
+  setSelected(val) {
+    // console.log(`[Chsm.setSelected](${ this.id }) } setSelected: ${ val; } `);
+    super.setSelected(val);
+    for (let state of this.children) {
+      state.setSelected(val);
+    }
+    for (let note of this.notes) {
+      note.setSelected(val);
+    }
+  }
+
+  async addNote(noteOptions) {
+    return; // ICI
+    // console.log(`[Cregion.addNote] noteOptions:${ JSON.stringify(noteOptions); } `);
+    const myNote = new Cnote(this, noteOptions, "N");
+    // await myNote.load(noteOptions);
+    this.notes.push(myNote);
+    // console.log(`[Cregion.addNote] id:${ myNote.id; } `);
+    return myNote;
+  }
+
+  async addState(stateOptions) {
+    const myState = new Cstate(this, stateOptions);
+    this.children.push(myState);
+    await myState.load(stateOptions);
   }
 
   // Returns childrenBB in parent origin
@@ -59,6 +125,56 @@ export class CbaseRegion extends CbaseElem {
       child.patchSelfFromDragOrigin(dx0, dy0);
     }
   }
+
+  async insertState(xS, yS) {
+    // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+    const idz = this.idz();
+    const [x, y] = [idz.x, idz.y];
+    console.log(`[Cregion.insertState] Inserting state x:${x.toFixed()} y:${y.toFixed()}`);
+    const h = hsm.settings.stateMinHeight;
+    const w = hsm.settings.stateMinWidth;
+    const id = "S" + hsm.newSernum();
+    const m = hsm.settings.minDistanceMm;
+    const stateOptions = {
+      id: id,
+      name: "State " + id,
+      color: "blue",
+      geo: {
+        x0: x,
+        y0: y,
+        width: w,
+        height: h,
+      },
+      justCreated: true,
+      parentElem: this.myElem,
+    };
+    const myState = new Cstate(this, stateOptions, "S");
+    // console.log(`[Cregion.insertState] New state id:${ myState?.id; } `);
+    this.children.push(myState);
+    modeRef.value = "";
+    setDragOffset([U.mmToPx(w), U.mmToPx(h)]);
+    const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
+    console.log(`[Cregion.insertState] newIdz:${JSON.stringify(newIdz)} `);
+    hCtx.setIdz(newIdz);
+    await myState.dragStart(xS, yS); // Will create dragCtx
+  }
+
+  canInsertState(idz) {
+    const m = hsm.settings.minDistanceMm;
+    const h = hsm.settings.stateMinHeight;
+    const w = hsm.settings.stateMinWidth;
+    const [x0, y0] = [idz.x, idz.y];
+    // console.log(`[Cregion.canInsertState](${this.id}) idz.y:${idz.y.toFixed()} x0:${x0.toFixed()} y0:${y0.toFixed()}`);
+    if (x0 < m || x0 >= this.geo.width - m - w) return false;
+    if (y0 < m || y0 >= this.geo.height - m - h) return false;
+    for (let child of this.children) {
+      let geo = { x0: idz.x, y0: idz.y, width: w, height: h };
+      // console.log(`[Cregion.canInsertState](${ this.id }) gCId:${ child.id; } `);
+      if (U.rectsIntersect(child.geo, geo)) return false;
+    }
+    return true;
+  }
+
 }
 
 export class CExternalRegion extends CbaseRegion {
@@ -67,45 +183,48 @@ export class CExternalRegion extends CbaseRegion {
   }
 }
 
-export class Cregion extends CbaseRegion {
+export class Cregion extends CregionWithStates {
   constructor(parent, options) {
     super(parent, options, "R");
+  }
+
+  async dragStart(xS, yS) {
+    const idz = this.idz();
+    // const [x, y] = [idz.x, idz.y];
+    // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+    const [x, y] = [idz.x, idz.y];
+    console.log(`[Cregion.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
+    switch (modeRef.value) {
+      case "inserting-state": {
+        this.insertState(xS, yS);
+        return;
+      }
+      case "inserting-note": {
+        await this.insertNote(x, y);
+        return;
+      }
+      default:
+        modeRef.value = "";
+    }
+    // console.log(`[Cregion.dragStart] e:${mat.e}`);
+    hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
+    // console.log(`[Cregion.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
+  }
+
+  drag(dxS, dyS) {
+    // dxS, dyS are in screen (pixel) space
     const g = this.geo;
-    // console.log(`[Cregion.constructor] (${this.id}) mat:${JSON.stringify(g.mat)}`);
-    this.setGeometry();
+    const d = hCtx.getDragCtx();
+    const mat = {};
+    Object.assign(mat, this.geo.mat);
+    mat.e = d.mat.e + dxS;
+    mat.f = d.mat.f + dyS;
+    // console.log(`[Cregion.drag] mat1:${JSON.stringify(mat)}`);
+    this.setMat(mat);
   }
 
-  setGeometry() {
-    // console.log(`[Cregion.setGeometry] (${this.id})`);
-    const s = this.myElem.style;
-    const g = this.geo;
-    g.y0 = hsm.settings.stateTitleHeightMm;
-    g.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
-    g.width = this.parent.geo.width;
-    g.mat.f = g.y0 * U.pxPerMm;
-    this.geo.matR = inverse(g.mat);
-    this.myElem.style.transform = toCSS(this.geo.mat);
-    // console.warn(`[CbaseElem.setGeometry] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
-    s.top = "0px";
-    s.left = "0px";
-    s.width = g.width + "mm";
-    s.height = g.height + "mm";
-    // s.background = "red";
-    s.background = "transparent";
-  }
-
-  async addState(stateOptions) {
-    const myState = new Cstate(this, stateOptions);
-    this.children.push(myState);
-    await myState.load(stateOptions);
-  }
-
-  async dragStart() {
-    console.error(`[Cregion.dragStart] ${this.id}`);
-  }
-
-  drag(dx, dy) {
-    console.error(`[Cregion.drag] ${this.id}`);
+  dragEnd(dxS, dyS) {
+    this.drag(dxS, dyS);
   }
 
   makeIdz(x, y, idz) {
@@ -121,6 +240,10 @@ export class Cregion extends CbaseRegion {
     ) {
       // console.log(`[Cregion.makeIdz] (${this.id} (${this.parent.id})) returning`);
       return idz;
+    }
+    if (modeRef.value == "inserting-state") {
+      // console.log(`[Cregion.makeIdz] 1 (${this.id} (${this.parent.id})) x:${x.toFixed()}  y:${y.toFixed()} x0:${this.geo.x0}`);
+      idz = { id: this.id, zone: "M", x: x, y: y };
     }
     for (let child of this.children) {
       // console.log(`[Cregion.makeIdz](${this.id}) calling ${child.id}`);

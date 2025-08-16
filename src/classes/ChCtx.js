@@ -4,6 +4,10 @@ const inchInMm = 25.4;
 
 export class ChCtx {
   constructor(obj) {
+    this.clear();
+  }
+
+  clear() {
     this.folio = null;
     this.hoveredId = "";
     this.selectedId = "";
@@ -66,4 +70,5 @@ export class ChCtx {
     this.draggedId = "";
     this.dragCtx = null;
   }
+
 }

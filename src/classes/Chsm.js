@@ -55,6 +55,7 @@ export class Chsm extends CbaseElem {
   }
 
   async load(hsmOptions) {
+    this.hCtx.clear();
     this.settings = hsmOptions.settings;
     this.status = hsmOptions.status;
     this.serNum = hsmOptions.serNum;
@@ -168,10 +169,10 @@ export class Chsm extends CbaseElem {
   dragEnd(dxS, dyS) {
     const [dx, dy] = [dxS * U.getScale(), dyS * U.getScale()];
     // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
-    if (modeRef.value != "") {
-      modeRef.value = "";
-      return;
-    }
+    // if (modeRef.value != "") {
+    //   modeRef.value = "";
+    //   return;
+    // }
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
     if (dragCtx.id == this.id) hCtx.folio.dragEnd(dxS, dyS);

@@ -148,7 +148,7 @@
           id: "S2",
           name: "First state",
           color: "blue",
-          geo: { x0: 50, y0: 50, width: 100, height: 100 },
+          geo: { x0: 50, y0: 50, width: 110, height: 110 },
           notes: [
             // {
             //   geo: { x0: 20, y0: 10, width: 20, height: 7 },
@@ -162,16 +162,24 @@
               name: "My region",
               states: [
                 {
-                  id: "S6",
-                  name: "Third state",
+                  id: "S10",
+                  name: "6th state",
                   color: "yellow",
-                  geo: { x0: 10, y0: 10, width: 20, height: 20 },
+                  geo: { x0: 50, y0: 5, width: 30, height: 30 },
+                  regions: [],
+                },
+                {
+                  id: "S6",
+                  name: "6th state",
+                  color: "yellow",
+                  geo: { x0: 10, y0: 10, width: 30, height: 30 },
+                  regions: [],
                 },
                 {
                   id: "S9",
-                  name: "Third state",
-                  color: "yellow",
-                  geo: { x0: 40, y0: 40, width: 20, height: 20 },
+                  name: "9th state",
+                  color: "green",
+                  geo: { x0: 40, y0: 40, width: 60, height: 60 },
                   regions: [
                     // {
                     //   id: "R5",
