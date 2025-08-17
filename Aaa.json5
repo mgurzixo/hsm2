@@ -99,7 +99,7 @@
         {
           segments: [],
           from: { id: "S2", side: "R", pos: 0.2 },
-          to: { id: "S3", side: "L", pos: 0.8 },
+          to: { id: "S3", side: "T", pos: 0.8 },
           isInternal: false,
         },
         // {

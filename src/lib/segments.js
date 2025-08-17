@@ -73,7 +73,7 @@ export function removeNullSegments(segs) {
   return res;
 }
 
-export function pathSegments(segments, x0, y0) {
+export function XpathSegments(segments, x0, y0) {
   // Warning, a segment len can be null when dragging
   // but 2 sonsecutive segs cant be both null
   function C(val) {

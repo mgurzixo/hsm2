@@ -6,7 +6,7 @@ import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Ctext } from "src/classes/Cnote";
 // import { Ctext } from "src/classes/Ctext";
-import { pathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
+import { XpathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
 import TrDialog from "src/components/TrDialog.vue";
 
 export class Ctr extends CbaseElem {
@@ -50,31 +50,107 @@ export class Ctr extends CbaseElem {
   }
 
   paintSegments() {
+    const g = hCtx.folio.geo;
+    const u = U.pxPerMm;
+    const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
+    const r = hsm.settings.maxTransRadiusMm;
+    const segments = this.segments;
+    function svgSegment(dir, len) {
+      console.log(`[Ctr.svgSegment] dir:${dir} len:${len.toFixed()}`);
+      let res;
+      switch (dir) {
+        case "N":
+          res = `v ${-len * u}\n`;
+          break;
+        case "E":
+          res = `h ${len * u}\n`;
+          break;
+        case "S":
+          res = `v ${len * u}\n`;
+          break;
+        case "W":
+          res = `h ${-len * u}\n`;
+          break;
+      }
+      return res;
+    }
+
+    function svgQuadraticCurveTo(cx, cy, x, y) {
+      return `q ${cx * u} ${cy * u} ${x * u} ${y * u}`;
+    }
+
     // console.log(`[Ctr.paintSegments] (${this.id}) segs:${JSON.stringify(this.segments)}`);
     // return;
 
-    const g = hCtx.folio.geo;
-    const s = g.scale;
-    const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
     // let svg = `<svg version="1.1"viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
     let svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
   <path stroke="red" stroke-width="2" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
     let [x0, y0] = T.anchorToXY(this.from);
-    [x0, y0] = [x0 * U.pxPerMm, y0 * U.pxPerMm];
-    // [x0, y0] = [x0 / (s), y0 / s];
     let [x1, y1] = T.anchorToXY(this.to);
-    [x1, y1] = [x1 * U.pxPerMm, y1 * U.pxPerMm];
-    // [x1, y1] = [x1 / (s), y1 / s];
-    // console.log(`[Ctr.paintSegments] (${this.id}) scale:${g.scale.toFixed(2)} `);
-    // console.log(`[Ctr.paintSegments] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()} `);
-    // console.log(`[Ctr.paintSegments] (${this.id}) x1:${x1} y1:${y1} `);
+    console.log(`[Ctr.paintSegments] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
-    svg += `
-       "M ${x0} ${y0}
-        L ${x1} ${y1}
-        "`;
-    svg += `> </svg>`;
+    svg += `"M ${x0 * u} ${y0 * u}\n`;
+    let radius1 = 0;
+    const maxIdx = segments.length - 1;
+    for (let idx in segments) {
+      idx = Number(idx);
+      let segment = segments[idx];
+      let len = segment.len;
+      if (len == 0) continue;
+      if (len <= 0) console.error(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+      console.warn(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+      let nextSeg = null;
+      for (let idn = idx + 1; idn <= maxIdx; idn++) {
+        if (segments[idn].len == 0) continue;
+        nextSeg = segments[idn];
+        break;
+      }
+      let curDir = segment.dir;
+      let radius2 = r;
+      if (radius2 > segment.len / 2) radius2 = segment.len / 2;
+      if (!nextSeg) radius2 = 0;
+      else if (radius2 > nextSeg.len / 2) radius2 = nextSeg.len / 2;
+      len = len - radius1 - radius2;
+      svg += svgSegment(segment.dir, len);
+      let [x, y] = [0, 0];
+      let [cpx, cpy] = [x, y];
+      console.log(`[Ctr.paintSegments] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
+      if (radius2) {
+        switch (segment.dir) {
+          case "N":
+            y -= radius2;
+            x += nextSeg.dir == "E" ? radius2 : -radius2;
+            cpy = y;
+            break;
+          case "S":
+            y += radius2;
+            x += nextSeg.dir == "E" ? radius2 : -radius2;
+            cpy = y;
+            break;
+          case "E":
+            x += radius2;
+            y += nextSeg?.dir == "S" ? radius2 : -radius2;
+            cpx = x;
+            break;
+          case "W":
+            x -= radius2;
+            y += nextSeg?.dir == "S" ? radius2 : -radius2;
+            cpx = x;
+            break;
+        }
+        svg += svgQuadraticCurveTo(cpx, cpy, x, y);
+        // svg += "q 10 0 10 10";
+        radius1 = radius2;
+      }
+    }
+
+    // svg += svgSegment("H", x1 - x0 - r);
+    // svg += svgAngle("TR", r);
+    // svg += svgSegment("V", y1 - y0 - r);
+    svg += `L ${x1 * u} ${y1 * u} \n`;
+    svg += `"> </svg>`;
+    console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
 
@@ -372,7 +448,8 @@ export class Ctr extends CbaseElem {
 
   adjustSegments() {
     // console.log(`[Ctr.adjustSegments] prevX:${this.from.prevX} prevY:${this.from.prevY}`);
-    if (this.segments.length == 0) this.segments = this.getInitialSegments();
+    if (1 || this.segments.length == 0) this.segments = this.getInitialSegments();
+    return; // ICI
     if (this.from.prevX == undefined || this.from.prevY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
@@ -423,7 +500,7 @@ export class Ctr extends CbaseElem {
       else cCtx.lineWidth = s.trLineWidth;
       cCtx.strokeStyle = s.trLine;
     }
-    pathSegments(this.segments, x0, y0);
+    XpathSegments(this.segments, x0, y0);
     cCtx.stroke();
     if (this.tag) {
       this.tag.tagStyle = {

@@ -63,7 +63,10 @@ export class Cfolio extends CregionWithStates {
   adjustTrAnchors(changedId) {
     // console.log(`[Cfolio.adjustTrAnchors] id:${this.id}
     for (let tr of this.trs) {
-      if (tr.from.id == changedId || tr.to.id == changedId) tr.paintSegments();
+      if (tr.from.id == changedId || tr.to.id == changedId) {
+        tr.adjustTrAnchors(changedId);
+        tr.paintSegments();
+      }
     }
   }
 
@@ -91,7 +94,7 @@ export class Cfolio extends CregionWithStates {
     // console.log(`[Cfolio.wheelP] k:${k} xS:${xS} dxP:${dxP}`);
     const mat1 = compose(matW, mat0);
     this.geo.scale = mat1.a;
-    console.log(`[Cfolio.wheelP] (${this.id}) scale:${this.geo.scale.toFixed(2)} `);
+    // console.log(`[Cfolio.wheelP] (${this.id}) scale:${this.geo.scale.toFixed(2)} `);
     this.setMat(mat1);
     this.paintTrs();
   }
