@@ -88,7 +88,7 @@ export class Ctr extends CbaseElem {
   <path stroke="red" stroke-width="2" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
     let [x0, y0] = T.anchorToXY(this.from);
     let [x1, y1] = T.anchorToXY(this.to);
-    console.log(`[Ctr.paintSegments] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
+    // console.log(`[Ctr.paintSegments] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
     svg += `"M ${x0 * u} ${y0 * u}\n`;
     let radius1 = 0;
@@ -99,7 +99,7 @@ export class Ctr extends CbaseElem {
       let len = segment.len;
       if (len == 0) continue;
       if (len <= 0) console.error(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
-      console.warn(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+      // console.warn(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
       let nextSeg = null;
       for (let idn = idx + 1; idn <= maxIdx; idn++) {
         if (segments[idn].len == 0) continue;
@@ -115,7 +115,7 @@ export class Ctr extends CbaseElem {
       svg += svgSegment(segment.dir, len);
       let [x, y] = [0, 0];
       let [cpx, cpy] = [x, y];
-      console.log(`[Ctr.paintSegments] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
+      // console.log(`[Ctr.paintSegments] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
       if (radius2) {
         switch (segment.dir) {
           case "N":
@@ -150,7 +150,7 @@ export class Ctr extends CbaseElem {
     // svg += svgSegment("V", y1 - y0 - r);
     svg += `L ${x1 * u} ${y1 * u} \n`;
     svg += `"> </svg>`;
-    console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
+    // console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
 
@@ -448,8 +448,7 @@ export class Ctr extends CbaseElem {
 
   adjustSegments() {
     // console.log(`[Ctr.adjustSegments] prevX:${this.from.prevX} prevY:${this.from.prevY}`);
-    if (1 || this.segments.length == 0) this.segments = this.getInitialSegments();
-    return; // ICI
+    if (this.segments.length == 0) this.segments = this.getInitialSegments();
     if (this.from.prevX == undefined || this.from.prevY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
