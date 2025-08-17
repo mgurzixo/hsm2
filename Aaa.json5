@@ -9,7 +9,9 @@
     deltaScale2: 0.2,
     cursorMarginP: 3,
     stateRadiusMm: 4,
+    // stateRadiusMm: 0,
     stateTitleHeightMm: 5,
+    // stateTitleHeightMm: 0,
     stateMinWidth: 10,
     stateMinHeight: 10,
     minDistanceMm: 1,
@@ -97,7 +99,7 @@
         {
           segments: [],
           from: { id: "S2", side: "R", pos: 0.2 },
-          to: { id: "S3", side: "L", pos: 0.9 },
+          to: { id: "S3", side: "L", pos: 0.8 },
           isInternal: false,
         },
         // {
@@ -148,7 +150,7 @@
           id: "S2",
           name: "First state",
           color: "blue",
-          geo: { x0: 60, y0: 50, width: 50, height: 50 },
+          geo: { x0: 10, y0: 10, width: 50, height: 50 },
           notes: [
             // {
             //   geo: { x0: 20, y0: 10, width: 20, height: 7 },

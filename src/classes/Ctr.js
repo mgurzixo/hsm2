@@ -53,13 +53,20 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.paintSegments] (${this.id}) segs:${JSON.stringify(this.segments)}`);
     // return;
 
-    let svg = `<svg version="1.1"
+    const g = hCtx.folio.geo;
+    const s = g.scale;
+    const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
+    // let svg = `<svg version="1.1"viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
+    let svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
   <path stroke="red" stroke-width="2" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
     let [x0, y0] = T.anchorToXY(this.from);
     [x0, y0] = [x0 * U.pxPerMm, y0 * U.pxPerMm];
+    // [x0, y0] = [x0 / (s), y0 / s];
     let [x1, y1] = T.anchorToXY(this.to);
     [x1, y1] = [x1 * U.pxPerMm, y1 * U.pxPerMm];
+    // [x1, y1] = [x1 / (s), y1 / s];
+    // console.log(`[Ctr.paintSegments] (${this.id}) scale:${g.scale.toFixed(2)} `);
     // console.log(`[Ctr.paintSegments] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()} `);
     // console.log(`[Ctr.paintSegments] (${this.id}) x1:${x1} y1:${y1} `);
 

@@ -67,9 +67,14 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
+  paintTrs() {
+    for (let tr of this.trs) {
+      tr.paintSegments();
+    }
+  }
+
   async wheelP(xS, yS, dyS) {
     const deltas = -dyS / hsm.settings.deltaMouseWheel;
-    const g = this.geo;
     const mat0 = fromString(getComputedStyle(this.myElem).transform);
     const s0 = mat0.a;
     let s1 = s0 + deltas * hsm.settings.deltaScale;
@@ -86,64 +91,10 @@ export class Cfolio extends CregionWithStates {
     // console.log(`[Cfolio.wheelP] k:${k} xS:${xS} dxP:${dxP}`);
     const mat1 = compose(matW, mat0);
     this.geo.scale = mat1.a;
+    console.log(`[Cfolio.wheelP] (${this.id}) scale:${this.geo.scale.toFixed(2)} `);
     this.setMat(mat1);
+    this.paintTrs();
   }
-
-  // async dragStart(xS, yS) {
-  //   const idz = this.idz();
-  //   const [x, y] = [idz.x, idz.y];
-  //   // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
-  //   console.log(`[Cfolio.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
-  //   switch (modeRef.value) {
-  //     case "inserting-state": {
-  //       this.insertState(x, y);
-  //       return;
-  //     }
-  //     case "inserting-note": {
-  //       await this.insertNote(x, y);
-  //       return;
-  //     }
-  //     default:
-  //       modeRef.value = "";
-  //   }
-  //   // console.log(`[Cfolio.dragStart] e:${mat.e}`);
-  //   hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
-  //   // console.log(`[Cfolio.dragStart] matrix:${getComputedStyle(this.myElem).transform} `);
-  // }
-
-  // drag(dxS, dyS) {
-  //   // dxS, dyS are in screen (pixel) space
-  //   const g = this.geo;
-  //   const d = hCtx.getDragCtx();
-  //   const mat = {};
-  //   Object.assign(mat, this.geo.mat);
-  //   mat.e = d.mat.e + dxS;
-  //   mat.f = d.mat.f + dyS;
-  //   // console.log(`[Cfolio.drag] mat1:${JSON.stringify(mat)}`);
-  //   this.setMat(mat);
-  // }
-
-  // dragEnd(dxS, dyS) {
-  //   this.drag(dxS, dyS);
-  // }
-
-  // setSelected(val) {
-  //   // console.log(`[Chsm.setSelected](${ this.id }) } setSelected: ${ val; } `);
-  //   super.setSelected(val);
-  //   for (let note of this.notes) {
-  //     note.setSelected(val);
-  //   }
-  // }
-
-  // async addNote(noteOptions) {
-  //   return; // ICI
-  //   // console.log(`[Cfolio.addNote] noteOptions:${ JSON.stringify(noteOptions); } `);
-  //   const myNote = new Cnote(this, noteOptions, "N");
-  //   // await myNote.load(noteOptions);
-  //   this.notes.push(myNote);
-  //   // console.log(`[Cfolio.addNote] id:${ myNote.id; } `);
-  //   return myNote;
-  // }
 
   async addTr(trOptions) {
     const myTr = new Ctr(this, trOptions, "T");
