@@ -98,7 +98,7 @@
       trs: [
         {
           segments: [],
-          from: { id: "S2", side: "R", pos: 0.2 },
+          from: { id: "S2", side: "B", pos: 0.2 },
           to: { id: "S3", side: "T", pos: 0.8 },
           isInternal: false,
         },
@@ -150,7 +150,7 @@
           id: "S2",
           name: "First state",
           color: "blue",
-          geo: { x0: 10, y0: 10, width: 50, height: 50 },
+          geo: { x0: 50, y0: 60, width: 50, height: 50 },
           notes: [
             // {
             //   geo: { x0: 20, y0: 10, width: 20, height: 7 },
@@ -211,7 +211,7 @@
           id: "S3",
           name: "Second state",
           color: "gold",
-          geo: { x0: 130, y0: 60, width: 30, height: 30 },
+          geo: { x0: 130, y0: 130, width: 30, height: 30 },
         },
       ],
     },

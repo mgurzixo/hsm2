@@ -222,4 +222,11 @@ export class CbaseElem {
     return [x, y];
   }
 
+  adjustChange(changedId) {
+    // console.log(`[CbaseElem.adjustChange] id:${this.id}`);
+    for (let child of this.children) {
+      child.adjustChange(changedId);
+    }
+  }
+
 }

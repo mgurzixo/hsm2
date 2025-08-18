@@ -7,17 +7,27 @@ import { patchMouseDown } from "src/lib/rootElemListeners";
 
 // All distances in mm from folio origin
 
+export function getStateOriginInFolioFrame(state) {
+  const s = hCtx.folio.geo.scale;
+  const bb = state.myElem.getBoundingClientRect();
+  const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
+  let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
+  [x0, y0] = [x0 / U.pxPerMm / s, y0 / U.pxPerMm / s];
+  return [x0, y0];
+}
+
 // return anchor in mm in folio frame
 export function anchorToXY(anchor, pos = anchor.pos) {
   const elem = hElems.getElemById(anchor.id);
   if (pos > 1) pos = 1;
   if (pos < 0) pos = 0;
-  const s = hCtx.folio.geo.scale;
-  const bb = elem.myElem.getBoundingClientRect();
-  const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
-  let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
-  [x0, y0] = [x0 / U.pxPerMm, y0 / U.pxPerMm];
-  [x0, y0] = [x0 / (s), y0 / s];
+  // const s = hCtx.folio.geo.scale;
+  // const bb = elem.myElem.getBoundingClientRect();
+  // const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
+  // let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
+  // [x0, y0] = [x0 / U.pxPerMm, y0 / U.pxPerMm];
+  // [x0, y0] = [x0 / (s), y0 / s];
+  let [x0, y0] = getStateOriginInFolioFrame(elem);
   const r = hsm.settings.stateRadiusMm;
   const w = elem.geo.width;
   const h = elem.geo.height;
