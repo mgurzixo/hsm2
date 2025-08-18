@@ -55,6 +55,7 @@ export class Ctr extends CbaseElem {
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
     const r = hsm.settings.maxTransRadiusMm;
     const segments = this.segments;
+
     function svgSegment(dir, len) {
       console.log(`[Ctr.svgSegment] dir:${dir} len:${len.toFixed()}`);
       let res;
@@ -76,7 +77,34 @@ export class Ctr extends CbaseElem {
     }
 
     function svgQuadraticCurveTo(cx, cy, x, y) {
-      return `q ${cx * u} ${cy * u} ${x * u} ${y * u}`;
+      return `q ${cx * u} ${cy * u} ${x * u} ${y * u}\n`;
+    }
+
+    // Make an arrow @ current location in @dir direction
+    function svgArrow(dir) {
+      const u = U.pxPerMm;
+      let lenP = hsm.settings.arrowLengthMm * u;
+      let widthP = hsm.settings.arrowWidthMm * u;
+      let res = "";
+      switch (dir) {
+        case "N":
+          lenP = -lenP;
+        // eslint-disable-next-line no-fallthrough
+        case "S":
+          res += `m ${- widthP} ${- lenP}\n`;
+          res += `l ${widthP} ${lenP}\n`;
+          res += `l ${widthP} ${-lenP}\n`;
+          break;
+        case "W":
+          lenP = -lenP;
+        // eslint-disable-next-line no-fallthrough
+        case "E":
+          res += `m ${- lenP} ${- widthP}\n`;
+          res += `l ${lenP} ${widthP}\n`;
+          res += `l ${- lenP} ${-widthP}\n`;
+          break;
+      }
+      return res;
     }
 
     // console.log(`[Ctr.paintSegments] (${this.id}) segs:${JSON.stringify(this.segments)}`);
@@ -92,6 +120,7 @@ export class Ctr extends CbaseElem {
 
     svg += `"M ${x0 * u} ${y0 * u}\n`;
     let radius1 = 0;
+    let curDir;
     const maxIdx = segments.length - 1;
     for (let idx in segments) {
       idx = Number(idx);
@@ -106,7 +135,7 @@ export class Ctr extends CbaseElem {
         nextSeg = segments[idn];
         break;
       }
-      let curDir = segment.dir;
+      curDir = segment.dir;
       let radius2 = r;
       if (radius2 > segment.len / 2) radius2 = segment.len / 2;
       if (!nextSeg) radius2 = 0;
@@ -149,8 +178,9 @@ export class Ctr extends CbaseElem {
     // svg += svgAngle("TR", r);
     // svg += svgSegment("V", y1 - y0 - r);
     svg += `L ${x1 * u} ${y1 * u} \n`;
+    if (curDir) svg += svgArrow(curDir);
     svg += `"> </svg>`;
-    // console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
+    console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
 
@@ -456,21 +486,25 @@ export class Ctr extends CbaseElem {
       [this.to.prevX, this.to.prevY] = T.anchorToXY(this.to);
       return;
     }
-    const elemStart = hElems.getElemById(this.from.id);
+    const elemFrom = hElems.getElemById(this.from.id);
     // [xs,ys] new position from canvas
-    let [xs, ys] = this.getDelta(this.from, elemStart);
-    xs += elemStart.geo.xx0;
-    ys += elemStart.geo.yy0;
+    let [xs, ys] = this.getDelta(this.from, elemFrom);
+    const f0 = T.getStateOriginInFolioFrame(elemFrom);
+    // xs += elemFrom.geo.xx0;
+    // ys += elemFrom.geo.yy0;
+    xs += f0[0]; ys += f0[1];
     let [dxs, dys] = [xs - this.from.prevX, ys - this.from.prevY];
     if (dxs != 0 || dys != 0) {
       [dxs, dys] = this.myAdjustXy(dxs, dys);
     }
     [this.from.prevX, this.from.prevY] = [xs, ys];
 
-    const elemEnd = hElems.getElemById(this.to.id);
-    let [xe, ye] = this.getDelta(this.to, elemEnd);
-    xe += elemEnd.geo.xx0;
-    ye += elemEnd.geo.yy0;
+    const elemTo = hElems.getElemById(this.to.id);
+    let [xe, ye] = this.getDelta(this.to, elemTo);
+    const e0 = T.getStateOriginInFolioFrame(elemTo);
+    // xe += elemTo.geo.xx0;
+    // ye += elemTo.geo.yy0;
+    xe += e0[0]; ye += e0[1];
 
     let [dxe, dye] = [xe - this.to.prevX, ye - this.to.prevY];
     if (dxe != 0 || dye != 0) {
@@ -480,48 +514,52 @@ export class Ctr extends CbaseElem {
     [this.to.prevX, this.to.prevY] = [xe, ye];
   }
 
-  draw(xx0, yy0) {
-    if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
-    const [x0, y0] = T.anchorToXY(this.from);
-    [this.geo.x0, this.geo.y0] = [x0, y0];
-    this.geo.xx0 = xx0 + this.geo.x0;
-    this.geo.yy0 = yy0 + this.geo.y0;
-    const s = hElems.getElemById(this.from.id).styles;
-    // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
-    if (!this.isLegal()) {
-      cCtx.lineWidth = s.trLineErrorWidth;
-      cCtx.strokeStyle = s.trLineError;
-      if (this.tag) this.tag.color = s.trLineError;
-      // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
-    }
-    else {
-      if (this.isSelected || this.id == hCtx.selectedId) cCtx.lineWidth = s.trLineSelectedWidth;
-      else cCtx.lineWidth = s.trLineWidth;
-      cCtx.strokeStyle = s.trLine;
-    }
-    XpathSegments(this.segments, x0, y0);
-    cCtx.stroke();
-    if (this.tag) {
-      this.tag.tagStyle = {
-        bg: s.tagBg,
-        borderColor: s.tagBorderColor,
-        borderWidth: s.tagBorderWidth,
-        borderSelectedColor: s.tagBorderSelectedColor,
-        borderSelectedWidth: s.tagBorderSelectedWidth,
-        textColor: s.tagTextColor,
-        textSelectedColor: s.tagTextSelectedColor,
-        textFont: s.tagTextFont,
-        cornerP: s.tagCornerP,
-      };
-      this.tag.draw(this.geo.xx0, this.geo.yy0);
-    }
-  }
+  // draw(xx0, yy0) {
+  //   if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
+  //   const [x0, y0] = T.anchorToXY(this.from);
+  //   [this.geo.x0, this.geo.y0] = [x0, y0];
+  //   this.geo.xx0 = xx0 + this.geo.x0;
+  //   this.geo.yy0 = yy0 + this.geo.y0;
+  //   const s = hElems.getElemById(this.from.id).styles;
+  //   // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
+  //   if (!this.isLegal()) {
+  //     cCtx.lineWidth = s.trLineErrorWidth;
+  //     cCtx.strokeStyle = s.trLineError;
+  //     if (this.tag) this.tag.color = s.trLineError;
+  //     // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
+  //   }
+  //   else {
+  //     if (this.isSelected || this.id == hCtx.selectedId) cCtx.lineWidth = s.trLineSelectedWidth;
+  //     else cCtx.lineWidth = s.trLineWidth;
+  //     cCtx.strokeStyle = s.trLine;
+  //   }
+  //   XpathSegments(this.segments, x0, y0);
+  //   cCtx.stroke();
+  //   if (this.tag) {
+  //     this.tag.tagStyle = {
+  //       bg: s.tagBg,
+  //       borderColor: s.tagBorderColor,
+  //       borderWidth: s.tagBorderWidth,
+  //       borderSelectedColor: s.tagBorderSelectedColor,
+  //       borderSelectedWidth: s.tagBorderSelectedWidth,
+  //       textColor: s.tagTextColor,
+  //       textSelectedColor: s.tagTextSelectedColor,
+  //       textFont: s.tagTextFont,
+  //       cornerP: s.tagCornerP,
+  //     };
+  //     this.tag.draw(this.geo.xx0, this.geo.yy0);
+  //   }
+  // }
 
   adjustTrAnchors(changedId) {
     if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
       console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
       this.adjustSegments();
     }
+  }
+
+  adjustChange(changedId) {
+    this.adjustSegments();
   }
 
   makeIdz(x, y, idz) {
