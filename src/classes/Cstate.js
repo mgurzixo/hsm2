@@ -220,13 +220,13 @@ export class Cstate extends CbaseState {
     console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
     modeRef.value = "";
-    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
     const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
     await myNote.dragStart(); // Will create dragCtx
   }
 
-  // Returns [x,y] of (side,pos)
+  // Returns [x,y] of (side,pos) in state frame
   makeTrXY(side, pos) {
     const r = hsm.settings.stateRadiusMm;
     let len = this.geo.width - 2 * r;
@@ -310,8 +310,6 @@ export class Cstate extends CbaseState {
     hCtx.setDragCtx(trDragCtx);
 
 
-    // const m = U.pToMmL(hsm.settings.cursorMarginP);
-    // const newIdz = myTr.makeIdz(x, y, this.idz());
     const newIdz = {
       id: myTr.id,
       zone: "TO", x: x, y: y

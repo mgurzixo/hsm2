@@ -7,64 +7,30 @@ import { patchMouseDown } from "src/lib/rootElemListeners";
 
 // All distances in mm from folio origin
 
-export function getStateOriginInFolioFrame(state) {
-  const s = hCtx.folio.geo.scale;
-  const bb = state.myElem.getBoundingClientRect();
-  const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
-  let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
-  [x0, y0] = [x0 / U.pxPerMm / s, y0 / U.pxPerMm / s];
-  return [x0, y0];
-}
+
 
 // return anchor in mm in folio frame
-export function anchorToXY(anchor, pos = anchor.pos) {
+export function anchorToXYF(anchor, pos = anchor.pos) {
   const elem = hElems.getElemById(anchor.id);
   if (pos > 1) pos = 1;
   if (pos < 0) pos = 0;
-  // const s = hCtx.folio.geo.scale;
-  // const bb = elem.myElem.getBoundingClientRect();
-  // const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
-  // let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
-  // [x0, y0] = [x0 / U.pxPerMm, y0 / U.pxPerMm];
-  // [x0, y0] = [x0 / (s), y0 / s];
-  let [x0, y0] = getStateOriginInFolioFrame(elem);
-  const r = hsm.settings.stateRadiusMm;
-  const w = elem.geo.width;
-  const h = elem.geo.height;
-  switch (anchor.side) {
-    case "R":
-      x0 += w;
-      y0 += r + (h - 2 * r) * pos;
-      break;
-    case "B":
-      x0 += r + (w - 2 * r) * pos;
-      y0 += h;
-      break;
-    case "L":
-      y0 += r + (h - 2 * r) * pos;
-      break;
-    case "T":
-    default:
-      x0 += r + (w - 2 * r) * pos;
-      break;
-  }
-  return [x0, y0];
+  let [x0, y0] = elem.getOriginXYF();
+  const [x, y] = elem.makeTrXY(anchor.side, pos);
+  return [x + x0, y + y0];
 }
 
-export function XYToAnchorPos(anchor, x, y) {
-  const minXY = anchorToXY(anchor, 0);
-  const maxXY = anchorToXY(anchor, 1);
+// Returns pos from XY in folio frame optionally clamped to [0, 1]
+export function XYFToAnchorPos(anchor, x, y, doClamp = true) {
+  const minXY = anchorToXYF(anchor, 0);
+  const maxXY = anchorToXYF(anchor, 1);
   let pos = 0;
-  if (U.isHoriz(anchor.side)) {
-    if (x <= minXY[0]) pos = 0;
-    else if (x >= maxXY[0]) pos = 1;
-    else pos = (x - minXY[0]) / (maxXY[0] - minXY[0]);
-  } else {
-    if (y <= minXY[1]) pos = 0;
-    else if (y >= maxXY[1]) pos = 1;
-    else pos = (y - minXY[1]) / (maxXY[1] - minXY[1]);
+  if (U.isHoriz(anchor.side)) pos = (x - minXY[0]) / (maxXY[0] - minXY[0]);
+  else pos = (y - minXY[1]) / (maxXY[1] - minXY[1]);
+  if (doClamp) {
+    if (pos < 0) pos = 0;
+    else if (pos > 1) pos = 1;
   }
-  // console.log(`[Ctr.XYToAnchorPos] pos:${pos}`);
+  // console.log(`[Ctr.XYFToAnchorPos] pos:${pos}`);
   return pos;
 }
 
@@ -72,8 +38,8 @@ function createSelfSegments(tr) {
   // console.log(`[Ctr.createSelfSegments]`);
   let segments = [];
   const dsl = hsm.settings.defaultSegmentLengthMm;
-  const [x0, y0] = anchorToXY(tr.from);
-  let [x1, y1] = anchorToXY(tr.to);
+  const [x0, y0] = anchorToXYF(tr.from);
+  let [x1, y1] = anchorToXYF(tr.to);
   if (x0 == x1) x1 += 0.1;
   if (y0 == y1) y1 += 0.1;
   const [dx, dy] = [x1 - x0, y1 - y0];
@@ -126,8 +92,8 @@ export function createSegments(tr) {
   if (tr.from.id == tr.to.id) return createSelfSegments(tr);
   let segments = [];
   const dsl = hsm.settings.defaultSegmentLengthMm;
-  const [x0, y0] = anchorToXY(tr.from);
-  const [x1, y1] = anchorToXY(tr.to);
+  const [x0, y0] = anchorToXYF(tr.from);
+  const [x1, y1] = anchorToXYF(tr.to);
   const [dx, dy] = [x1 - x0, y1 - y0];
   const [dxa, dya] = [Math.abs(dx), Math.abs(dy)];
   const side0 = tr.from.side;
@@ -301,28 +267,28 @@ export function dragNormalSegment(tr, dx, dy) {
 
 function dragSingleSegment(tr, dx, dy) {
   // console.log(`[trUtils.dragSingleSegment] (${tr.id}) 0 ${JSON.stringify(tr.from)}`);
-  const fromMinXY = anchorToXY(tr.from, 0);
-  const fromMaxXY = anchorToXY(tr.from, 1);
-  const toMinXY = anchorToXY(tr.to, 0);
-  const toMaxXY = anchorToXY(tr.to, 1);
+  const fromMinXY = anchorToXYF(tr.from, 0);
+  const fromMaxXY = anchorToXYF(tr.from, 1);
+  const toMinXY = anchorToXYF(tr.to, 0);
+  const toMaxXY = anchorToXYF(tr.to, 1);
   const dragCtx = hCtx.getDragCtx();
-  const fromXY = anchorToXY(dragCtx.tr0.from);
-  const toXY = anchorToXY(dragCtx.tr0.to);
+  const fromXY = anchorToXYF(dragCtx.tr0.from);
+  const toXY = anchorToXYF(dragCtx.tr0.to);
   if (U.isHoriz(tr.segments[0].dir)) {
     if (fromXY[1] + dy < fromMinXY[1]) dy = fromMinXY[1] - fromXY[1];
     if (fromXY[1] + dy > fromMaxXY[1]) dy = fromMaxXY[1] - fromXY[1];
     if (toXY[1] + dy < toMinXY[1]) dy = toMinXY[1] - toXY[1];
     if (toXY[1] + dy > toMaxXY[1]) dy = toMaxXY[1] - toXY[1];
-    tr.from.pos = XYToAnchorPos(tr.from, fromXY[0], fromXY[1] + dy);
-    tr.to.pos = XYToAnchorPos(tr.to, toXY[0], toXY[1] + dy);
+    tr.from.pos = XYFToAnchorPos(tr.from, fromXY[0], fromXY[1] + dy);
+    tr.to.pos = XYFToAnchorPos(tr.to, toXY[0], toXY[1] + dy);
   }
   else {
     if (fromXY[0] + dx < fromMinXY[0]) dx = fromMinXY[0] - fromXY[0];
     if (fromXY[0] + dx > fromMaxXY[0]) dx = fromMaxXY[0] - fromXY[0];
     if (toXY[0] + dx < toMinXY[0]) dx = toMinXY[0] - toXY[0];
     if (toXY[0] + dx > toMaxXY[0]) dx = toMaxXY[0] - toXY[0];
-    tr.from.pos = XYToAnchorPos(tr.from, fromXY[0] + dx, fromXY[1]);
-    tr.to.pos = XYToAnchorPos(tr.to, toXY[0] + dx, toXY[1]);
+    tr.from.pos = XYFToAnchorPos(tr.from, fromXY[0] + dx, fromXY[1]);
+    tr.to.pos = XYFToAnchorPos(tr.to, toXY[0] + dx, toXY[1]);
   }
 }
 
@@ -339,7 +305,7 @@ export function dragFirstSegment(tr, dx, dy) {
   const seg2 = {};
   const seg3 = {};
   const seg4 = {};
-  const [xs, ys] = anchorToXY(tr.from);
+  const [xs, ys] = anchorToXYF(tr.from);
   const [xe, ye] = nextXY(segA, xs, ys);
   const [d, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: xs, y: ys }, { x: xe, y: ye });
   // console.log(`[trUtils.dragFirstSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
@@ -394,14 +360,14 @@ export function dragLastSegment(tr, dx, dy) {
   const seg2 = {};
   const seg3 = {};
   const seg4 = {};
-  const [xs, ys] = anchorToXY(tr.to);
+  const [xs, ys] = anchorToXYF(tr.to);
   const [xe, ye] = prevXY(segA, xs, ys);
   const [d, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: xs, y: ys }, { x: xe, y: ye });
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) segA.len:${segA.len} (xx0:${dragCtx.xx0}, yy0:${dragCtx.yy0}) (dx:${dx}, dy:${dy}) (x:${x}, y:${y}) (xs:${xs}, ys:${ys})  (xe:${xe}, ye:${ye}) d:${d.toFixed(2)} pos:${pos.toFixed(2)}`);
   seg1.len = segA.len * (pos) + (segA.dir == "E" ? -2 * dy : -dy);
   seg1.dir = segA.dir;
 
-  console.log(`[trUtils.dragLastSegment] segA:${segA.dir} dy:${dy}`);
+  // console.log(`[trUtils.dragLastSegment] segA:${segA.dir} dy:${dy}`);
   if (U.isHoriz(segA.dir)) seg2.len = (segA.dir == "E" ? -dy : dy);
   else seg2.len = (segA.dir == "S" ? -dx : dx);
   seg2.dir = segB.dir;
@@ -417,7 +383,7 @@ export function dragLastSegment(tr, dx, dy) {
     seg3.dir = U.reverseDir(seg3.dir);
   }
 
-  console.log(`[trUtils.dragLastSegment] segB:${segB.dir} dx:${dx}`);
+  // console.log(`[trUtils.dragLastSegment] segB:${segB.dir} dx:${dx}`);
   if (U.isHoriz(segB.dir)) seg4.len = segB.len + (segB.dir == "E" ? dx : -dx);
   else seg4.len = segB.len + (segB.dir == "S" ? dy : -dy);
   seg4.dir = segB.dir;
@@ -432,50 +398,34 @@ export function dragLastSegment(tr, dx, dy) {
   tr.segments.push(seg4, seg3, seg2, seg1);
   dragCtx.zone = tr.segments.length - 3;
   patchMouseDown();
-  console.log(`[trUtils.dragLastSegment] (${tr.id}) xxD:${dx} yyD:${dy}`);
+  // console.log(`[trUtils.dragLastSegment] (${tr.id}) xxD:${dx} yyD:${dy}`);
   // console.log(`[trUtils.dragLastSegment] (${tr.id}) TO segments:${JSON.stringify(tr.segments)}`);
 }
 
-
-function trySingleSegmentAnchor(tr, dx, dy, isFrom) {
-  const magnet = hsm.settings.magnetAttractionMm;
-  const dragCtx = hCtx.getDragCtx();
-  const [xFrom, yFrom] = anchorToXY(dragCtx.tr0.from);
-  const [xTo, yTo] = anchorToXY(dragCtx.tr0.to);
+function trySingleSegment(tr, isFrom) {
+  const [xFrom, yFrom] = anchorToXYF(tr.from);
+  const [xTo, yTo] = anchorToXYF(tr.to);
+  const patchedAnchor = isFrom ? tr.from : tr.to;
   if (U.isHoriz(tr.from.side) && U.isHoriz(tr.to.side)) {
-    if (isFrom) {
-      if (Math.abs(xFrom + dx - xTo) > magnet) return false;
-      tr.from.pos = XYToAnchorPos(dragCtx.tr0.from, xTo, yFrom);
-    } else {
-      if (Math.abs(xTo + dx - xFrom) > magnet) return false;
-      tr.to.pos = XYToAnchorPos(dragCtx.tr0.to, xFrom, yTo);
+    const pos = XYFToAnchorPos(tr.from, isFrom ? xTo : xFrom, isFrom ? yFrom : yTo, false);
+    if (pos >= 0 && pos <= 1) {
+      if (yTo > yFrom) tr.segments = [{ dir: "S", len: yTo - yFrom }];
+      else tr.segments = [{ dir: "N", len: yFrom - yTo }];
+      patchedAnchor.pos = pos;
     }
-    if (yTo > yFrom) tr.segments = [{ dir: "S", len: yTo - yFrom }];
-    else tr.segments = [{ dir: "N", len: yFrom - yTo }];
-    return true;
   } else if (!U.isHoriz(tr.from.side) && !U.isHoriz(tr.to.side)) {
-    if (isFrom) {
-      if (Math.abs(yFrom + dy - yTo) > magnet) return false;
-      tr.from.pos = XYToAnchorPos(dragCtx.tr0.from, xFrom, yTo);
-    } else {
-      if (Math.abs(yTo + dy - yFrom) > magnet) return false;
-      tr.to.pos = XYToAnchorPos(dragCtx.tr0.to, xTo, yFrom);
+    const pos = XYFToAnchorPos(tr.to, isFrom ? xFrom : xTo, isFrom ? yTo : yFrom, false);
+    if (pos >= 0 && pos <= 1) {
+      if (xTo > xFrom) tr.segments = [{ dir: "E", len: xTo - xFrom }];
+      else tr.segments = [{ dir: "W", len: xFrom - xTo }];
+      patchedAnchor.pos = pos;
     }
-    if (xTo > xFrom) tr.segments = [{ dir: "E", len: xTo - xFrom }];
-    else tr.segments = [{ dir: "W", len: xFrom - xTo }];
-    return true;
   }
-  return false;
 }
 
 export function dragToAnchor(dx, dy) {
   const dragCtx = hCtx.getDragCtx();
   const tr = U.getElemById(dragCtx.id);
-  if (tr.segments.length <= 3) {
-    const res = trySingleSegmentAnchor(tr, dx, dy, false);
-    // console.log(`[trUtils.dragFromAnchor] (${tr.id}) res:${res}`);
-    if (res) return;
-  }
   const [theElem, theSide, thePos] = tr.findNearestLegalTarget(tr.from, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
   // console.log(`[trUtils.dragToAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.to.id = theElem.id;
@@ -501,19 +451,13 @@ export function dragToAnchor(dx, dy) {
     else tr.segments = tr.getInitialSegments();
   }
   else tr.segments = tr.getInitialSegments();
-  // console.log(`[trUtils.dragToAnchor] (${tr.id}) Segments len:${tr.segments.length}`);
-
+  const magnet = hsm.settings.magnetAttractionMm;
+  if (tr.segments.length == 3 && tr.segments[1].len < magnet) trySingleSegment(tr, false);
 }
 
 export function dragFromAnchor(dx, dy) {
   const dragCtx = hCtx.getDragCtx();
   const tr = U.getElemById(dragCtx.id);
-  if (tr.segments.length <= 3) {
-    const res = trySingleSegmentAnchor(tr, dx, dy, true);
-    // console.log(`[trUtils.dragFromAnchor] (${tr.id}) res:${res}`);
-    if (res) return;
-  }
-  // const idz = tr.idz();
   const [theElem, theSide, thePos] = tr.findNearestLegalTarget(tr.to, dragCtx.xx0 + dx, dragCtx.yy0 + dy);
   // console.log(`[trUtils.dragFromAnchor] (${tr.id}) theElem:${theElem?.id} theSide:${theSide} thePos:${thePos?.toFixed(2)}`);
   tr.from.id = theElem.id;
@@ -539,4 +483,6 @@ export function dragFromAnchor(dx, dy) {
     else tr.segments = tr.getInitialSegments();
   }
   else tr.segments = tr.getInitialSegments();
+  const magnet = hsm.settings.magnetAttractionMm;
+  if (tr.segments.length == 3 && tr.segments[1].len < magnet) trySingleSegment(tr, true);
 }

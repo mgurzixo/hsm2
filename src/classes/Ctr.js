@@ -8,6 +8,7 @@ import { Ctext } from "src/classes/Cnote";
 // import { Ctext } from "src/classes/Ctext";
 import { removeNullSegments, segsNormalise } from "src/lib/segments";
 import TrDialog from "src/components/TrDialog.vue";
+import { applyToPoint } from 'transformation-matrix';
 
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
@@ -57,7 +58,7 @@ export class Ctr extends CbaseElem {
     const segments = this.segments;
 
     function svgSegment(dir, len) {
-      console.log(`[Ctr.svgSegment] dir:${dir} len:${len.toFixed()}`);
+      // console.log(`[Ctr.svgSegment] dir:${dir} len:${len.toFixed()}`);
       let res;
       switch (dir) {
         case "N":
@@ -101,7 +102,7 @@ export class Ctr extends CbaseElem {
         case "E":
           res += `m ${- lenP} ${- widthP}\n`;
           res += `l ${lenP} ${widthP}\n`;
-          res += `l ${- lenP} ${-widthP}\n`;
+          res += `l ${- lenP} ${widthP}\n`;
           break;
       }
       return res;
@@ -114,8 +115,8 @@ export class Ctr extends CbaseElem {
     let svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
   <path stroke="red" stroke-width="2" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
-    let [x0, y0] = T.anchorToXY(this.from);
-    let [x1, y1] = T.anchorToXY(this.to);
+    let [x0, y0] = T.anchorToXYF(this.from);
+    let [x1, y1] = T.anchorToXYF(this.to);
     // console.log(`[Ctr.paintSegments] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
     svg += `"M ${x0 * u} ${y0 * u}\n`;
@@ -173,11 +174,7 @@ export class Ctr extends CbaseElem {
         radius1 = radius2;
       }
     }
-
-    // svg += svgSegment("H", x1 - x0 - r);
-    // svg += svgAngle("TR", r);
-    // svg += svgSegment("V", y1 - y0 - r);
-    svg += `L ${x1 * u} ${y1 * u} \n`;
+    // svg += `L ${x1 * u} ${y1 * u} \n`;
     if (curDir) svg += svgArrow(curDir);
     svg += `"> </svg>`;
     // console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
@@ -230,23 +227,11 @@ export class Ctr extends CbaseElem {
         for (let mySide of ["T", "R", "B", "L"]) {
           // if ((anchor.id == myElem.id) && (anchor.side != mySide)) continue;
           const geo = myElem.geo;
-          let myX0, myY0, myX1, myY1;
-          switch (mySide) {
-            case "T":
-            case "B":
-              myX0 = geo.xx0 + r;
-              myX1 = geo.xx0 + geo.width - r;
-              myY0 = mySide == "T" ? geo.yy0 : geo.yy0 + geo.height;
-              myY1 = myY0;
-              break;
-            case "L":
-            case "R":
-              myY0 = geo.yy0 + r;
-              myY1 = geo.yy0 + geo.height - r;
-              myX0 = mySide == "L" ? geo.xx0 : geo.xx0 + geo.width;
-              myX1 = myX0;
-              break;
-          }
+          const elemXYF = myElem.getOriginXYF();
+          let [myX0, myY0] = myElem.makeTrXY(mySide, 0);
+          myX0 += elemXYF[0]; myY0 += elemXYF[1];
+          let [myX1, myY1] = myElem.makeTrXY(mySide, 1);
+          myX1 += elemXYF[0]; myY1 += elemXYF[1];
           const [d, pos] = U.distToSegmentSquared({ x: x0, y: y0 }, { x: myX0, y: myY0 }, { x: myX1, y: myY1 });
           // if (anchor.id == myElem.id) console.log(`[Ctr.findNearestTarget] anchor.side:${anchor.side} mySide:${mySide} bestDist:${bestDist.toFixed()} dist:${d}`);
 
@@ -277,28 +262,31 @@ export class Ctr extends CbaseElem {
         type: idz.type,
         xx0: idz.x,
         yy0: idz.y,
-        x0: this.geo.x0,
-        y0: this.geo.y0,
+        // x0: this.geo.x0,
+        // y0: this.geo.y0,
         tr0: {
           from: structuredClone(this.from),
           to: structuredClone(this.to),
           segments: structuredClone(this.segments)
         }
       };
-      // console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
+      console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
       hCtx.setDragCtx(trDragCtx);
     }
     window.windump = true;
     return this;
   }
 
-  drag(dx, dy) {
+  drag(dxS, dyS) {
     const dragCtx = hCtx.getDragCtx();
+    const s0 = hCtx.folio.geo.mat.a;
+    const [dx, dy] = [dxS / U.pxPerMm / s0, dyS / U.pxPerMm / s0];
     if (dragCtx.zone == "FROM") T.dragFromAnchor(dx, dy);
     else if (dragCtx.zone == "TO") T.dragToAnchor(dx, dy);
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
     else T.dragNormalSegment(this, dx, dy);
+    this.paintSegments();
   }
 
   openDialog() {
@@ -330,8 +318,8 @@ export class Ctr extends CbaseElem {
 
   getInitialSegments() {
     let segments = [];
-    const [x0, y0] = T.anchorToXY(this.from);
-    const [x1, y1] = T.anchorToXY(this.to);
+    const [x0, y0] = T.anchorToXYF(this.from);
+    const [x1, y1] = T.anchorToXYF(this.to);
     [this.from.prevX, this.from.prevY] = [x0, y0];
     [this.to.prevX, this.to.prevY] = [x1, y1];
     segments = T.createSegments(this);
@@ -482,14 +470,14 @@ export class Ctr extends CbaseElem {
     if (this.from.prevX == undefined || this.from.prevY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
-      [this.from.prevX, this.from.prevY] = T.anchorToXY(this.from);
-      [this.to.prevX, this.to.prevY] = T.anchorToXY(this.to);
+      [this.from.prevX, this.from.prevY] = T.anchorToXYF(this.from);
+      [this.to.prevX, this.to.prevY] = T.anchorToXYF(this.to);
       return;
     }
     const elemFrom = hElems.getElemById(this.from.id);
     // [xs,ys] new position from canvas
     let [xs, ys] = this.getDelta(this.from, elemFrom);
-    const f0 = T.getStateOriginInFolioFrame(elemFrom);
+    const f0 = elemFrom.getOriginXYF();
     // xs += elemFrom.geo.xx0;
     // ys += elemFrom.geo.yy0;
     xs += f0[0]; ys += f0[1];
@@ -501,7 +489,7 @@ export class Ctr extends CbaseElem {
 
     const elemTo = hElems.getElemById(this.to.id);
     let [xe, ye] = this.getDelta(this.to, elemTo);
-    const e0 = T.getStateOriginInFolioFrame(elemTo);
+    const e0 = elemTo.getOriginXYF();
     // xe += elemTo.geo.xx0;
     // ye += elemTo.geo.yy0;
     xe += e0[0]; ye += e0[1];
@@ -516,7 +504,7 @@ export class Ctr extends CbaseElem {
 
   // draw(xx0, yy0) {
   //   if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
-  //   const [x0, y0] = T.anchorToXY(this.from);
+  //   const [x0, y0] = T.anchorToXYF(this.from);
   //   [this.geo.x0, this.geo.y0] = [x0, y0];
   //   this.geo.xx0 = xx0 + this.geo.x0;
   //   this.geo.yy0 = yy0 + this.geo.y0;
@@ -553,7 +541,7 @@ export class Ctr extends CbaseElem {
 
   adjustTrAnchors(changedId) {
     if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
-      console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
+      // console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
       this.adjustSegments();
     }
   }
@@ -565,17 +553,20 @@ export class Ctr extends CbaseElem {
   makeIdz(x, y, idz) {
     // [x,y] in mm in this tr frame
     // console.log(`[Ctr.makeIdz](${this.id}) id: ${idz.id} zone: ${idz.zone}`);
-    let [x0, y0] = T.anchorToXY(this.from);
+    let [x0, y0] = T.anchorToXYF(this.from);
+    let [xt, yt] = T.anchorToXYF(this.to);
     let bestD2 = Number.MAX_VALUE;
     let bestZone = "TO";
     let bestType;
     let newIdz;
-    const maxAnchorD2 = U.pToMmL(hsm.settings.cursorMarginP);
-    if (((x - x0) * (x - x0) + (y - y0) * (y - y0) < maxAnchorD2)) {
-      // Force an anchor
-      return {
-        id: this.id, zone: "FROM", type: "A", dist2P: 0, x: x, y: y
-      };
+    // const m = (hsm.settings.cursorMarginP / U.pxPerMm) / hCtx.folio.geo.scale;
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
+    const m2 = m * m;
+    if (((x - x0) ** 2 + (y - y0) ** 2 <= m2)) {
+      return { id: this.id, zone: "FROM", type: "A", dist2P: 0, x: x, y: y }; // Force an anchor
+    }
+    if (((x - xt) ** 2 + (y - yt) ** 2 <= m2)) {
+      return { id: this.id, zone: "TO", type: "A", dist2P: 0, x: x, y: y }; // Force an anchor
     }
     for (let idx in this.segments) {
       idx = Number(idx);
@@ -596,9 +587,9 @@ export class Ctr extends CbaseElem {
           break;
       }
       let [d2, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: x0, y: y0 }, { x: x1, y: y1 });
-      // if (this.id == "T9") console.log(`[Ctr.makeIdz](${this.id}) (x:${x}, y:${y}) dir:${segment.dir} (x0:${x0}, y0:${y0}) (x1:${x1}, y1:${y1}) idx:${idx} d2:${d2.toFixed()}`);
+      // if (this.id == "T5") console.log(`[Ctr.makeIdz](${this.id}) (x:${x.toFixed()}, y:${y.toFixed()}) dir:${segment.dir} (x0:${x0.toFixed()}, y0:${y0.toFixed()}) (x1:${x1.toFixed()}, y1:${y1.toFixed()  }) idx:${idx} d2:${d2.toFixed()}`);
       [x0, y0] = [x1, y1];
-      if ((idx == this.segments.length - 1) && (((x - x1) * (x - x1) + (y - y1) * (y - y1)) < maxAnchorD2)) {
+      if ((idx == this.segments.length - 1) && (((x - x1) * (x - x1) + (y - y1) * (y - y1)) < m)) {
         return {
           id: this.id, zone: "TO", type: "A", dist2P: 0, x: x, y: y
         };
@@ -616,5 +607,13 @@ export class Ctr extends CbaseElem {
     newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
     if (this.tag) newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
     return newIdz;
+  }
+
+  makeIdzInParentCoordinates(xp, yp, myIdz) {
+    [xp, yp] = [xp * U.pxPerMm, yp * U.pxPerMm];
+    let [x, y] = applyToPoint(this.geo.matR, [xp, yp]);
+    [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
+    const idz = this.makeIdz(x, y, myIdz);
+    return idz;
   }
 }

@@ -139,14 +139,22 @@ export class CbaseElem {
 
   dragCancel(dx, dy) { }
 
-  getXY0InFolio() {
-    let [x, y] = [0, 0];
-    for (let elem = this; elem; elem = elem.parent) {
-      [x, y] = [x + elem.geo.x0, y + elem.geo.y0];
-      // console.log(`[CbaseElem.getXY0InFolio] id:${elem.id} x:${x?.toFixed()}`);
-    }
-    return [x, y];
+  getOriginXYF() {
+    const s = hCtx.folio.geo.scale;
+    const bb = this.myElem.getBoundingClientRect();
+    const bbFolio = hCtx.folio.myElem.getBoundingClientRect();
+    let [x0, y0] = [bb.left - bbFolio.left, bb.top - bbFolio.top];
+    [x0, y0] = [x0 / U.pxPerMm / s, y0 / U.pxPerMm / s];
+    return [x0, y0];
   }
+  // getXY0InFolio() {
+  //   let [x, y] = [0, 0];
+  //   for (let elem = this; elem; elem = elem.parent) {
+  //     [x, y] = [x + elem.geo.x0, y + elem.geo.y0];
+  //     // console.log(`[CbaseElem.getXY0InFolio] id:${elem.id} x:${x?.toFixed()}`);
+  //   }
+  //   return [x, y];
+  // }
 
   scalePhy() {
     return hCtx.folio.geo.scale * (hsm.settings.screenDpi / inchInMm);
@@ -166,23 +174,6 @@ export class CbaseElem {
     // if (found) c.push(found);
     // this.children = c;
     U.raiseElement(this.children, childId);
-  }
-
-  makeIdz(x, y, idz) {
-    const m = U.pToMmL(hsm.settings.cursorMarginP);
-    if (
-      x < this.geo.x0 ||
-      x > this.geo.x0 + this.geo.width ||
-      y < this.geo.y0 ||
-      y > this.geo.y0 + this.geo.height
-    )
-      return idz;
-    idz = { id: this.id, zone: "M", x: x, y: y };
-    for (let child of this.children) {
-      idz = child.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    }
-    // console.log(`[CbaseElem.makeIdz] (${this.id}) id:${idz.id} zone:${idz.zone}`);
-    return idz;
   }
 
   idz() {

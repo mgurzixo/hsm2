@@ -216,7 +216,7 @@ export class CregionWithStates extends CbaseRegion {
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     const bak = Object.assign({}, idz);
-    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
     // console.log(`[Cregion.makeIdz] (${this.id} (${this.parent.id})) x:${x.toFixed()}  y:${y.toFixed()} x0:${this.geo.x0}`);
     if (
       x < - m ||

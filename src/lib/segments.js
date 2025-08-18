@@ -161,7 +161,7 @@ function segsToBps(segments, x = 0, y = 0) {
     prevSeg = seg;
   }
   // console.log(`[segments.segsToBps] tabBps:${JSON.stringify(tabBps)}`);
-  console.log(`[segments.segsToBps] nsegs:${tabBps.length}`);
+  // console.log(`[segments.segsToBps] nsegs:${tabBps.length}`);
   return tabBps;
 }
 
