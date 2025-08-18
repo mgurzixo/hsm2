@@ -97,12 +97,12 @@
         },
       ],
       trs: [
-        {
-          segments: [],
-          from: { id: "S2", side: "B", pos: 0.2 },
-          to: { id: "S3", side: "T", pos: 0.8 },
-          isInternal: false,
-        },
+        // {
+        //   segments: [],
+        //   from: { id: "S2", side: "B", pos: 0.2 },
+        //   to: { id: "S3", side: "T", pos: 0.8 },
+        //   isInternal: false,
+        // },
         // {
         //   segments: [],
         //   from: { id: "S2", side: "R", pos: 0.2 },

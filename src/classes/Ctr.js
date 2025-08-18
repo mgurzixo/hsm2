@@ -255,24 +255,24 @@ export class Ctr extends CbaseElem {
   async dragStart() {
     // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
-    if (modeRef.value == "") {
-      const trDragCtx = {
-        id: this.id,
-        zone: idz.zone,
-        type: idz.type,
-        xx0: idz.x,
-        yy0: idz.y,
-        // x0: this.geo.x0,
-        // y0: this.geo.y0,
-        tr0: {
-          from: structuredClone(this.from),
-          to: structuredClone(this.to),
-          segments: structuredClone(this.segments)
-        }
-      };
-      console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
-      hCtx.setDragCtx(trDragCtx);
-    }
+    // if (modeRef.value == "") {
+    const trDragCtx = {
+      id: this.id,
+      zone: idz.zone,
+      type: idz.type,
+      xx0: idz.x,
+      yy0: idz.y,
+      // x0: this.geo.x0,
+      // y0: this.geo.y0,
+      tr0: {
+        from: structuredClone(this.from),
+        to: structuredClone(this.to),
+        segments: structuredClone(this.segments)
+      }
+    };
+    // console.log(`[Ctr.dragStart] trDragCtx:${JSON.stringify(trDragCtx)}`);
+    hCtx.setDragCtx(trDragCtx);
+    // }
     window.windump = true;
     return this;
   }
