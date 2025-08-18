@@ -114,6 +114,25 @@ function bpIntersect(bpA, bpB) {
   return p;
 };
 
+
+export function nextXY(segment, x, y) {
+  switch (segment.dir) {
+    case "N":
+      y -= segment.len;
+      break;
+    case "S":
+      y += segment.len;
+      break;
+    case "W":
+      x -= segment.len;
+      break;
+    case "E":
+      x += segment.len;
+      break;
+  }
+  return [x, y];
+}
+
 // Transform segments to biPoints
 function segsToBps(segments, x = 0, y = 0) {
   const epsilon = hsm.settings.epsilonMm;

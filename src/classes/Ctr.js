@@ -6,7 +6,7 @@ import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { Ctext } from "src/classes/Cnote";
 // import { Ctext } from "src/classes/Ctext";
-import { XpathSegments, removeNullSegments, segsNormalise } from "src/lib/segments";
+import { removeNullSegments, segsNormalise } from "src/lib/segments";
 import TrDialog from "src/components/TrDialog.vue";
 
 export class Ctr extends CbaseElem {
@@ -180,7 +180,7 @@ export class Ctr extends CbaseElem {
     svg += `L ${x1 * u} ${y1 * u} \n`;
     if (curDir) svg += svgArrow(curDir);
     svg += `"> </svg>`;
-    console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
+    // console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
 
