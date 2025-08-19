@@ -167,11 +167,14 @@ function segsToBps(segments) {
       continue; // Remove short segments
     }
     [x1, y1] = nextXY(seg, x0, y0);
-    tabBps.push({ from: { x: x0, y: y0 }, to: { x: x1, y: y1 } });
+    const bp = { from: { x: x0, y: y0 }, to: { x: x1, y: y1 } };
+    // console.log(`[segments.segsToBps] pushing:${JSON.stringify(bp)}`);
+    tabBps.push(bp);
     dirPrev = seg.dir;
     lenPrev = seg.len;
-    [x0Prev, y0Prev] = [x0, y0]
+    [x0Prev, y0Prev] = [x0, y0];
     [x0, y0] = [x1, y1];
+    // console.log(`[segments.segsToBps] x0:${x0} x1:${x1}`);
   }
   // console.log(`[segments.segsToBps] tabBps:${JSON.stringify(tabBps)}`);
   // console.log(`[segments.segsToBps] nsegs:${tabBps.length}`);
@@ -226,7 +229,7 @@ function bpsRemoveLoops(tabBps) {
     for (let ib = nbBps - 1; ib > ia + 1; ib--) {
       const p = bpIntersect(tabBps[ia], tabBps[ib]);
       if (p == null) continue;
-      // console.log(`[segments.bpsRemoveLoops] Xfound intersect #${ia} #${ib}`);
+      // console.log(`[segments.bpsRemoveLoops] Found intersect #${ia} #${ib}`);
       res.push({ from: bpA.from, to: p });
       res.push({ from: p, to: tabBps[ib].to });
       ia = ib;
@@ -250,7 +253,6 @@ function mergeSameDirSegments(segments) {
       // Same dir, must combine
       if (seg.dir == res.at(-1).dir) res.at(-1).len += seg.len;
       else res.at(-1).len -= seg.len;
-      // res.at(-1) = U.normalizeSegment(res[-1]);
     }
     else {
       hv = U.isHoriz(seg.dir);

@@ -178,7 +178,7 @@ export class CregionWithStates extends CbaseRegion {
     // const [x, y] = [idz.x, idz.y];
     // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
     const [x, y] = [idz.x, idz.y];
-    console.log(`[Cregion.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
+    // console.log(`[Cregion.dragStart] xS:${xS?.toFixed()} x:${x.toFixed()} `);
     switch (modeRef.value) {
       case "inserting-state": {
         this.insertState(xS, yS);

@@ -102,7 +102,7 @@ export class Cfolio extends CregionWithStates {
   async addTr(trOptions) {
     const myTr = new Ctr(this, trOptions, "T");
     this.trs.push(myTr);
-    // await myTr.load(trOptions);
+    // console.log(`[Cfolio.addTr] new tr:${myTr.id}`);
     return myTr;
   }
 
@@ -224,9 +224,8 @@ export class Cfolio extends CregionWithStates {
       const tIdz = tr.makeIdzInParentCoordinates(x, y, idz);
       if (tIdz.dist2P <= bestTIdz.dist2P) {
         bestTIdz = tIdz;
-        break;
       }
-      if (tr.id == "T5") console.log(`[Cfolio.makeIdz](${tIdz.id}) dist2P: ${tIdz.dist2P.toFixed()} zone: ${tIdz.zone} type: ${tIdz.type} `);
+      // if (tr.id == "T5") console.log(`[Cfolio.makeIdz](${tIdz.id}) dist2P: ${tIdz.dist2P.toFixed()} zone: ${tIdz.zone} type: ${tIdz.type} `);
     }
     if (bestTIdz.dist2P < m) {
       idz = bestTIdz;

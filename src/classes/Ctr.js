@@ -305,7 +305,7 @@ export class Ctr extends CbaseElem {
     delete this.from.prevY;
     delete this.to.prevX;
     delete this.to.prevY;
-    console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
+    // console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
     if (this.justCreated == true) {
       hsm.openDialog(TrDialog, this);
       delete this.justCreated;
@@ -554,7 +554,7 @@ export class Ctr extends CbaseElem {
       let [d2, pos] = U.distToSegmentSquared({ x: x, y: y }, { x: x0, y: y0 }, { x: x1, y: y1 });
       // if (this.id == "T5") console.log(`[Ctr.makeIdz](${this.id}) (x:${x.toFixed()}, y:${y.toFixed()}) dir:${segment.dir} (x0:${x0.toFixed()}, y0:${y0.toFixed()}) (x1:${x1.toFixed()}, y1:${y1.toFixed()  }) idx:${idx} d2:${d2.toFixed()}`);
       [x0, y0] = [x1, y1];
-      if ((idx == this.segments.length - 1) && (((x - x1) * (x - x1) + (y - y1) * (y - y1)) < m)) {
+      if ((idx == this.segments.length - 1) && ((x - x1) ** 2 + (y - y1) ** 2 < m2)) {
         return {
           id: this.id, zone: "TO", type: "A", dist2P: 0, x: x, y: y
         };
@@ -569,12 +569,13 @@ export class Ctr extends CbaseElem {
 
       }
     }
-    newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: U.mmToPL(bestD2), x: x, y: y };
+    newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: bestD2, x: x, y: y };
     if (this.tag) newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
     return newIdz;
   }
 
   makeIdzInParentCoordinates(xp, yp, myIdz) {
+    // console.log(`[Ctr.makeIdzInParentCoordinates](${this.id})`);
     [xp, yp] = [xp * U.pxPerMm, yp * U.pxPerMm];
     let [x, y] = applyToPoint(this.geo.matR, [xp, yp]);
     [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
