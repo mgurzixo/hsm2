@@ -5,9 +5,7 @@ import { hsm, hElems, hCtx } from "src/classes/Chsm";
 import { nextXY } from "src/lib/segments";
 import { patchMouseDown } from "src/lib/rootElemListeners";
 
-// All distances in mm from folio origin
-
-
+// All distances in mm from folio frame
 
 // return anchor in mm in folio frame
 export function anchorToXYF(anchor, pos = anchor.pos) {
@@ -170,8 +168,6 @@ function prevXY(segment, x, y) {
   }
   return [x, y];
 }
-
-
 
 export function dragNormalSegment(tr, dx, dy) {
   // console.log(`[trUtils.dragNormalSegment] (${tr.id}) FROM segments:${JSON.stringify(tr.segments)}`);
@@ -446,11 +442,11 @@ export function dragToAnchor(dx, dy) {
       } else if (!U.isHoriz(tr.to.side) && !U.isHoriz(segments[idx].dir)) {
         segments[idx] = U.addToSegment(segments[idx], y1 - y0);
         tr.segments = segments;
-      } else tr.segments = tr.getInitialSegments();
+      } else tr.segments = tr.createSimpleSegments();
     }
-    else tr.segments = tr.getInitialSegments();
+    else tr.segments = tr.createSimpleSegments();
   }
-  else tr.segments = tr.getInitialSegments();
+  else tr.segments = tr.createSimpleSegments();
   const magnet = hsm.settings.magnetAttractionMm;
   if (tr.segments.length == 3 && tr.segments[1].len < magnet) trySingleSegment(tr, false);
 }
@@ -478,11 +474,11 @@ export function dragFromAnchor(dx, dy) {
       } else if (!U.isHoriz(tr.from.side) && !U.isHoriz(segments[idx].dir)) {
         segments[idx] = U.addToSegment(segments[idx], y0 - y1);
         tr.segments = segments;
-      } else tr.segments = tr.getInitialSegments();
+      } else tr.segments = tr.createSimpleSegments();
     }
-    else tr.segments = tr.getInitialSegments();
+    else tr.segments = tr.createSimpleSegments();
   }
-  else tr.segments = tr.getInitialSegments();
+  else tr.segments = tr.createSimpleSegments();
   const magnet = hsm.settings.magnetAttractionMm;
   if (tr.segments.length == 3 && tr.segments[1].len < magnet) trySingleSegment(tr, true);
 }

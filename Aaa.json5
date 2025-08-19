@@ -97,12 +97,12 @@
         },
       ],
       trs: [
-        // {
-        //   segments: [],
-        //   from: { id: "S2", side: "B", pos: 0.2 },
-        //   to: { id: "S3", side: "T", pos: 0.8 },
-        //   isInternal: false,
-        // },
+        {
+          segments: [],
+          from: { id: "S2", side: "B", pos: 0.2 },
+          to: { id: "S3", side: "T", pos: 0.8 },
+          isInternal: false,
+        },
         // {
         //   segments: [],
         //   from: { id: "S2", side: "R", pos: 0.2 },
@@ -151,7 +151,7 @@
           id: "S2",
           name: "First state",
           color: "blue",
-          geo: { x0: 50, y0: 60, width: 50, height: 50 },
+          geo: { x0: 50, y0: 20, width: 50, height: 50 },
           notes: [
             // {
             //   geo: { x0: 20, y0: 10, width: 20, height: 7 },

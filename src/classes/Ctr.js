@@ -16,13 +16,6 @@ export class Ctr extends CbaseElem {
     this.lineWidth = 1.5;
     this.isBaseTr = true;
     this.oldTagText = "";
-    const l0 = 20;
-    const l1 = 20;
-    const r = 5;
-    const [x0, y0] = [20, 10];
-    const [x1, y1] = [50, 50];
-    const [dx, dy] = [x1 - x0, y1 - y0];
-    const [c1x, c1y] = [x0 + dx, y0];
     this.segments = options.segments;
     this.from = options.from;
     this.to = options.to;
@@ -37,20 +30,17 @@ export class Ctr extends CbaseElem {
   }
 
   async onLoaded() {
-    if (this.segments.length == 0) this.segments = this.getInitialSegments();
+    if (this.segments.length == 0) this.segments = this.createSimpleSegments();
     this.makeTag();
     const el = this.myElem;
-    // const fx = [hCtx.folio.geo.width * U.pxPerMm, hCtx.folio.geo.height * U.pxPerMm];
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
     // console.log(`[Ctr.onLoaded] (${this.id}) width:${fx[0]}`);
     el.setAttribute("width", fx[0] + "mm");
     el.setAttribute("height", fx[1] + "mm");
-    // el.style.width = fx[0].toFixed(2);
-    // el.style.height = fx[0].toFixed(2);
-    this.paintSegments();
+    this.paint();
   }
 
-  paintSegments() {
+  paint() {
     const g = hCtx.folio.geo;
     const u = U.pxPerMm;
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
@@ -108,16 +98,27 @@ export class Ctr extends CbaseElem {
       return res;
     }
 
-    // console.log(`[Ctr.paintSegments] (${this.id}) segs:${JSON.stringify(this.segments)}`);
-    // return;
+    const s = hElems.getElemById(this.from.id).styles;
+    // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
+    let lineWidth, strokeStyle;
+    if (!this.isLegal()) {
+      lineWidth = s.trLineErrorWidth;
+      strokeStyle = s.trLineError;
+      if (this.tag) this.tag.color = s.trLineError;
+      // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
+    }
+    else {
+      if (this.isSelected || this.id == hCtx.selectedId) lineWidth = s.trLineSelectedWidth;
+      else lineWidth = s.trLineWidth;
+      strokeStyle = s.trLine;
+    }
 
-    // let svg = `<svg version="1.1"viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
     let svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
-  <path stroke="red" stroke-width="2" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
+  <path stroke="${strokeStyle}" stroke-width="${lineWidth}" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
     let [x0, y0] = T.anchorToXYF(this.from);
     let [x1, y1] = T.anchorToXYF(this.to);
-    // console.log(`[Ctr.paintSegments] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
+    // console.log(`[Ctr.paint] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
     svg += `"M ${x0 * u} ${y0 * u}\n`;
     let radius1 = 0;
@@ -128,8 +129,8 @@ export class Ctr extends CbaseElem {
       let segment = segments[idx];
       let len = segment.len;
       if (len == 0) continue;
-      if (len <= 0) console.error(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
-      // console.warn(`[segments.paintSegments] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+      if (len <= 0) console.error(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+      // console.warn(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
       let nextSeg = null;
       for (let idn = idx + 1; idn <= maxIdx; idn++) {
         if (segments[idn].len == 0) continue;
@@ -145,7 +146,7 @@ export class Ctr extends CbaseElem {
       svg += svgSegment(segment.dir, len);
       let [x, y] = [0, 0];
       let [cpx, cpy] = [x, y];
-      // console.log(`[Ctr.paintSegments] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
+      // console.log(`[Ctr.paint] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
       if (radius2) {
         switch (segment.dir) {
           case "N":
@@ -177,7 +178,7 @@ export class Ctr extends CbaseElem {
     // svg += `L ${x1 * u} ${y1 * u} \n`;
     if (curDir) svg += svgArrow(curDir);
     svg += `"> </svg>`;
-    // console.log(`[Ctr.paintSegments] (${this.id}) svg:${svg}`);
+    // console.log(`[Ctr.paint] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
 
@@ -212,6 +213,7 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.setSelected] (${this.id}) } setSelected:${val}`);
     super.setSelected(val);
     if (this.tag.isSelected != val) this.tag.setSelected(val);
+    this.paint();
   }
 
   findNearestLegalTarget(anchor, x0, y0) {
@@ -286,7 +288,7 @@ export class Ctr extends CbaseElem {
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);
     else if (dragCtx.zone == this.segments.length - 1) T.dragLastSegment(this, dx, dy);
     else T.dragNormalSegment(this, dx, dy);
-    this.paintSegments();
+    this.paint();
   }
 
   openDialog() {
@@ -297,13 +299,13 @@ export class Ctr extends CbaseElem {
     // console.log(`[Ctr.dragEnd]`);
     this.drag(dx, dy);
     this.segments = removeNullSegments(this.segments);
-    const [segs, dxs, dys, dxe, dye] = segsNormalise(this.segments);
-    this.segments = segs;
+    this.segments = segsNormalise(this.segments);;
+    this.paint();
     delete this.from.prevX;
     delete this.from.prevY;
     delete this.to.prevX;
     delete this.to.prevY;
-    // console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
+    console.log(`[Ctr.dragEnd] this.segments:${JSON.stringify(this.segments)}`);
     if (this.justCreated == true) {
       hsm.openDialog(TrDialog, this);
       delete this.justCreated;
@@ -312,19 +314,19 @@ export class Ctr extends CbaseElem {
       return false;
     }
     window.windump = false;
-    hsm.clearSelections();
+    // hsm.clearSelections();
     return true;
   }
 
-  getInitialSegments() {
+  createSimpleSegments() {
     let segments = [];
     const [x0, y0] = T.anchorToXYF(this.from);
     const [x1, y1] = T.anchorToXYF(this.to);
     [this.from.prevX, this.from.prevY] = [x0, y0];
     [this.to.prevX, this.to.prevY] = [x1, y1];
     segments = T.createSegments(this);
-    // console.warn(`[Ctr.getInitialSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
-    // console.log(`[Ctr.getInitialSegments] Segments:${JSON.stringify(segments)}`);
+    // console.warn(`[Ctr.createSimpleSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
+    // console.log(`[Ctr.createSimpleSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
 
@@ -401,7 +403,7 @@ export class Ctr extends CbaseElem {
       this.segments = this.segments.reverse();
     }
     if (dx != 0 || dy != 0) {
-      this.segments = this.getInitialSegments();
+      this.segments = this.createSimpleSegments();
     }
     return [0, 0];
   }
@@ -436,37 +438,10 @@ export class Ctr extends CbaseElem {
     return true;
   }
 
-  // Get delta to add to [xx0,yy0]
-  getDelta(p, elem = hElems.getElemById(p.id)) {
-    // console.log(`[Ctr.getDelta] id:${elem?.id}`);
-    if (p.pos > 1) p.pos = 1;
-    let [x, y] = [0, 0];
-    const r = hsm.settings.stateRadiusMm;
-    const w = elem.geo.width;
-    const h = elem.geo.height;
-    switch (p.side) {
-      case "R":
-        x = w;
-        y = r + (h - 2 * r) * p.pos;
-        break;
-      case "B":
-        x = r + (w - 2 * r) * p.pos;
-        y = h;
-        break;
-      case "L":
-        y = r + (h - 2 * r) * p.pos;
-        break;
-      case "T":
-      default:
-        x = r + (w - 2 * r) * p.pos;
-        break;
-    }
-    return [x, y];
-  }
-
+  // Adjusts existing segments to new From/To
   adjustSegments() {
     // console.log(`[Ctr.adjustSegments] prevX:${this.from.prevX} prevY:${this.from.prevY}`);
-    if (this.segments.length == 0) this.segments = this.getInitialSegments();
+    if (this.segments.length == 0) this.segments = this.createSimpleSegments();
     if (this.from.prevX == undefined || this.from.prevY == undefined) {
       // first time, segments is supposed to be OK
       // console.log(`[Ctr.adjustSegments] First time`);
@@ -474,32 +449,22 @@ export class Ctr extends CbaseElem {
       [this.to.prevX, this.to.prevY] = T.anchorToXYF(this.to);
       return;
     }
-    const elemFrom = hElems.getElemById(this.from.id);
-    // [xs,ys] new position from canvas
-    let [xs, ys] = this.getDelta(this.from, elemFrom);
-    const f0 = elemFrom.getOriginXYF();
-    // xs += elemFrom.geo.xx0;
-    // ys += elemFrom.geo.yy0;
-    xs += f0[0]; ys += f0[1];
-    let [dxs, dys] = [xs - this.from.prevX, ys - this.from.prevY];
-    if (dxs != 0 || dys != 0) {
-      [dxs, dys] = this.myAdjustXy(dxs, dys);
+    const [xFrom, yFrom] = T.anchorToXYF(this.from); // In folio frame
+    let [dxFrom, dyFrom] = [xFrom - this.from.prevX, yFrom - this.from.prevY];
+    if (dxFrom != 0 || dyFrom != 0) {
+      [dxFrom, dyFrom] = this.myAdjustXy(dxFrom, dyFrom);
     }
-    [this.from.prevX, this.from.prevY] = [xs, ys];
+    [this.from.prevX, this.from.prevY] = [xFrom, yFrom];
 
-    const elemTo = hElems.getElemById(this.to.id);
-    let [xe, ye] = this.getDelta(this.to, elemTo);
-    const e0 = elemTo.getOriginXYF();
-    // xe += elemTo.geo.xx0;
-    // ye += elemTo.geo.yy0;
-    xe += e0[0]; ye += e0[1];
+    const [xTo, yTo] = T.anchorToXYF(this.to);
 
-    let [dxe, dye] = [xe - this.to.prevX, ye - this.to.prevY];
-    if (dxe != 0 || dye != 0) {
-      [dxe, dye] = this.myAdjustXy(-dxe, -dye);
-      if (dxe != 0 || dye != 0) console.error(`[Ctr.adjustSegments] BAD dxe:${dxe} dye:${dye}`);
+    let [dxTo, dyTo] = [xTo - this.to.prevX, yTo - this.to.prevY];
+    if (dxTo != 0 || dyTo != 0) {
+      [dxTo, dyTo] = this.myAdjustXy(-dxTo, -dyTo);
+      if (dxTo != 0 || dyTo != 0) console.error(`[Ctr.adjustSegments] BAD dxTo:${dxTo} dyTo:${dyTo}`);
     }
-    [this.to.prevX, this.to.prevY] = [xe, ye];
+    [this.to.prevX, this.to.prevY] = [xTo, yTo];
+    this.segments = segsNormalise(this.segments);;
   }
 
   // draw(xx0, yy0) {

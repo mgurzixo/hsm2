@@ -65,14 +65,14 @@ export class Cfolio extends CregionWithStates {
     for (let tr of this.trs) {
       if (tr.from.id == changedId || tr.to.id == changedId) {
         tr.adjustTrAnchors(changedId);
-        tr.paintSegments();
+        tr.paint();
       }
     }
   }
 
   paintTrs() {
     for (let tr of this.trs) {
-      tr.paintSegments();
+      tr.paint();
     }
   }
 

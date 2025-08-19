@@ -109,7 +109,7 @@ function onUpdate() {
   // eslint-disable-next-line vue/no-mutating-props
   props.element.trigger = U.underscorize(props.element.trigger.toUpperCase());
   props.element.makeTag();
-  props.element.paintSegments();
+  props.element.paint();
 }
 
 V.onMounted(async () => {

@@ -110,7 +110,7 @@ function onChange() {
   // console.log(`[stateDialog.onChange]`);
   // eslint-disable-next-line vue/no-mutating-props
   props.element.name = U.underscorize(props.element.name);
-  props.element.paintInterior();
+  props.element.paint();
 }
 
 V.watch(stateHue, (baseColor) => {
@@ -126,7 +126,10 @@ V.watch(stateHue, (baseColor) => {
   // eslint-disable-next-line vue/no-mutating-props
   props.element.color = baseColor;
   props.element.setStyles();
-  props.element.paintInterior();
+  props.element.paint();
+  for (let tr of hCtx.folio.trs) {
+    if (tr.from.id == props.element.id) tr.paint();
+  }
   // console.log(`[StateDialog.watch.stateColor] msBg:${msBg.value}`);
 });
 

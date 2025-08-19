@@ -134,31 +134,44 @@ export function nextXY(segment, x, y) {
 }
 
 // Transform segments to biPoints
-function segsToBps(segments, x = 0, y = 0) {
+function segsToBps(segments) {
+  // console.warn(`[segments.segsToBps] segments:${JSON.stringify(segments)}`);
   const epsilon = hsm.settings.epsilonMm;
   const tabBps = [];
-  let [x0, y0] = [x, y];
-  let x1, y1 = [0, 0];
+  let [x0Prev, y0Prev] = [0, 0];
+  let dirPrev;
+  let lenPrev = 0;
+  let [x0, y0] = [0, 0];
+  let x1, y1;
   let mustCombine = false;
-  let prevSeg = null;
   for (let seg of segments) {
-    if (mustCombine && tabBps.len != 0) {
+    // console.log(`[segments.segsToBps] seg:${seg.dir}/${seg.len}`);
+    if (mustCombine) {
       // Patch this segment with previous one
-      let dl = prevSeg.dir == seg.dir ? seg.len : -seg.len;
-      seg.len += dl;
-      seg = U.normalizeSegment(seg);
-      const prevXY = tabBps.pop();
-      [x0, y0] = [prevXY.from.x, prevXY.from.y];
+      // console.log(`[segments.segsToBps] Combinimg: prev:"${dirPrev}"/${lenPrev} with :${seg.dir}/${seg.len}`);
+      if (dirPrev) {
+        let dl = dirPrev == seg.dir ? lenPrev : -lenPrev;
+        seg.len += dl;
+        seg = U.normalizeSegment(seg);
+        tabBps.pop();
+        [x0, y0] = [x0Prev, y0Prev];
+      }
+      else {
+        // console.warn(`[segments.segsToBps] Null dirPrev`);
+      }
       mustCombine = false;
     }
     if (Math.abs(seg.len) <= epsilon) {
+      // console.log(`[segments.segsToBps] Short segment:${seg.dir}/${seg.len}`);
       mustCombine = true;
       continue; // Remove short segments
     }
     [x1, y1] = nextXY(seg, x0, y0);
     tabBps.push({ from: { x: x0, y: y0 }, to: { x: x1, y: y1 } });
+    dirPrev = seg.dir;
+    lenPrev = seg.len;
+    [x0Prev, y0Prev] = [x0, y0]
     [x0, y0] = [x1, y1];
-    prevSeg = seg;
   }
   // console.log(`[segments.segsToBps] tabBps:${JSON.stringify(tabBps)}`);
   // console.log(`[segments.segsToBps] nsegs:${tabBps.length}`);
@@ -166,29 +179,35 @@ function segsToBps(segments, x = 0, y = 0) {
 }
 
 function bpsToSegs(tabBps) {
+  const epsilon = hsm.settings.epsilonMm;
   const segments = [];
   for (let bp of tabBps) {
     let dir, len;
-    if (bp.from.y == bp.to.y) {
+    if (Math.abs(bp.from.y - bp.to.y) < epsilon) {
       // Horizontal
       if (bp.to.x > bp.from.x) {
         dir = "E";
         len = bp.to.x - bp.from.x;
       }
-      else {
+      else if (bp.to.x < bp.from.x) {
         dir = "W";
         len = bp.from.x - bp.to.x;
       }
+      else continue; // Null segment
     }
-    else {
+    else if (Math.abs(bp.from.x - bp.to.x) < epsilon) {
       if (bp.to.y > bp.from.y) {
         dir = "S";
         len = bp.to.y - bp.from.y;
       }
-      else {
+      else if (bp.to.y < bp.from.y) {
         dir = "N";
         len = bp.from.y - bp.to.y;
       }
+      else continue; // Null segment
+    }
+    else {
+      console.error(`[segments.bpsToSegs] invalid segment from:${JSON.stringify(bp.from)} to:${JSON.stringify(bp.to)}`);
     }
     segments.push({ len: len, dir: dir });
   }
@@ -199,13 +218,15 @@ function bpsToSegs(tabBps) {
 function bpsRemoveLoops(tabBps) {
   const nbBps = tabBps.length;
   const res = [];
+  // console.log(`[segments.bpsRemoveLoops] 0 tabBps:${JSON.stringify(tabBps)}`);
   for (let ia = 0; ia < nbBps; ia++) {
     const bpA = tabBps[ia];
     let found = false;
-    for (let ib = ia + 2; ib < nbBps; ib++) {
+    // for (let ib = ia + 2; ib < nbBps; ib++) {
+    for (let ib = nbBps - 1; ib > ia + 1; ib--) {
       const p = bpIntersect(tabBps[ia], tabBps[ib]);
       if (p == null) continue;
-      // console.log(`[segments.bpsRemoveLoops] found intersect #${ia} #${ib}`);
+      // console.log(`[segments.bpsRemoveLoops] Xfound intersect #${ia} #${ib}`);
       res.push({ from: bpA.from, to: p });
       res.push({ from: p, to: tabBps[ib].to });
       ia = ib;
@@ -214,8 +235,28 @@ function bpsRemoveLoops(tabBps) {
     }
     if (!found) res.push(bpA);
   }
-  // console.log(`[segments.bpsRemoveLoops] tabBps:${JSON.stringify(tabBps)}`);
+  // console.log(`[segments.bpsRemoveLoops] 1 tabBps:${JSON.stringify(tabBps)}`);
   // console.log(`[segments.bpsRemoveLoops] res:${JSON.stringify(res)}`);
+  return res;
+}
+
+function mergeSameDirSegments(segments) {
+  // console.log(`[segments.mergeSameDirSegments] res:${JSON.stringify(segments)}`);
+  const res = [segments[0]];
+  let hv = U.isHoriz(segments[0].dir);
+  segments.shift();
+  for (let seg of segments) {
+    if (U.isHoriz(seg.dir) == hv) {
+      // Same dir, must combine
+      if (seg.dir == res.at(-1).dir) res.at(-1).len += seg.len;
+      else res.at(-1).len -= seg.len;
+      // res.at(-1) = U.normalizeSegment(res[-1]);
+    }
+    else {
+      hv = U.isHoriz(seg.dir);
+      res.push(seg);
+    }
+  }
   return res;
 }
 
@@ -223,5 +264,6 @@ export function segsNormalise(segments) {
   const tabBps = segsToBps(segments);
   const tabBps1 = bpsRemoveLoops(tabBps);
   const segs1 = bpsToSegs(tabBps1);
-  return [segs1, 0, 0, 0, 0];
+  const segs2 = mergeSameDirSegments(segs1);
+  return segs2;
 }

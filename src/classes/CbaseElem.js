@@ -147,14 +147,6 @@ export class CbaseElem {
     [x0, y0] = [x0 / U.pxPerMm / s, y0 / U.pxPerMm / s];
     return [x0, y0];
   }
-  // getXY0InFolio() {
-  //   let [x, y] = [0, 0];
-  //   for (let elem = this; elem; elem = elem.parent) {
-  //     [x, y] = [x + elem.geo.x0, y + elem.geo.y0];
-  //     // console.log(`[CbaseElem.getXY0InFolio] id:${elem.id} x:${x?.toFixed()}`);
-  //   }
-  //   return [x, y];
-  // }
 
   scalePhy() {
     return hCtx.folio.geo.scale * (hsm.settings.screenDpi / inchInMm);

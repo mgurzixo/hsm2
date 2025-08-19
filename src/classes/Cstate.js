@@ -74,7 +74,7 @@ export class Cstate extends CbaseState {
     super(parent, options, "S");
     this.notes = [];
     this.setStyles();
-    this.paintInterior();
+    this.paint();
     if (options.regions) {
       for (let id of Object.keys(options.regions)) {
         // console.log(`[Cstate.load] RegionId:${ id; } `);
@@ -134,7 +134,7 @@ export class Cstate extends CbaseState {
     se.border = `solid ${borderWidth}px ${borderColor}`;
   }
 
-  paintInterior() {
+  paint() {
     this.myElem.replaceChildren();
     const se = this.myElem.style;
     // const g = this.geo;
