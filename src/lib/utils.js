@@ -151,8 +151,7 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
 
 // cf. https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 export function distToSegmentSquared(p, v, w) {
-  function sqr(x) { return x * x; }
-  function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y); }
+  function dist2(v, w) { return (v.x - w.x) ** 2 + (v.y - w.y) ** 2; }
   var l2 = dist2(v, w);
   if (l2 == 0) return [dist2(p, v), 0];
   var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
@@ -293,9 +292,9 @@ export function mmToPL(lMm) {
   return Math.round(lMm * hsm.scalePhy());
 }
 
-export function pToMmL(lP) {
-  return lP / hsm.scalePhy();
-}
+// export function pToMmL(lP) {
+//   return lP / hsm.scalePhy();
+// }
 
 export function mmToPx(len) {
   const px = len * hCtx.folio.geo.scale * pxPerMm;

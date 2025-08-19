@@ -40,7 +40,7 @@ export function getPxFromMouseEvent(e) {
 export async function handleMouseMove(e) {
   e.preventDefault();
   let [xS, yS] = getPxFromMouseEvent(e); // px from rootElem
-  const [x, y] = [U.pToMmL(xS), U.pToMmL(yS)]; // mm from rootElem
+  const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)]; // mm from rootElem
   mousePos.value = { xP: xS, yP: yS, x: x, y: y, buttons: e.buttons };
   // console.log(`[canvasListeners.handleMouseMove] [xP:${xP.toFixed()}, yP:${yP.toFixed()}]`);
 
@@ -56,14 +56,12 @@ export async function handleMouseMove(e) {
       isDragging = true;
       inDoubleClick = false;
       clearTimeout(clickTimeoutId);
-      // const [mdx, mdy] = [U.pToMmL(mouseDown.x), U.pToMmL(mouseDown.y)];
       dragOffsetS = [0, 0];
       await hsm.dragStart(mouseDown.x, mouseDown.y);
     }
   }
   if (isDragging == true) {
     const [dxS, dyS] = [xS - mouseDown.x, yS - mouseDown.y];
-    // const [dx, dy] = [U.pToMmL(dxP), U.pToMmL(dyP)];
     hsm.drag(dxS - dragOffsetS[0], dyS - dragOffsetS[1]);
   } else {
     hsm.mouseMove(xS, yS);

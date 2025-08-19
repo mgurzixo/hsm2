@@ -74,7 +74,7 @@ export class Cstate extends CbaseState {
     super(parent, options, "S");
     this.notes = [];
     this.setStyles();
-    this.paintInterior();
+    this.paint();
     if (options.regions) {
       for (let id of Object.keys(options.regions)) {
         // console.log(`[Cstate.load] RegionId:${ id; } `);
@@ -134,7 +134,7 @@ export class Cstate extends CbaseState {
     se.border = `solid ${borderWidth}px ${borderColor}`;
   }
 
-  paintInterior() {
+  paint() {
     this.myElem.replaceChildren();
     const se = this.myElem.style;
     // const g = this.geo;
@@ -220,13 +220,13 @@ export class Cstate extends CbaseState {
     console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
     modeRef.value = "";
-    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
     const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
     await myNote.dragStart(); // Will create dragCtx
   }
 
-  // Returns [x,y] of (side,pos)
+  // Returns [x,y] of (side,pos) in state frame
   makeTrXY(side, pos) {
     const r = hsm.settings.stateRadiusMm;
     let len = this.geo.width - 2 * r;
@@ -261,7 +261,7 @@ export class Cstate extends CbaseState {
   }
 
   async insertTr(x, y) {
-    // console.log(`[Cstate.insertTr] Inserting tr x:${ x.toFixed(); } y:${ y.toFixed(); } `);
+    // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
     // console.log(`[Cstate.insertTr] idz:${ JSON.stringify(this.idz()); } `);
     const idz = this.idz();
     const side = idz.zone;
@@ -288,36 +288,36 @@ export class Cstate extends CbaseState {
       justCreated: true,
     };
     const myTr = await hCtx.folio.addTr(trOptions);
-    let [xx0, yy0] = [0, 0];
-    for (let parent = this.parent; parent; parent = parent.parent) {
-      xx0 += parent.geo.x0;
-      yy0 += parent.geo.y0;
-    }
-    console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id} `);
-    const trDragCtx = {
-      id: myTr.id,
-      zone: "TO",
-      type: "A",
-      xx0: xx0 + x,
-      yy0: yy0 + y,
-      tr0: {
-        from: structuredClone(myTr.from),
-        to: structuredClone(myTr.to),
-        segments: structuredClone(myTr.segments)
-      }
-    };
-    console.log(`[Cstate.insertTr] trDragCtx:${JSON.stringify(trDragCtx)} `);
-    hCtx.setDragCtx(trDragCtx);
+    myTr.onLoaded();
+    // let [xx0, yy0] = [0, 0];
+    // for (let parent = this.parent; parent; parent = parent.parent) {
+    //   xx0 += parent.geo.x0;
+    //   yy0 += parent.geo.y0;
+    // }
+    // console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id} `);
+    // const trDragCtx = {
+    //   id: myTr.id,
+    //   zone: "TO",
+    //   type: "A",
+    //   xx0: xx0 + x,
+    //   yy0: yy0 + y,
+    //   tr0: {
+    //     from: structuredClone(myTr.from),
+    //     to: structuredClone(myTr.to),
+    //     segments: structuredClone(myTr.segments)
+    //   }
+    // };
+    // console.log(`[Cstate.insertTr] trDragCtx:${JSON.stringify(trDragCtx)} `);
+    // hCtx.setDragCtx(trDragCtx);
 
 
-    // const m = U.pToMmL(hsm.settings.cursorMarginP);
-    // const newIdz = myTr.makeIdz(x, y, this.idz());
     const newIdz = {
       id: myTr.id,
       zone: "TO", x: x, y: y
     };
     modeRef.value = "";
     hCtx.setIdz(newIdz);
+    myTr.dragStart();
   }
 
   async dragStart(xS, yS) {
@@ -576,7 +576,7 @@ export class Cstate extends CbaseState {
     let zone = "M";
     if (modeRef.value == "inserting-state") {
       let th = hsm.settings.stateTitleHeightMm;
-      if (y < hsm.settings.stateTitleHeightMm) {
+      if (y < th) {
         idz = { id: id, zone: zone, x: x, y: y };
         return idz;
       }
@@ -685,7 +685,7 @@ export class Cstate extends CbaseState {
           width: w,
           height: h,
         };
-        console.log(`[Cstate.canInsertNote](${this.id}) gCId:${child.id} `);
+        console.log(`[Cstate.canInsertNote](${this.id}) gCId:${child.id}`);
         if (U.rectsIntersect(grandChild.geo, geo)) return false;
       }
     }
@@ -698,7 +698,7 @@ export class Cstate extends CbaseState {
       idz.zone != "B" &&
       idz.zone != "L") return false;
     const r = hsm.settings.initialTransLength;
-    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    const [x0, y0] = [idz.x, idz.y];
     switch (idz.zone) {
       case "R":
       case "L":

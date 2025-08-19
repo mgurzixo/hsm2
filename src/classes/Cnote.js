@@ -217,7 +217,7 @@ export class Cnote extends CbaseElem {
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
     // console.log(`[Cnote.makeIdz] (${this.id}) x:${x} y:${y}`);
-    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
     const r = hsm.settings.noteCornerP;
     if (
       x < this.geo.x0 - m ||
@@ -260,7 +260,7 @@ export class Ctext extends Cnote {
   makeIdz(x, y, idz) {
     const newIdz = super.makeIdz(x, y, idz);
     if (newIdz.id == this.id) {
-      const m = U.pToMmL(hsm.settings.cursorMarginP);
+      const m = U.pxToMm(hsm.settings.cursorMarginP);
       if (x >= this.geo.x0 + this.geo.width - m) newIdz.zone = "R";
       else newIdz.zone = "M";
     }

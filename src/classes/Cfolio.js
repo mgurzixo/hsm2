@@ -65,14 +65,14 @@ export class Cfolio extends CregionWithStates {
     for (let tr of this.trs) {
       if (tr.from.id == changedId || tr.to.id == changedId) {
         tr.adjustTrAnchors(changedId);
-        tr.paintSegments();
+        tr.paint();
       }
     }
   }
 
   paintTrs() {
     for (let tr of this.trs) {
-      tr.paintSegments();
+      tr.paint();
     }
   }
 
@@ -144,7 +144,7 @@ export class Cfolio extends CregionWithStates {
     console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
     modeRef.value = "";
-    const m = U.pToMmL(hsm.settings.cursorMarginP);
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
     const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
     await myNote.dragStart(); // Will create dragCtx
@@ -209,26 +209,29 @@ export class Cfolio extends CregionWithStates {
     if (x < 0 || y < 0) return idz;
     if (x > g.width || y > g.height) return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
+    const m = U.pxToMm(hsm.settings.cursorMarginP);
     // TODO
     // for (let note of this.notes) {
     //   idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
     // }
-
-    // // console.log(`[Cfolio.makeIdz] S id: ${ idz.id; } zone: ${ idz.zone; } `);
-    // let bestTIdz = { dist2P: Number.MAX_VALUE };
-    // for (let tr of this.trs) {
-    //   const tIdz = tr.makeIdz(x, y, idz);
-    //   if (tIdz.dist2P <= bestTIdz.dist2P) bestTIdz = tIdz;
-    //   // if (tr.id == "T9") console.log(`[Cfolio.makeIdz](${ tIdz.id }) dist2P: ${ tIdz.dist2P.toFixed(); } zone: ${ tIdz.zone; } type: ${ tIdz.type; } `);
-    // }
-    // if (bestTIdz.dist2P < hsm.settings.cursorMarginP) {
-    //   idz = bestTIdz;
-    // }
-    // console.log(`[Cfolio.makeIdz] T id: ${ bestTIdz.id; } dist2P: ${ bestTIdz.dist2P.toFixed(); } zone: ${ bestTIdz.zone; } type: ${ bestTIdz.type; } `);
     for (let child of this.children) {
       // console.warn(`[Cregion.Cfolio](${this.id}) calling ${child.id}`);
       idz = child.makeIdzInParentCoordinates(idz.x, idz.y, idz);
     }
+    // console.log(`[Cfolio.makeIdz] S id: ${ idz.id; } zone: ${ idz.zone; } `);
+    let bestTIdz = { dist2P: Number.MAX_VALUE };
+    for (let tr of this.trs) {
+      const tIdz = tr.makeIdzInParentCoordinates(x, y, idz);
+      if (tIdz.dist2P <= bestTIdz.dist2P) {
+        bestTIdz = tIdz;
+        break;
+      }
+      if (tr.id == "T5") console.log(`[Cfolio.makeIdz](${tIdz.id}) dist2P: ${tIdz.dist2P.toFixed()} zone: ${tIdz.zone} type: ${tIdz.type} `);
+    }
+    if (bestTIdz.dist2P < m) {
+      idz = bestTIdz;
+    }
+    // console.log(`[Cfolio.makeIdz] T id: ${bestTIdz.id} dist2P: ${bestTIdz.dist2P.toFixed()} zone: ${bestTIdz.zone} type: ${bestTIdz.type} `);
     return idz;
   }
 
