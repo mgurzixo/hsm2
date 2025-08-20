@@ -142,7 +142,7 @@ V.onMounted(async () => {
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(rootElem.parentElement);
   const canvas = canvasRef.value;
-  new Chsm(null, { name: "Hsm", elem: rootElem, canvas: canvas });
+  new Chsm(null, { name: "Hsm", myElem: rootElem, canvas: canvas });
   await loadHsm(); // For devpt
   setRootElemListeners(rootElem);
   hsm.handleRightClick = handleRightClick;

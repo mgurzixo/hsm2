@@ -110,7 +110,6 @@ export class Cstate extends CbaseState {
   async addNote(noteOptions) {
     // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
     const myNote = new Cnote(this, noteOptions, "N");
-    await myNote.load(noteOptions);
     this.notes.push(myNote);
     // console.log(`[Cstate.addNote] id:${myNote.id}`);
     return myNote;

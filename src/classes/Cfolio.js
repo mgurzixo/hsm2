@@ -99,13 +99,6 @@ export class Cfolio extends CregionWithStates {
     this.paintTrs();
   }
 
-  async addTr(trOptions) {
-    const myTr = new Ctr(this, trOptions, "T");
-    this.trs.push(myTr);
-    // console.log(`[Cfolio.addTr] new tr:${myTr.id}`);
-    return myTr;
-  }
-
   async onLoaded() {
     // console.log(`[Cfolio.onLoaded] xx0:${this.geo.xx0}`);
     this.isDirty = true;
@@ -121,7 +114,19 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
-  async insertNote(x, y) {
+
+  async addTr(trOptions) {
+    // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
+    const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    this.myElem.append(svgEl);
+    trOptions.myElem = svgEl;
+    const myTr = new Ctr(this, trOptions, "T");
+    this.trs.push(myTr);
+    // console.log(`[Cfolio.addTr] new tr:${myTr.id}`);
+    return myTr;
+  }
+
+  async addNote(x, y) {
     console.log(`[Cfolio.dragStartP] Inserting note x:${x.toFixed()}`);
     const id = "N" + hsm.newSernum();
     const w = hsm.settings.noteMinWidth;
@@ -141,7 +146,7 @@ export class Cfolio extends CregionWithStates {
     };
     setDragOffset([w, h]);
     const myNote = await this.addNote(noteOptions);
-    console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
+    console.log(`[Cfolio.addNote] New note id:${myNote?.id} `);
     await myNote.onLoaded();
     modeRef.value = "";
     const m = U.pxToMm(hsm.settings.cursorMarginP);

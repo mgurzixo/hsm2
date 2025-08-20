@@ -455,15 +455,19 @@ export class Ctr extends CbaseElem {
       [dxFrom, dyFrom] = this.myAdjustXy(dxFrom, dyFrom);
     }
     [this.from.prevX, this.from.prevY] = [xFrom, yFrom];
-
     const [xTo, yTo] = T.anchorToXYF(this.to);
-
     let [dxTo, dyTo] = [xTo - this.to.prevX, yTo - this.to.prevY];
     if (dxTo != 0 || dyTo != 0) {
       [dxTo, dyTo] = this.myAdjustXy(-dxTo, -dyTo);
       if (dxTo != 0 || dyTo != 0) console.error(`[Ctr.adjustSegments] BAD dxTo:${dxTo} dyTo:${dyTo}`);
     }
-    [this.to.prevX, this.to.prevY] = [xTo, yTo];
+    if (this.segments.length && (
+      (U.isHoriz(this.from.side) && U.isHoriz(this.segments[0].dir)) ||
+      (!U.isHoriz(this.from.side) && !U.isHoriz(this.segments[0].dir)) ||
+      (U.isHoriz(this.to.side) && U.isHoriz(this.segments[this.segments.length - 1].dir)) ||
+      (!U.isHoriz(this.to.side) && !U.isHoriz(this.segments[this.segments.length - 1].dir))
+    )) this.segments = this.createSimpleSegments();
+    else[this.to.prevX, this.to.prevY] = [xTo, yTo];
     this.segments = segsNormalise(this.segments);;
   }
 

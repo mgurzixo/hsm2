@@ -24,15 +24,11 @@ export class CbaseElem {
     this.name = options?.name || `S${id}`;
     this.parent = parent;
     this.children = [];
-    if (options.elem) this.myElem = options.elem;
+    if (options.myElem) this.myElem = options.myElem;
     else {
-      if (type == "T") {
-        // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
-        this.myElem = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      }
-      else this.myElem = document.createElement("div");
+      this.myElem = document.createElement("div");
+      if (this.parent?.myElem && !this.myElem.parentelement) this.parent.myElem.append(this.myElem);
     }
-    if (this.parent?.myElem) this.parent.myElem.append(this.myElem);
     const s = this.myElem.style;
     s.position = "absolute";
     s.overflow = "hidden";

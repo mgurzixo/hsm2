@@ -26,8 +26,7 @@ export class CregionWithStates extends CbaseRegion {
 
     if (options.states) {
       for (let stateOptions of options.states) {
-        const myState = new Cstate(this, stateOptions);
-        this.children.push(myState);
+        this.addState(stateOptions);
       }
     }
     return; // ICI
@@ -73,10 +72,17 @@ export class CregionWithStates extends CbaseRegion {
     return myNote;
   }
 
-  async addState(stateOptions) {
+  addState(stateOptions) {
+    const stEl = document.createElement("div");
+    if (this.trs && this.trs[0]) {
+      // Must be inserted before trs
+      console.log(`[Cregion.addState] insert before`);
+      this.myElem.insertBefore(stEl, this.trs[0].myElem);
+    } else this.myElem.append(stEl);
+    stateOptions.myElem = stEl;
     const myState = new Cstate(this, stateOptions);
     this.children.push(myState);
-    await myState.load(stateOptions);
+    return myState;
   }
 
   // Returns childrenBB in parent origin
@@ -145,9 +151,8 @@ export class CregionWithStates extends CbaseRegion {
       justCreated: true,
       parentElem: this.myElem,
     };
-    const myState = new Cstate(this, stateOptions, "S");
-    // console.log(`[Cregion.insertState] New state id:${ myState?.id; } `);
-    this.children.push(myState);
+    const myState = this.addState(stateOptions);
+    console.log(`[Cregion.insertState] New state id:${myState?.id} `);
     modeRef.value = "";
     setDragOffset([U.mmToPx(w), U.mmToPx(h)]);
     const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
@@ -185,7 +190,7 @@ export class CregionWithStates extends CbaseRegion {
         return;
       }
       case "inserting-note": {
-        await this.insertNote(x, y);
+        await this.addNote(x, y);
         return;
       }
       default:
