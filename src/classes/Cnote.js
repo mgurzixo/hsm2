@@ -26,7 +26,6 @@ export class Cnote extends CbaseElem {
   }
 
   async onLoaded() {
-    // this.makeCanvas();
   }
 
   setSelected(val) {

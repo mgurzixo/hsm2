@@ -29,7 +29,7 @@ export class Ctr extends CbaseElem {
     this.comment = options.comment;
   }
 
-  async onLoaded() {
+  onLoaded() {
     if (this.segments.length == 0) this.segments = this.createSimpleSegments();
     this.makeTag();
     const el = this.myElem;
@@ -257,7 +257,7 @@ export class Ctr extends CbaseElem {
   }
 
 
-  async dragStart() {
+  dragStart() {
     // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
     // if (modeRef.value == "") {

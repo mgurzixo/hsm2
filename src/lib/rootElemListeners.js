@@ -57,7 +57,7 @@ export async function handleMouseMove(e) {
       inDoubleClick = false;
       clearTimeout(clickTimeoutId);
       dragOffsetS = [0, 0];
-      await hsm.dragStart(mouseDown.x, mouseDown.y);
+      await hsm.dragStart(Number(mouseDown.x), Number(mouseDown.y));
     }
   }
   if (isDragging == true) {

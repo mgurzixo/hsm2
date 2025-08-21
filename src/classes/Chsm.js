@@ -48,7 +48,7 @@ export class Chsm extends CbaseElem {
     cCtx = this.canvas.getContext("2d");
   }
 
-  async addFolio(folioOptions) {
+  addFolio(folioOptions) {
     const foEl = document.createElement("div");
     this.childElem.append(foEl);
     folioOptions.myElem = foEl;
@@ -57,7 +57,7 @@ export class Chsm extends CbaseElem {
     this.children.push(myFolio);
   }
 
-  async load(hsmOptions) {
+  load(hsmOptions) {
     this.hCtx.clear();
     this.settings = hsmOptions.settings;
     this.status = hsmOptions.status;
@@ -67,12 +67,12 @@ export class Chsm extends CbaseElem {
 
     setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
     for (let folioOptions of hsmOptions.folios) {
-      await this.addFolio(folioOptions);
+      this.addFolio(folioOptions);
     }
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     hCtx.folio.setFolioDisplay(true);
     // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
-    await hCtx.folio.onLoaded();
+    hCtx.folio.onLoaded();
     this.makeIdzP();
     return null;
   }
@@ -137,7 +137,7 @@ export class Chsm extends CbaseElem {
     elem?.openDialog();
   }
 
-  async dragStart(xP, yP) {
+  dragStart(xP, yP) {
     // console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
     // const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
     let idz = this.makeIdzP(xP, yP);
@@ -150,17 +150,17 @@ export class Chsm extends CbaseElem {
     switch (mode) {
       case "":
         // folio is responsible when dragging background
-        if (idz.id == this.id) await hCtx.folio.dragStart(xP, yP);
-        else await elem.dragStart(xP, yP);
+        if (idz.id == this.id) hCtx.folio.dragStart(xP, yP);
+        else elem.dragStart(xP, yP);
         break;
       case "inserting-state":
-        if (elem.canInsertState(idz)) await elem.dragStart(xP, yP);
+        if (elem.canInsertState(idz)) elem.dragStart(xP, yP);
         break;
       case "inserting-trans":
-        if (elem.canInsertTr(idz)) await elem.dragStart(xP, yP);
+        if (elem.canInsertTr(idz)) elem.dragStart(xP, yP);
         break;
       case "inserting-note":
-        if (elem.canInsertNote(idz)) await elem.dragStart(xP, yP);
+        if (elem.canInsertNote(idz)) elem.dragStart(xP, yP);
         break;
     }
   }

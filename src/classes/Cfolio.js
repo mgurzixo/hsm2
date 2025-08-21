@@ -4,20 +4,11 @@ import * as U from "src/lib/utils";
 import * as V from "vue";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { CregionWithStates } from "src/classes/Cregion";
-import { Cstate } from "src/classes/Cstate";
+import { Cnote } from "src/classes/Cnote";
 import { Ctr } from "src/classes/Ctr";
 import { setDragOffset } from "src/lib/rootElemListeners";
 import { fromString, applyToPoint, inverse, toCSS, compose } from 'transformation-matrix';
 import FolioDialog from "src/components/FolioDialog.vue";
-
-let noteTo;
-
-function deferredNotesUpdate() {
-  if (noteTo) clearTimeout(noteTo);
-  noteTo = setTimeout(async () => {
-    await hCtx.folio.updateNotes();
-  }, 100);
-}
 
 export class Cfolio extends CregionWithStates {
   constructor(parent, folioOptions) {
@@ -31,10 +22,11 @@ export class Cfolio extends CregionWithStates {
     const s = this.myElem.style;
     const g = this.geo;
     this.setGeometry();
+
     this.trElem = document.createElement("div");
     this.myElem.append(this.trElem);
     for (let trOptions of folioOptions.trs) {
-      this.addTr(trOptions); // BEWARE async
+      this.addTr(trOptions);
     }
   }
 
@@ -78,7 +70,7 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
-  async wheelP(xS, yS, dyS) {
+  wheelP(xS, yS, dyS) {
     const deltas = -dyS / hsm.settings.deltaMouseWheel;
     const mat0 = fromString(getComputedStyle(this.myElem).transform);
     const s0 = mat0.a;
@@ -101,23 +93,22 @@ export class Cfolio extends CregionWithStates {
     this.paintTrs();
   }
 
-  async onLoaded() {
+  onLoaded() {
     // console.log(`[Cfolio.onLoaded] xx0:${this.geo.xx0}`);
     this.isDirty = true;
     for (let child of this.children) {
-      await child.onLoaded();
+      child.onLoaded();
     }
     for (let tr of this.trs) {
-      await tr.onLoaded();
+      tr.onLoaded();
     }
     return; // ICI
     for (let note of this.notes) {
-      await note.onLoaded();
+      note.onLoaded();
     }
   }
 
-
-  async addTr(trOptions) {
+  addTr(trOptions) {
     // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     this.trElem.append(svgEl);
@@ -128,43 +119,36 @@ export class Cfolio extends CregionWithStates {
     return myTr;
   }
 
-  async addNote(x, y) {
-    console.log(`[Cfolio.dragStartP] Inserting note x:${x.toFixed()}`);
-    const id = "N" + hsm.newSernum();
-    const w = hsm.settings.noteMinWidth;
-    const h = hsm.settings.noteMinHeight;
-    const noteOptions = {
-      id: id,
-      name: "Note " + id,
-      color: "blue",
-      geo: {
-        x0: x - this.geo.x0,
-        y0: y - this.geo.y0,
-        width: w,
-        height: h,
-      },
-      text: "Text",
-      justCreated: true,
-    };
-    setDragOffset([w, h]);
-    const myNote = await this.addNote(noteOptions);
-    console.log(`[Cfolio.addNote] New note id:${myNote?.id} `);
-    await myNote.onLoaded();
-    modeRef.value = "";
-    const m = U.pxToMm(hsm.settings.cursorMarginP);
-    const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
-    hCtx.setIdz(newIdz);
-    await myNote.dragStart(); // Will create dragCtx
-  }
-
-  // adjustTrAnchors(changedId) {
-  //   // ICI
-  //   // for (let child of this.children) {
-  //   //   child.adjustTrAnchors(changedId);
-  //   // }
-  //   // for (let tr of this.trs) {
-  //   //   tr.adjustTrAnchors(changedId);
-  //   // }
+  // addNote(x, y) {
+  //   console.log(`[Cfolio.dragStartP] Inserting note x:${x}`);
+  //   const id = "N" + hsm.newSernum();
+  //   const w = hsm.settings.noteMinWidth;
+  //   const h = hsm.settings.noteMinHeight;
+  //   const noteOptions = {
+  //     id: id,
+  //     name: "Note " + id,
+  //     color: "blue",
+  //     geo: {
+  //       x0: x - this.geo.x0,
+  //       y0: y - this.geo.y0,
+  //       width: w,
+  //       height: h,
+  //     },
+  //     text: "Text",
+  //     justCreated: true,
+  //   };
+  //   setDragOffset([w, h]);
+  //   const noteEl = document.createElement("div");
+  //   this.noteElem.append(noteEl);
+  //   noteOptions.myElem = noteEl;
+  //   const myNote = new Cnote(noteOptions);
+  //   console.log(`[Cfolio.addNote] New note id:${myNote?.id} `);
+  //   await myNote.onLoaded();
+  //   modeRef.value = "";
+  //   const m = U.pxToMm(hsm.settings.cursorMarginP);
+  //   const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
+  //   hCtx.setIdz(newIdz);
+  //   await myNote.dragStart(); // Will create dragCtx
   // }
 
   updateNotes() {
@@ -178,19 +162,6 @@ export class Cfolio extends CregionWithStates {
     for (let tr of hCtx.folio.trs) {
       tr.updateNotes();
     }
-  }
-
-  canInsertNote(idz) {
-    if (idz.zone != "M") return false;
-    const m = hsm.settings.minDistanceMm;
-    const h = hsm.settings.noteMinHeight + m;
-    const w = hsm.settings.noteMinWidth + m;
-    const t = hsm.settings.stateTitleHeightMm;
-    // console.log(`[Cfolio.canInsertNote](${ this.id }) idz.y:${ idz.y; } `);
-    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
-    if (x0 < m || x0 >= this.geo.width - w - m) return false;
-    if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
-    return true;
   }
 
   makeIdz(x, y, idz) {
