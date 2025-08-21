@@ -195,7 +195,10 @@ export class Ctr extends CbaseElem {
     if (!this.tag) {
       // console.log(`[Ctr.makeTag] (${this.id}) } hCtx.folio:${hCtx}`);
       const t = hsm.settings.styles.tag;
+      const noEl = document.createElement("div");
+      this.childElem.append(noEl);
       this.tag = new Ctext(this, {
+        myElem: noEl,
         geo: { x0: 1, y0: 1, width: 20 },
         text: text,
         container: hCtx.folio,

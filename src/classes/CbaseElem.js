@@ -9,7 +9,7 @@ const inchInMm = 25.4;
 
 export class CbaseElem {
   constructor(parent, options, type) {
-    // console.log(`[CbaseElem.constructor] type:${type} elem:${options.elem}`);
+    console.log(`[CbaseElem.constructor] type:${type} elem:${options.myElem}`);
     let id = options?.id;
     if (type == "M") id = "M1";
     else {
@@ -24,11 +24,10 @@ export class CbaseElem {
     this.name = options?.name || `S${id}`;
     this.parent = parent;
     this.children = [];
-    if (options.myElem) this.myElem = options.myElem;
-    else {
-      this.myElem = document.createElement("div");
-      if (this.parent?.myElem && !this.myElem.parentelement) this.parent.myElem.append(this.myElem);
-    }
+    this.myElem = options.myElem;
+    this.childElem = document.createElement("div");
+    this.myElem.append(this.childElem);
+    console.log(`[CbaseElem.constructor] (${this.myElem.id}) childElem:${this.childElem}`);
     const s = this.myElem.style;
     s.position = "absolute";
     s.overflow = "hidden";

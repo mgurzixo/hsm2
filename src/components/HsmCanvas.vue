@@ -3,7 +3,8 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <div id="M1">
+    <div id="M1">YYY
+      <div></div>
     </div>
     <div style="position:absolute;">
       <div ref="contextAnchor" class="context-anchor">
@@ -122,7 +123,7 @@ function adjustSizes() {
 V.onUnmounted(() => {
   // console.log(`[HsmCanvas.onUnmounted]`);
   if (rootElem) {
-    rootElem.innerHTML = ''; // Avoid previous vals with HMR
+    rootElem.textContent = ''; // Avoid previous vals with HMR
     removeRootElemListeners(rootElem);
   }
   if (resizeObserver) {
@@ -137,7 +138,7 @@ V.onMounted(async () => {
   await U.nextTick();
   console.warn(`[HsmCanvas.onMounted] hello`);
   rootElem = document.getElementById("M1");
-  rootElem.innerHTML = ''; // Avoid previous vals with HMR
+  rootElem.textContent = ''; // Avoid previous vals with HMR
   adjustSizes();
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(rootElem.parentElement);

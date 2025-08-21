@@ -49,9 +49,12 @@ export class Chsm extends CbaseElem {
   }
 
   async addFolio(folioOptions) {
+    const foEl = document.createElement("div");
+    this.childElem.append(foEl);
+    folioOptions.myElem = foEl;
+    console.log(`[Chsm.addFolio]`);
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
-    // await myFolio.load(folioOptions);
   }
 
   async load(hsmOptions) {
@@ -60,7 +63,6 @@ export class Chsm extends CbaseElem {
     this.status = hsmOptions.status;
     this.serNum = hsmOptions.serNum;
     this.hElems.clearElems();
-    this.myElem.textContent = ""; // Clear screen
     this.hElems.insertElem(this);
 
     setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);

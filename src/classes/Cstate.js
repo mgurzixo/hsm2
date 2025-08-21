@@ -109,6 +109,9 @@ export class Cstate extends CbaseState {
 
   async addNote(noteOptions) {
     // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
+    const noEl = document.createElement("div");
+    this.childElem.append(noEl);
+    noteOptions.myElem = noEl;
     const myNote = new Cnote(this, noteOptions, "N");
     this.notes.push(myNote);
     // console.log(`[Cstate.addNote] id:${myNote.id}`);
@@ -116,6 +119,9 @@ export class Cstate extends CbaseState {
   }
 
   async addRegion(regionOptions) {
+    const reEl = document.createElement("div");
+    this.childElem.append(reEl);
+    regionOptions.myElem = reEl;
     const myRegion = new Cregion(this, regionOptions);
     // console.log(`[Cstate.addRegion] (${this.id}) #${this.children.length} added region ${myRegion.id}`);
     this.children.push(myRegion);
@@ -140,13 +146,6 @@ export class Cstate extends CbaseState {
     se.borderRadius = hsm.settings.stateRadiusMm + "mm";
     const s = this.styles;
     this.paintBorder();
-    // // Draw border
-    // let borderWidth = s.borderWidth;
-    // if (hCtx.getErrorId() == this.id) borderWidth = s.borderErrorWidth;
-    // else if (this.isSelected) borderWidth = s.borderSelectedWidth;
-    // let borderColor = s.border;
-    // if (hCtx.getErrorId() == this.id) borderColor = s.borderError;
-    // se.border = `solid ${borderWidth}px  ${borderColor}`;
     // Draw state background
     se.background = s.bg;
     // console.log(`[Cstate.setGeometry] bg:${s.bg} background:${se.backgroundColor}`);
@@ -288,27 +287,6 @@ export class Cstate extends CbaseState {
     };
     const myTr = await hCtx.folio.addTr(trOptions);
     myTr.onLoaded();
-    // let [xx0, yy0] = [0, 0];
-    // for (let parent = this.parent; parent; parent = parent.parent) {
-    //   xx0 += parent.geo.x0;
-    //   yy0 += parent.geo.y0;
-    // }
-    // console.log(`[Cstate.insertTr] (${this.id}) it.id:${myTr?.id} `);
-    // const trDragCtx = {
-    //   id: myTr.id,
-    //   zone: "TO",
-    //   type: "A",
-    //   xx0: xx0 + x,
-    //   yy0: yy0 + y,
-    //   tr0: {
-    //     from: structuredClone(myTr.from),
-    //     to: structuredClone(myTr.to),
-    //     segments: structuredClone(myTr.segments)
-    //   }
-    // };
-    // console.log(`[Cstate.insertTr] trDragCtx:${JSON.stringify(trDragCtx)} `);
-    // hCtx.setDragCtx(trDragCtx);
-
 
     const newIdz = {
       id: myTr.id,
@@ -355,13 +333,12 @@ export class Cstate extends CbaseState {
       segments0: {},
       mat: this.geo.mat,
     };
-    // ICI
-    // for (let tr of hCtx.folio.trs) {
-    //   if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
-    //     dragCtx.segments0[tr.id] = structuredClone(tr.segments);
-    //     // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.segments0[tr.id]; } `);
-    //   }
-    // }
+    for (let tr of hCtx.folio.trs) {
+      if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
+        dragCtx.segments0[tr.id] = structuredClone(tr.segments);
+        // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.segments0[tr.id]; } `);
+      }
+    }
     // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
     this.parent.raiseChild(this.id);
@@ -513,7 +490,7 @@ export class Cstate extends CbaseState {
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       hsm.drag(dx, dy);
-      if (!elem.parent.childIntersect(elem) || currentIteration > totalIterations) {
+      if (currentIteration > totalIterations) {
         elem.isRevertingDrag = false;
         for (const trId of Object.keys(dragCtx.segments0)) {
           const tr = U.getElemById(trId);
@@ -526,6 +503,8 @@ export class Cstate extends CbaseState {
         currentIteration++;
         window.requestIdleCallback(myCb);
       }
+      hsm.adjustTrAnchors(this.id);
+      this.setGeometry();
       const idz = hCtx.getIdz(); // This is not defined...
       // hsm.setCursor(idz); // TODO !
     }

@@ -63,8 +63,8 @@ export class CregionWithStates extends CbaseRegion {
   }
 
   async addNote(noteOptions) {
-    return; // ICI
-    // console.log(`[Cregion.addNote] noteOptions:${ JSON.stringify(noteOptions); } `);
+    return;  // ICI
+    console.log(`[Cregion.addNote] noteOptions:${JSON.stringify(noteOptions)} `);
     const myNote = new Cnote(this, noteOptions, "N");
     // await myNote.load(noteOptions);
     this.notes.push(myNote);
@@ -74,11 +74,7 @@ export class CregionWithStates extends CbaseRegion {
 
   addState(stateOptions) {
     const stEl = document.createElement("div");
-    if (this.trs && this.trs[0]) {
-      // Must be inserted before trs
-      console.log(`[Cregion.addState] insert before`);
-      this.myElem.insertBefore(stEl, this.trs[0].myElem);
-    } else this.myElem.append(stEl);
+    this.childElem.append(stEl);
     stateOptions.myElem = stEl;
     const myState = new Cstate(this, stateOptions);
     this.children.push(myState);

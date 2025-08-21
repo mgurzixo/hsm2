@@ -31,6 +31,8 @@ export class Cfolio extends CregionWithStates {
     const s = this.myElem.style;
     const g = this.geo;
     this.setGeometry();
+    this.trElem = document.createElement("div");
+    this.myElem.append(this.trElem);
     for (let trOptions of folioOptions.trs) {
       this.addTr(trOptions); // BEWARE async
     }
@@ -118,7 +120,7 @@ export class Cfolio extends CregionWithStates {
   async addTr(trOptions) {
     // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    this.myElem.append(svgEl);
+    this.trElem.append(svgEl);
     trOptions.myElem = svgEl;
     const myTr = new Ctr(this, trOptions, "T");
     this.trs.push(myTr);
@@ -177,22 +179,6 @@ export class Cfolio extends CregionWithStates {
       tr.updateNotes();
     }
   }
-
-  // canInsertState(idz) {
-  //   // console.log(`[Cfolio.canInsertState](${ this.id }) idz.x:${ idz.x; } `);
-  //   const m = hsm.settings.minDistanceMm;
-  //   const h = hsm.settings.stateMinHeight + m;
-  //   const w = hsm.settings.stateMinWidth + m;
-  //   const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
-  //   if (x0 < w || x0 >= this.geo.width - m) return false;
-  //   if (y0 < h || y0 >= this.geo.height - m) return false;
-  //   for (let child of this.children) {
-  //     let geo = { x0: idz.x - w, y0: idz.y - this.geo.y0 - h, width: w, height: h };
-  //     // console.log(`[Cfolio.canInsertState](${ this.id }) gCId:${ child.id; } `);
-  //     if (U.rectsIntersect(child.geo, geo)) return false;
-  //   }
-  //   return true;
-  // }
 
   canInsertNote(idz) {
     if (idz.zone != "M") return false;
