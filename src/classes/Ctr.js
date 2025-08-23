@@ -295,6 +295,7 @@ export class Ctr extends CbaseElem {
   }
 
   openDialog() {
+    hsm.setSelected(this.id);
     hsm.openDialog(TrDialog, this);
   }
 

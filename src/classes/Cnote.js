@@ -59,11 +59,15 @@ export class Cnote extends CbaseElem {
       ss = styles.borderSelectedColor;
     }
     this.myElem.replaceChildren();
-    // lw = 2;
-    // ss = "green";
     processor.process(this.text).then(html => {
       this.myElem.innerHTML = html;
-      this.myElem.style.border = `solid ${lw + "px"} ${ss}`;
+      const s = this.myElem.style;
+      const g = this.geo;
+      this.myElem.style.
+        border = `solid ${lw + "px"} ${ss}`;
+      g.mat.a = g.scale;
+      g.mat.d = g.scale;
+      s.transform = toCSS(g.mat);
     });
   }
 
@@ -79,6 +83,8 @@ export class Cnote extends CbaseElem {
   setSelected(val) {
     this.isSelected = val;
     // console.log(`[Cnote.dragStart] (${this.id}) togetherSelected:${this.togetherSelected}`);
+    super.setSelected(val);
+    this.paint();
     if (this.togetherSelected) {
       if (this.parent.isSelected != val) this.parent.setSelected(val);
     }
@@ -87,6 +93,7 @@ export class Cnote extends CbaseElem {
   openDialog() {
     // if (this.togetherSelected) this.parent.openDialog();
     // else hsm.openDialog(NoteDialog, this);
+    hsm.setSelected(this.id);
     hsm.openDialog(NoteDialog, this);
   }
 

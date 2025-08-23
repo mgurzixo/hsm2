@@ -1,83 +1,139 @@
 <template>
-  <q-card id="noteCardId" class="my-card-note text-black col-auto  bg-color-note">
-    <q-bar id="noteHeaderId" class="text-grey-9 bg-amber-2">
-      <div class=" my-no-overflow">
-        Note: {{ element.id }}
-      </div>
-      <q-space />
-      <q-btn flat v-close-popup round dense icon="close" />
-    </q-bar>
-
-    <div id="notePayloadId" class="q-pa-sm column no-wrap my-region-note">
-
-      <div class="col-auto row no-wrap q-pb-sm q-pt-md q-pr-sm">
-        <div class="q-pr-md">Scale:</div>
-        <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="4" :step="0.1" label label-always
-          color="amber-5">
-        </q-slider>
-      </div>
-
-      <div id="noteInputOutput" class="col-auto row no-wrap full-size">
-        <q-input dense v-model="elemNote.text" label="Markdown Text:" outlined autogrow @update:model-value="doCanvas"
-          class="input-container mono-font col-6" />
-
-        <div class="q-pl-sm col-6 overflow-auto">
-          <div ref="htmlRef" class="markdown-container markdown-body"></div>
+  <q-dialog v-model="showDialog" persistent>
+    <q-card id="noteCardId" class="my-card-note text-black bg-color-note" :style="cardStyle" ref="qCardRef">
+      <q-bar id="noteHeaderId" class="text-grey-9 bg-amber-2 header-bar">
+        <div class="my-no-overflow">Note: {{ element.id }}</div>
+        <q-space />
+        <q-btn flat v-close-popup round dense icon="close" @click="showDialog = false" />
+      </q-bar>
+      <div id="notePayloadId" class="q-pa-sm column no-wrap my-region-note flex-grow">
+        <div class="col-auto row no-wrap q-pb-sm q-pt-md q-pr-sm">
+          <div class="q-pr-md">Scale:</div>
+          <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="4" :step="0.1" label label-always
+            color="amber-5" />
+        </div>
+        <div id="noteInputOutput" class="row no-wrap note-io-row"
+          style="height: 400px; min-height: 200px; max-height: 60vh;">
+          <div class="input-scroll-area col-6 mono-font"
+            style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
+            <label class="native-label">Markdown Text:</label>
+            <textarea v-model="noteText" class="native-textarea styled-textarea" rows="6"
+              style="resize: vertical; width: 100%; min-height: 100px; max-height: 100%; box-sizing: border-box; flex: 1 1 auto;"
+              @input="doCanvas" spellcheck="false" />
+          </div>
+          <div class="q-pl-sm col-6 markdown-scroll-area"
+            style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
+            <label class="native-label">Markdown Result:</label>
+            <div ref="htmlRef" class="markdown-container markdown-body" v-html="mdHtml"
+              :style="{ fontSize: (sliderScale * 1.1) + 'em', flex: '1 1 auto', overflow: 'auto', height: '100%' }">
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </q-card>
+    </q-card>
+  </q-dialog>
 </template>
 
-<style>
+<style scoped>
+.my-card-note {
+  overflow: hidden !important;
+  min-width: 200px !important;
+  max-width: 1200px !important;
+  width: 90vw !important;
+  min-height: 200px !important;
+  max-height: 1200px !important;
+  height: auto !important;
+  max-height: 90vh !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-bar {
+  flex: 0 0 auto;
+  z-index: 2;
+}
+
+.my-region-note {
+  flex: 1 1 auto;
+  min-height: 200px;
+  max-height: 1200px;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-io-row {
+  width: 100%;
+  min-height: 100px;
+  align-items: stretch;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.input-scroll-area {
+  height: 100%;
+  max-height: 100%;
+  min-width: 0;
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+.markdown-scroll-area {
+  height: 100%;
+  max-height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.native-label {
+  font-size: 12px;
+  color: #757575;
+  margin-left: 2px;
+  display: block;
+  min-height: 18px;
+  /* Remove margin-bottom to ensure both columns align perfectly */
+}
+
+.native-textarea.styled-textarea {
+  width: 100%;
+  min-height: 100px;
+  max-height: 1000px;
+  resize: none;
+  overflow: auto;
+  font: 14px ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  box-sizing: border-box;
+  border: 1px solid #c2c2c2;
+  border-radius: 4px;
+  background: #fffbe6;
+  color: #222;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+  white-space: pre;
+  /* Remove margin-bottom to align columns */
+}
+
+.native-textarea.styled-textarea:focus {
+  border-color: #ffc107;
+  background: #fffde7;
+}
+
 .markdown-container {
   border: solid 1px lightgrey;
   padding: 8px;
-  transform-origin: top left;
-  overflow: auto;
-}
-
-.input-container {
-  overflow: auto;
+  min-height: 100px;
+  background: #fffbe6;
+  width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
 }
 
 .mono-font {
-  font:
-    14px ui-monospace,
-    SFMono-Regular,
-    SF Mono,
-    Menlo,
-    Consolas,
-    Liberation Mono,
-    monospace;
-}
-
-.full-size {
-  width: 100%;
-  height: 100%;
-}
-
-.bg-color-note {
-  background-color: v-bind(bgColor) !important;
-}
-
-.input-container .q-field__inner {
-  overflow: auto;
-}
-
-.slider-css {
-  max-width: 50em;
-}
-
-.input-container {
-  max-width: 800px !important;
-}
-
-
-.my-region-note {
-  min-height: 250px;
-  /* min-height: 90vv; */
-  /* max-height: 90vv; */
+  font: 14px ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 }
 
 .my-no-overflow {
@@ -85,24 +141,12 @@
   text-wrap: nowrap;
   text-overflow: ellipsis;
 }
-
-.my-card-note {
-  overflow: hidden !important;
-  /* min-width: 500px !important; */
-  min-height: 200px !important;
-  max-height: 90vh !important;
-  width: 90vw !important;
-  min-width: 200px !important;
-  max-width: 1200px !important;
-}
 </style>
 
 <script setup>
-// eslint-disable vue/no-mutating-props
-
 import * as U from "src/lib/utils";
 import * as V from "vue";
-import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
+import { hsm } from "src/classes/Chsm";
 import rehypeStringify from 'rehype-stringify';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -111,117 +155,52 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { unified } from 'unified';
 
-const bgColor = V.ref("white");
-const isInternal = V.ref(true);
-const elemFrom = V.ref({});
-const elemTo = V.ref({});
-const colorFrom = V.ref("red");
-const mdHtml = V.ref("");
-const myDiv = V.ref(null);
-const eee = V.ref(null);
-const sliderScale = V.ref(1);
-const elemNote = V.ref({});
-const htmlRef = V.ref({});
+const props = defineProps({
+  element: { type: Object },
+  elementId: { type: String },
+});
 
+const showDialog = V.ref(true);
+const sliderScale = V.ref(1);
+
+const elemNote = V.ref({});
+const noteText = V.ref("");
+const mdHtml = V.ref("");
+const htmlRef = V.ref(null);
+const qCardRef = V.ref(null);
+const cardStyle = V.ref({});
+let resizeObserver;
 
 const processor = unified()
   .use(remarkParse)
-  .use(remarkGfm) // Support GFM (tables, autolinks, tasklists, strikethrough)
+  .use(remarkGfm)
   .use(remarkMath)
   .use(remarkRehype, { allowDangerousHtml: false })
   .use(rehypeKatex)
   .use(rehypeStringify);
 
-let qCardE;
-let headerE;
-let payloadE;
-let textAreaE;
-let noteIOE;
-let IOVertOffset;
-
-let resizeObserver;
-
-const props = defineProps({
-  element: {
-    type: Object,
-  },
-  elementId: {
-    type: String,
-  },
-});
-
-
-async function adjustHeights() {
-  if (!qCardE || !headerE || !payloadE) return;
-  await U.nextTick();
-  const paddingBottom = 8;
-  const inputHeight = textAreaE.offsetHeight;
-  const htmlHeight = htmlRef.value.offsetHeight;
-
-  const bbC = qCardE.getBoundingClientRect();
-  const bbIO = noteIOE.getBoundingClientRect();
-  IOVertOffset = bbIO.top - bbC.top;
-  console.log(`[noteDialog.adjustHeights] bbC.top:${bbC.top} bbIO.top:${bbIO.top}`);
-  console.log(`[noteDialog.adjustHeights] bbC.height:${bbC.height} bbIO.height:${bbIO.height}`);
-
-  console.log(`[noteDialog.adjustHeights] inputHeight:${inputHeight} htmlHeight:${htmlHeight} IOVertOffset:${IOVertOffset}`);
-  let qCardWantedHeight = Math.max(textAreaE.offsetHeight, htmlRef.value.offsetHeight);
-  console.log(`[noteDialog.adjustHeights] 0 qCardWantedHeight:${qCardWantedHeight}`);
-  qCardWantedHeight += paddingBottom + IOVertOffset + 20;
-  qCardE.style.height = qCardWantedHeight + "px";
-  console.log(`[noteDialog.adjustHeights] 1 qCardWantedHeight:${qCardWantedHeight}`);
-  let height = qCardE.offsetHeight - IOVertOffset - paddingBottom;
-  console.log(`[noteDialog.adjustHeights] height:${height}`);
-  payloadE.style.height = height + "px";
-}
-
-// let newDiv;
 
 async function doCanvas() {
-  // console.log(`[noteDialog.doCanvas]`);
-  const html = await processor.process(elemNote.value.text);
-  htmlRef.value.innerHTML = html;
-  htmlRef.value.style.scale = sliderScale.value;
-  elemNote.value.scale = sliderScale.value;
-  console.log(`[noteDiSalog.doCanvas]  elemNote:${elemNote.value}`);
-  elemNote.value.paint();
-  await U.nextTick();
-  adjustHeights();
+  const html = String(await processor.process(noteText.value || ""));
+  mdHtml.value = html;
+  if (elemNote.value) elemNote.value.text = noteText.value;
 }
 
-V.watch(sliderScale, async (el) => {
-  doCanvas();
+V.watch(sliderScale, doCanvas);
+
+
+V.onMounted(async () => {
+  elemNote.value = U.getElemById(props.elementId);
+  noteText.value = elemNote.value.text || "";
+  sliderScale.value = elemNote.value.scale || 1;
+  await doCanvas();
+  resizeObserver = new ResizeObserver(() => {
+    // No need for JS height management
+  });
+  resizeObserver.observe(document.body);
 });
 
 V.onUnmounted(() => {
-  console.log(`[noteDialog.onUnmounted]`);
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;;
-  }
-});
-
-V.onMounted(async () => {
-  await V.nextTick();
-  console.log(`[noteDialog.onMounted] elementId:${props.elementId} hsm:${hsm}`);
-  elemNote.value = U.getElemById(props.elementId);
-  bgColor.value = hsm.settings.styles.folioBackground;
-  await U.nextTick();
-  noteIOE = document.getElementById("noteInputOutput");
-  // textAreaE = noteIOE.getElementsByTagName('textarea')[0];
-  textAreaE = noteIOE.getElementsByClassName('q-field__control')[0];
-  qCardE = document.getElementById("noteCardId");
-  headerE = document.getElementById("noteHeaderId");
-  payloadE = document.getElementById("notePayloadId");
-  sliderScale.value = elemNote.value.scale;
-  // console.log(`[noteDialog.onMounted] qCardE:${qCardE} headerE:${headerE} payloadE:${payloadE}`);
-  qCardE.style.width = qCardE.style.width + 1 + "px";
-
-
-
-  doCanvas();
-  resizeObserver = new ResizeObserver(adjustHeights);
-  // resizeObserver.observe(qCardE);
-  document.querySelectorAll('textarea').forEach(e => e.setAttribute('spellcheck', false));
+  if (resizeObserver) resizeObserver.disconnect();
 });
 </script>

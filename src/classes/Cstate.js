@@ -462,6 +462,7 @@ export class Cstate extends CbaseState {
   }
 
   openDialog() {
+    hsm.setSelected(this.id);
     hsm.openDialog(StateDialog, this);
   }
 
