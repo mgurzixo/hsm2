@@ -9,7 +9,7 @@ const inchInMm = 25.4;
 
 export class CbaseElem {
   constructor(parent, options, type) {
-    console.log(`[CbaseElem.constructor] type:${type} elem:${options.myElem}`);
+    // console.log(`[CbaseElem.constructor] type:${type} elem:${options.myElem}`);
     let id = options?.id;
     if (type == "M") id = "M1";
     else {
@@ -27,7 +27,7 @@ export class CbaseElem {
     this.myElem = options.myElem;
     this.childElem = document.createElement("div");
     this.myElem.append(this.childElem);
-    console.log(`[CbaseElem.constructor] (${this.myElem.id}) childElem:${this.childElem}`);
+    // console.log(`[CbaseElem.constructor] (${this.id}) childElem:${this.childElem}`);
     const s = this.myElem.style;
     s.position = "absolute";
     s.overflow = "hidden";
@@ -55,7 +55,7 @@ export class CbaseElem {
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 
-  async load(options) {
+  load(options) {
     console.warn(`[CbaseElem.load] this:${this.id}`);
     return true;
   }
@@ -72,6 +72,7 @@ export class CbaseElem {
       child.destroy();
     }
     hsm.hElems.removeElemById(this.id);
+    this.myElem.remove();
     delete this.id;
     delete this.name;
     delete this.parent;
@@ -91,10 +92,10 @@ export class CbaseElem {
     hsm.hElems.removeElemById(this.id);
   }
 
-  async onLoaded() {
+  onLoaded() {
     // Called when everything is loaded
     for (let child of this.children) {
-      await child.onLoaded();
+      child.onLoaded();
     }
   }
 
@@ -117,7 +118,7 @@ export class CbaseElem {
   }
 
   doubleClick(x, y) { }
-  async dragStart(xP, yP) { }
+  dragStart(xP, yP) { }
   drag(dx, dy) { }
 
   // adjustTrAnchors(changedId) {
@@ -188,7 +189,7 @@ export class CbaseElem {
     }
   }
 
-  async updateNotes() {
+  updateNotes() {
     for (let child of this.children) {
       child.updateNotes();
     }

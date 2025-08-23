@@ -30,6 +30,12 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
+  destroy() {
+    super.destroy();
+    console.log(`[Cfolio.destroy]`);
+    this.trElem.remove();
+  }
+
   setFolioDisplay(isActive) {
     if (isActive) this.myElem.style.display = "block";
     else this.myElem.style.display = "none";
@@ -172,10 +178,9 @@ export class Cfolio extends CregionWithStates {
     if (x > g.width || y > g.height) return idz;
     idz = { id: this.id, zone: "M", x: x, y: y };
     const m = U.pxToMm(hsm.settings.cursorMarginP);
-    // TODO
-    // for (let note of this.notes) {
-    //   idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-    // }
+    for (let note of this.notes) {
+      idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+    }
     for (let child of this.children) {
       // console.warn(`[Cregion.Cfolio](${this.id}) calling ${child.id}`);
       idz = child.makeIdzInParentCoordinates(idz.x, idz.y, idz);

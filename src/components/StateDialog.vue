@@ -10,19 +10,19 @@
     </q-bar>
 
     <div class="q-pa-sm my-region">
-      <div class="q-pa-sm q-mb-md" spellcheck="false">
+      <div class="q-pa-sm q-mb-md">
         <q-input dense outlined v-model="element.name" label="Name:" @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm" spellcheck="false">
+      <div class="q-pa-sm">
         <q-input dense v-model="element.entry" label="Entry:" outlined @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm" spellcheck="false">
+      <div class="q-pa-sm">
         <q-input dense v-model="element.exit" label="Exit:" outlined @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm" spellcheck="false">
+      <div class="q-pa-sm">
         <q-input dense v-model="element.include" label="Include:" outlined autogrow @update:model-value="onChange" />
       </div>
-      <div class="q-pa-sm" spellcheck="false">
+      <div class="q-pa-sm">
         <q-input dense v-model="element.comment" label="Comment:" outlined autogrow @update:model-value="onChange" />
       </div>
       <div class="q-pr-sm row no-wrap items-center">
@@ -138,5 +138,6 @@ V.onMounted(async () => {
   bgColor.value = hsm.settings.styles.folioBackground;
   // console.log(`[StateDialog.onMounted] elementId:${props.element.id} Color:${props.element.color}`);
   stateHue.value = props.element.color;
+  document.querySelectorAll('input').forEach(e => e.setAttribute('spellcheck', false));
 });
 </script>

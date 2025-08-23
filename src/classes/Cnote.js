@@ -7,25 +7,73 @@ import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { noteStyles } from "src/lib/styles";
 import { mdToCanvas } from "src/lib/md";
 import NoteDialog from "src/components/NoteDialog.vue";
+import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
+import rehypeStringify from 'rehype-stringify';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { unified } from 'unified';
+
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkGfm) // Support GFM (tables, autolinks, tasklists, strikethrough)
+  .use(remarkMath)
+  .use(remarkRehype, { allowDangerousHtml: false })
+  .use(rehypeKatex)
+  .use(rehypeStringify);
 
 export class Cnote extends CbaseElem {
   constructor(parent, noteOptions, type = "N") {
     super(parent, noteOptions, type);
     // console.log(`[Cnote] New note id:${this.id} parent:${this.parent.id} ${noteOptions.container?.id}`);
-    // console.log(`[Cnote] text:${noteOptions.text}`);
     this.text = noteOptions?.text || "";
     this.scale = noteOptions?.scale || 1;
     this.container = noteOptions?.container ? noteOptions.container : parent;
+    this.myElem.classList.add("markdown-body");
     this.togetherSelected = noteOptions?.togetherSelected;
     this.canvasScale = 0;
+    console.warn(`[Cnote] (${this.id}) text:${this.text}`);
+    this.setGeometry();
   }
 
-  async load(noteOptions) {
+  setGeometry() {
+    // console.log(`[Cnote.setGeometry]`);
+    const s = this.myElem.style;
+    const g = this.geo;
+    s.top = "0px";
+    s.left = "0px";
+    s.width = g.width + "mm";
+    s.height = g.height + "mm";
+    this.paint();
+  }
+
+  paint() {
+    console.log(`[Cnote.paint] text:"${this.text}"`);
+    const styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
+    let lw = styles.borderWidth;
+    let ss = styles.borderColor;
+    if (this.isSelected || this.id == hCtx.selectedId || (this.togetherSelected && this.parent.id == hCtx.selectedId)) {
+      lw = styles.borderSelectedWidth;
+      ss = styles.borderSelectedColor;
+    }
+    this.myElem.replaceChildren();
+    // lw = 2;
+    // ss = "green";
+    processor.process(this.text).then(html => {
+      this.myElem.innerHTML = html;
+      this.myElem.style.border = `solid ${lw + "px"} ${ss}`;
+    });
+  }
+
+  setText(text) {
+    this.text = text;
+    this.paint();
+  }
+
+  load(noteOptions) {
     // console.log(`[Cnote.load] noteOptions:${noteOptions}`);
-
-  }
-
-  async onLoaded() {
   }
 
   setSelected(val) {
@@ -37,11 +85,12 @@ export class Cnote extends CbaseElem {
   }
 
   openDialog() {
-    if (this.togetherSelected) this.parent.openDialog();
-    else hsm.openDialog(NoteDialog, this);
+    // if (this.togetherSelected) this.parent.openDialog();
+    // else hsm.openDialog(NoteDialog, this);
+    hsm.openDialog(NoteDialog, this);
   }
 
-  async dragStart() {
+  dragStart() {
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // [x,y] in mm in this.geo.x/y frame
@@ -144,73 +193,73 @@ export class Cnote extends CbaseElem {
     return true;
   }
 
-  async makeCanvas(text) {
-    // console.warn(`[Cnote.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
-    const canvasScale = this.scale * hCtx.folio.geo.scale;
-    const styles = noteStyles(this.color || hsm.settings.styles.defaultColor);
+  makeCanvas(text) {
+    // // console.warn(`[Cnote.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
+    // const canvasScale = this.scale * hCtx.folio.geo.scale;
+    // const styles = noteStyles(this.color || hsm.settings.styles.defaultColor);
 
-    // console.log(`[Cnote.makeCanvas] (${this.id}) canvasScale:${canvasScale.toFixed(2)} text:${text}`);
-    this.canvas = mdToCanvas(this.text, canvasScale, styles.textColor, styles.bg);
-    this.canvasScale = canvasScale;
-    // console.log(`[Cnote.makeCanvas] 1 (${this.id}) canvas:${this.canvas}`);
+    // // console.log(`[Cnote.makeCanvas] (${this.id}) canvasScale:${canvasScale.toFixed(2)} text:${text}`);
+    // this.canvas = mdToCanvas(this.text, canvasScale, styles.textColor, styles.bg);
+    // this.canvasScale = canvasScale;
+    // // console.log(`[Cnote.makeCanvas] 1 (${this.id}) canvas:${this.canvas}`);
   }
 
   deleteCanvas() {
-    // console.warn(`[Cnote.deleteCanvas] (${this.id})`);
-    delete this.canvas;
+    // // console.warn(`[Cnote.deleteCanvas] (${this.id})`);
+    // delete this.canvas;
   }
 
   draw(xx0, yy0, text = this.text) {
-    if (!text) text = this.parent.id;
-    // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0} ge0.x0:${this.geo.x0}`);
-    // console.log(`[Cnote.draw] Drawing ${this.id} text:${text}`);
-    if (xx0 != undefined) {
-      this.geo.xx0 = xx0 + this.geo.x0;
-      this.geo.yy0 = yy0 + this.geo.y0;
-    }
-    const styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
-    const x0P = R(U.mmToPL(this.geo.xx0), styles.borderWidth);
-    const y0P = R(U.mmToPL(this.geo.yy0));
-    const widthP = R(U.mmToPL(this.geo.width));
-    const heightP = R(U.mmToPL(this.geo.height));
-    // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} geo.xx0:${this.geo.xx0} X0P:${x0P}`);
-    // Draw border
-    let lw = styles.borderWidth;
-    let ss = styles.borderColor;
-    if (this.isSelected || this.id == hCtx.selectedId || (this.togetherSelected && this.parent.id == hCtx.selectedId)) {
-      lw = styles.borderSelectedWidth;
-      ss = styles.borderSelectedColor;
-    } else {
-      cCtx.lineWidth = styles.borderWidth;
-      cCtx.strokeStyle = styles.borderColor;
-    }
-    cCtx.lineWidth = lw;
-    cCtx.strokeStyle = ss;
-    if (this.id.startsWith("X")) {
-      // console.log(`[Cnote.draw] (${this.id}) strokeStyle:${cCtx.strokeStyle} lineWidth:${cCtx.lineWidth} styles.borderWidth:${styles.borderWidth}`);
-      // console.log(`[Cnote.draw] (${this.id}) x0P:${x0P} y0P:${y0P} widthP:${widthP} heightP:${heightP}`);
-      // console.log(`[Cnote.draw] (${this.id}) height:${this.geo.height} lw:${lw}`);
-    }
-    // if (lw > 0) { // beware of clip() below!
-    cCtx.beginPath();
-    cCtx.rect(x0P, y0P, widthP, heightP);
-    cCtx.moveTo(x0P + widthP - styles.cornerP, y0P + heightP);
-    cCtx.lineTo(x0P + widthP, y0P + heightP - styles.cornerP);
-    if (lw > 0) cCtx.stroke();
+    // if (!text) text = this.parent.id;
+    // // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} yy0:${yy0} ge0.x0:${this.geo.x0}`);
+    // // console.log(`[Cnote.draw] Drawing ${this.id} text:${text}`);
+    // if (xx0 != undefined) {
+    //   this.geo.xx0 = xx0 + this.geo.x0;
+    //   this.geo.yy0 = yy0 + this.geo.y0;
     // }
-    // Draw note text
-    // console.log(`[Cnote.draw] canvas:${this.canvas}`);
-    if (!text) return;
-    cCtx.save();
-    cCtx.clip();
-    if (this.canvas) {
-      cCtx.drawImage(this.canvas, 0, 0, widthP, heightP, x0P, y0P, widthP, heightP);
-    }
-    else {
-      // console.log(`[Cnote.draw] Redo: canvas:${this.canvas}`);
-      this.makeCanvas(text);
-    }
-    cCtx.restore();
+    // const styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
+    // const x0P = R(U.mmToPL(this.geo.xx0), styles.borderWidth);
+    // const y0P = R(U.mmToPL(this.geo.yy0));
+    // const widthP = R(U.mmToPL(this.geo.width));
+    // const heightP = R(U.mmToPL(this.geo.height));
+    // // console.log(`[Cnote.draw] Drawing ${this.id} xx0:${xx0} geo.xx0:${this.geo.xx0} X0P:${x0P}`);
+    // // Draw border
+    // let lw = styles.borderWidth;
+    // let ss = styles.borderColor;
+    // if (this.isSelected || this.id == hCtx.selectedId || (this.togetherSelected && this.parent.id == hCtx.selectedId)) {
+    //   lw = styles.borderSelectedWidth;
+    //   ss = styles.borderSelectedColor;
+    // } else {
+    //   cCtx.lineWidth = styles.borderWidth;
+    //   cCtx.strokeStyle = styles.borderColor;
+    // }
+    // cCtx.lineWidth = lw;
+    // cCtx.strokeStyle = ss;
+    // if (this.id.startsWith("X")) {
+    //   // console.log(`[Cnote.draw] (${this.id}) strokeStyle:${cCtx.strokeStyle} lineWidth:${cCtx.lineWidth} styles.borderWidth:${styles.borderWidth}`);
+    //   // console.log(`[Cnote.draw] (${this.id}) x0P:${x0P} y0P:${y0P} widthP:${widthP} heightP:${heightP}`);
+    //   // console.log(`[Cnote.draw] (${this.id}) height:${this.geo.height} lw:${lw}`);
+    // }
+    // // if (lw > 0) { // beware of clip() below!
+    // cCtx.beginPath();
+    // cCtx.rect(x0P, y0P, widthP, heightP);
+    // cCtx.moveTo(x0P + widthP - styles.cornerP, y0P + heightP);
+    // cCtx.lineTo(x0P + widthP, y0P + heightP - styles.cornerP);
+    // if (lw > 0) cCtx.stroke();
+    // // }
+    // // Draw note text
+    // // console.log(`[Cnote.draw] canvas:${this.canvas}`);
+    // if (!text) return;
+    // cCtx.save();
+    // cCtx.clip();
+    // if (this.canvas) {
+    //   cCtx.drawImage(this.canvas, 0, 0, widthP, heightP, x0P, y0P, widthP, heightP);
+    // }
+    // else {
+    //   // console.log(`[Cnote.draw] Redo: canvas:${this.canvas}`);
+    //   this.makeCanvas(text);
+    // }
+    // cCtx.restore();
   }
 
   makeIdz(x, y, idz) {
@@ -244,6 +293,15 @@ export class Cnote extends CbaseElem {
     // console.log(`[Cnote.makeIdz] (${this.id}) id:${id} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
     return idz;
   }
+
+  makeIdzInParentCoordinates(xp, yp, myIdz) {
+    [xp, yp] = [xp * U.pxPerMm, yp * U.pxPerMm];
+    let [x, y] = applyToPoint(this.geo.matR, [xp, yp]);
+    [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
+    // console.log(`[Cregion.makeIdzInParentCoordinates](${ this.id }(${ this.parent.id })) yp:${ yp.toFixed(); } y:${ y.toFixed(); } f:${ this.geo.mat.f.toFixed(); } `);
+    const idz = this.makeIdz(x, y, myIdz);
+    return idz;
+  }
 }
 
 export class Ctext extends Cnote {
@@ -271,17 +329,17 @@ export class Ctext extends Cnote {
   }
 
   draw(xx0, yy0) {
-    if (!this.text) super.draw(xx0, yy0, this.parent.id);
-    else super.draw(xx0, yy0);
+    // if (!this.text) super.draw(xx0, yy0, this.parent.id);
+    // else super.draw(xx0, yy0);
   }
 
-  async makeCanvas(text) {
-    // console.warn(`[Ctext.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
-    const canvasScale = this.scale * hCtx.folio.geo.scale;
-    // console.log(`[Ctext.makeCanvas] (${this.id}) canvasScale:${canvasScale.toFixed(2)} text:${text}`);
-    this.canvas = mdToCanvas(this.text, canvasScale, this.tagStyle.textColor, this.tagStyle.bg);
-    this.canvasScale = canvasScale;
-    // console.log(`[Ctext.makeCanvas] 1 (${this.id}) canvas:${this.canvas}`);
+  makeCanvas(text) {
+    // // console.warn(`[Ctext.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
+    // const canvasScale = this.scale * hCtx.folio.geo.scale;
+    // // console.log(`[Ctext.makeCanvas] (${this.id}) canvasScale:${canvasScale.toFixed(2)} text:${text}`);
+    // this.canvas = mdToCanvas(this.text, canvasScale, this.tagStyle.textColor, this.tagStyle.bg);
+    // this.canvasScale = canvasScale;
+    // // console.log(`[Ctext.makeCanvas] 1 (${this.id}) canvas:${this.canvas}`);
   }
 
 }

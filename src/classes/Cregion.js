@@ -24,7 +24,7 @@ export class CregionWithStates extends CbaseRegion {
     // this.myElem.innerHTML = `<div>${this.id} of state ${this.parent.id}</div>`;
     this.notes = [];
     this.noteElem = document.createElement("div");
-    this.myElem.append(this.noteElem);
+    this.myElem.prepend(this.noteElem);
     if (options.notes) {
       for (let noteOptions of options.notes) {
         this.addNote(noteOptions);
@@ -35,6 +35,11 @@ export class CregionWithStates extends CbaseRegion {
         this.addState(stateOptions);
       }
     }
+  }
+
+  destroy() {
+    super.destroy();
+    this.noteElem.remove();
   }
 
   setGeometry() {
@@ -71,7 +76,7 @@ export class CregionWithStates extends CbaseRegion {
     noteOptions.myElem = noteEl;
     const myNote = new Cnote(this, noteOptions, "N");
     this.notes.push(myNote);
-    console.log(`[Cregion.addNote] id:${myNote.id}`);
+    console.log(`[Cregion.addNote] id:${myNote.id} text:${myNote.text}`);
     return myNote;
   }
 
@@ -276,6 +281,9 @@ export class CregionWithStates extends CbaseRegion {
     if (modeRef.value == "inserting-state") {
       // console.log(`[Cregion.makeIdz] 1(${ this.id }(${ this.parent.id })) x:${ x.toFixed(); } y:${ y.toFixed(); } x0:${ this.geo.x0; } `);
       idz = { id: this.id, zone: "M", x: x, y: y };
+    }
+    for (let note of this.notes) {
+      idz = note.makeIdzInParentCoordinates(x, y, idz);
     }
     for (let child of this.children) {
       // console.log(`[Cregion.makeIdz](${ this.id }) calling ${ child.id; } `);

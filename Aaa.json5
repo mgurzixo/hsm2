@@ -91,9 +91,9 @@
       // geo: { x0: 0, y0: 0, width: 100, height: 100, scale: 1 },
       notes: [
         {
-          geo: { x0: 20, y0: 5, width: 19, height: 10 },
+          geo: { x0: 20, y0: 5, width: 50, height: 50 },
           // text: "Hello **World**! This is a very very very very very very very very very very very long note",
-          text: "# Heplo **Worljd** H",
+          text: "### Heplo **Worljd** H",
         },
       ],
       trs: [

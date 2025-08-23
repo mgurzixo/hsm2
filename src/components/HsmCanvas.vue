@@ -121,7 +121,7 @@ function adjustSizes() {
 }
 
 V.onUnmounted(() => {
-  // console.log(`[HsmCanvas.onUnmounted]`);
+  console.log(`[HsmCanvas.onUnmounted]`);
   if (rootElem) {
     rootElem.textContent = ''; // Avoid previous vals with HMR
     removeRootElemListeners(rootElem);

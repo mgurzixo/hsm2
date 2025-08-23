@@ -32,7 +32,16 @@ export class Chsm extends CbaseElem {
     this.setCanvas(this.canvas);
     hsm = this;
     hElems = this.hElems;
-    // console.log(`[Chsm.constructor] myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+  }
+
+
+  destroy() {
+    super.destroy();
+    delete this.activeFolio;
+    hCtx.folio = null;
+    this.canvas = null;
+    hsm = null;
   }
 
   checkSernum(num) {
@@ -75,15 +84,6 @@ export class Chsm extends CbaseElem {
     hCtx.folio.onLoaded();
     this.makeIdzP();
     return null;
-  }
-
-  destroy() { // TODO
-    // super.destroy();
-    // delete this.activeFolio;
-    // hCtx.folio = null;
-    // this.destroyResizeObserver();
-    // this.canvas = null;
-    // hsm = null;
   }
 
   save() { }

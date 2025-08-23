@@ -69,11 +69,12 @@ const props = defineProps({
 });
 
 V.watch(props.element, (el) => {
-  console.log(`[trDialog.watch.element] id:${el.id}`);
+  console.log(`[folioDialog.watch.element] id:${el.id}`);
   props.element.setGeometry();
 });
 
 V.onMounted(() => {
+  console.log(`[folioDialog.onMounted] hsm:${hsm}`);
   bgColor.value = hsm.settings.styles.folioBackground;
 });
 </script>
