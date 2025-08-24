@@ -32,7 +32,7 @@ export class Cfolio extends CregionWithStates {
 
   destroy() {
     super.destroy();
-    console.log(`[Cfolio.destroy]`);
+    // console.log(`[Cfolio.destroy]`);
     this.trElem.remove();
   }
 

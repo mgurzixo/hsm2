@@ -15,6 +15,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { unified } from 'unified';
+import FolioDialog from "src/components/FolioDialog.vue";
 
 const processor = unified()
   .use(remarkParse)
@@ -34,7 +35,7 @@ export class Cnote extends CbaseElem {
     this.myElem.classList.add("markdown-body");
     this.togetherSelected = noteOptions?.togetherSelected;
     this.canvasScale = 0;
-    console.warn(`[Cnote] (${this.id}) text:${this.text}`);
+    // console.warn(`[Cnote] (${this.id}) text:${this.text}`);
     this.setGeometry();
   }
 
@@ -50,7 +51,7 @@ export class Cnote extends CbaseElem {
   }
 
   paint() {
-    console.log(`[Cnote.paint] text:"${this.text}"`);
+    // console.log(`[Cnote.paint] text:"${this.text}"`);
     const styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
     let lw = styles.borderWidth;
     let ss = styles.borderColor;
@@ -59,6 +60,7 @@ export class Cnote extends CbaseElem {
       ss = styles.borderSelectedColor;
     }
     this.myElem.replaceChildren();
+    this.myElem.style.fontFamily = this.font ? this.font : "arial";
     processor.process(this.text).then(html => {
       this.myElem.innerHTML = html;
       const s = this.myElem.style;
@@ -80,10 +82,12 @@ export class Cnote extends CbaseElem {
     // console.log(`[Cnote.load] noteOptions:${noteOptions}`);
   }
 
+
   setSelected(val) {
     this.isSelected = val;
     // console.log(`[Cnote.dragStart] (${this.id}) togetherSelected:${this.togetherSelected}`);
     super.setSelected(val);
+    if (val) this.raise();
     this.paint();
     if (this.togetherSelected) {
       if (this.parent.isSelected != val) this.parent.setSelected(val);
@@ -95,6 +99,7 @@ export class Cnote extends CbaseElem {
     // else hsm.openDialog(NoteDialog, this);
     hsm.setSelected(this.id);
     hsm.openDialog(NoteDialog, this);
+    // hsm.openDialog(FolioDialog, this);
   }
 
   dragStart() {
@@ -116,7 +121,7 @@ export class Cnote extends CbaseElem {
     };
     // console.log(`[Cnote.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
-    // this.parent.raiseChild(this.id); // TODO
+    this.raise();
     return this;
   }
 

@@ -341,7 +341,7 @@ export class Cstate extends CbaseState {
     }
     // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
-    this.parent.raiseChild(this.id);
+    this.raise();
     hsm.adjustTrAnchors(this.id);
     return this;
   }

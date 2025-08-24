@@ -33,7 +33,7 @@ export class Chsm extends CbaseElem {
     hsm = this;
     this.inhibitDrag = false;
     hElems = this.hElems;
-    console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+    // console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
 
 
@@ -62,7 +62,7 @@ export class Chsm extends CbaseElem {
     const foEl = document.createElement("div");
     this.childElem.append(foEl);
     folioOptions.myElem = foEl;
-    console.log(`[Chsm.addFolio]`);
+    // console.log(`[Chsm.addFolio]`);
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
   }
@@ -139,9 +139,9 @@ export class Chsm extends CbaseElem {
   }
 
   dragStart(xP, yP) {
-    console.log(`[Chsm.click]  (xDown:${xP}, yDown:${xP})`);
+    // console.log(`[Chsm.click]  (xDown:${xP}, yDown:${xP})`);
     let idz = this.makeIdzP(xP, yP);
-    console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
+    // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     // if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);

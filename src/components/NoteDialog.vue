@@ -1,37 +1,49 @@
 <template>
-  <q-dialog v-model="showDialog">
-    <q-card id="noteCardId" class="my-card-note text-black bg-color-note" :style="cardStyle" ref="qCardRef">
-      <q-bar id="noteHeaderId" class="text-grey-9 bg-amber-2 header-bar">
-        <div class="my-no-overflow">Note: {{ element.id }}</div>
-        <q-space />
-        <q-btn flat v-close-popup round dense icon="close" @click="showDialog = false" />
-      </q-bar>
-      <div id="notePayloadId" class="q-pa-sm column no-wrap my-region-note flex-grow">
-        <div class="col-auto row no-wrap q-pb-sm q-pt-lg q-pr-sm" style="align-items: center;">
+  <q-card id="noteCardId" class="my-card-note text-black bg-color-note" :style="cardStyle" ref="qCardRef">
+    <q-bar id="noteHeaderId" class="text-grey-9 bg-amber-2 header-bar">
+      <div class="my-no-overflow">Note: {{ element.id }}</div>
+      <q-space />
+      <q-btn flat v-close-popup round dense icon="close" />
+    </q-bar>
+    <div id="notePayloadId" class="q-pa-sm column no-wrap my-region-note flex-grow">
+      <div class="col-auto row no-wrap q-pb-sm q-pt-lg q-pr-sm" style="align-items: center; width: 100%;">
+        <div style="flex: 1 1 0; min-width: 0; max-width: 50%; display: flex; align-items: center;">
           <span class="q-pr-md" style="font-size: 13px; color: #757575;">Scale:</span>
           <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="4" :step="0.1" label label-always
             thumb-size="14px" color="amber-5" style="flex: 1 1 0; min-width: 120px;" />
         </div>
-        <div id="noteInputOutput" class="row no-wrap note-io-row"
-          style="height: 400px; min-height: 200px; max-height: 60vh;">
-          <div class="input-scroll-area col-6 mono-font"
-            style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
-            <label class="native-label">Markdown Text:</label>
-            <textarea v-model="noteText" autofocus class="native-textarea styled-textarea" rows="6"
-              style="resize: none; width: 100%; min-height: 100px; max-height: 100%; box-sizing: border-box; flex: 1 1 auto;"
-              @input="doPainting" spellcheck="false" />
-          </div>
-          <div class="q-pl-sm col-6 markdown-scroll-area"
-            style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
-            <label class="native-label">Markdown Result:</label>
-            <div ref="htmlRef" class="markdown-container markdown-body" v-html="mdHtml"
+        <div
+          style="flex: 1 1 0; min-width: 0; max-width: 50%; display: flex; align-items: center; justify-content: flex-end;">
+          <span class="q-pr-md" style="font-size: 13px; color: #757575;">Font:</span>
+          <q-select v-model="selectedFont" :options="fontList" dense outlined
+            style="min-width: 140px; max-width: 220px;" emit-value map-options :option-label="font => font"
+            :option-value="font => font" />
+        </div>
+      </div>
+
+
+      <div id="noteInputOutput" class="row no-wrap note-io-row"
+        style="height: 400px; min-height: 200px; max-height: 60vh;">
+        <div class="input-scroll-area col-6 mono-font"
+          style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
+          <label class="native-label">Markdown Text:</label>
+          <textarea v-model="noteText" autofocus class="native-textarea styled-textarea" rows="6"
+            style="resize: none; width: 100%; min-height: 100px; max-height: 100%; box-sizing: border-box; flex: 1 1 auto;"
+            @input="doPainting" spellcheck="false" />
+        </div>
+        <div class="q-pl-sm col-6 markdown-scroll-area"
+          style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
+          <label class="native-label">Markdown Result:</label>
+          <!-- <div ref="htmlRef" class="markdown-container markdown-body" v-html="mdHtml"
               :style="{ fontSize: (sliderScale * 1.1) + 'em', flex: '1 1 auto', overflow: 'auto', height: '100%' }">
-            </div>
+            </div> -->
+          <div ref="htmlRef" class="markdown-container markdown-body" v-html="mdHtml"
+            :style="{ fontSize: (sliderScale * 1.1) + 'em', fontFamily: selectedFont, flex: '1 1 auto', overflow: 'auto', height: '100%' }">
           </div>
         </div>
       </div>
-    </q-card>
-  </q-dialog>
+    </div>
+  </q-card>
 </template>
 
 <style scoped>
@@ -154,6 +166,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { unified } from 'unified';
+import { getSystemFonts } from 'src/lib/fontUtils';
 
 const props = defineProps({
   element: { type: Object },
@@ -170,6 +183,15 @@ const htmlRef = V.ref(null);
 const qCardRef = V.ref(null);
 const cardStyle = V.ref({});
 
+const fontList = V.ref([]);
+const selectedFont = V.ref('');
+V.watch(selectedFont, (newFont) => {
+  if (elemNote.value) {
+    elemNote.value.font = newFont;
+    elemNote.value.paint();
+  }
+});
+
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -183,6 +205,7 @@ async function doPainting() {
   mdHtml.value = html;
   if (elemNote.value) {
     elemNote.value.text = noteText.value;
+    elemNote.value.geo.scale = sliderScale.value;
     elemNote.value.paint();
   }
 }
@@ -193,6 +216,11 @@ V.onMounted(async () => {
   elemNote.value = U.getElemById(props.elementId);
   noteText.value = elemNote.value.text || "";
   sliderScale.value = elemNote.value.scale || 1;
+  fontList.value = await getSystemFonts();
+  // Initialize font from elemNote property if present, else default
+  selectedFont.value = elemNote.value.font && fontList.value.includes(elemNote.value.font)
+    ? elemNote.value.font
+    : (fontList.value[0] || 'Arial');
   await doPainting();
 });
 

@@ -28,13 +28,31 @@
  * }
  */
 const { contextBridge } = require("electron");
-import { app, BrowserWindow, Menu, ipcRenderer } from "electron";
+const { ipcRenderer } = require("electron");
 const fs = require("fs");
 const os = require("os");
+let fontScanner;
+try {
+  fontScanner = require('font-scanner');
+} catch (e) {
+  fontScanner = null;
+}
 // import { mainWindow } from "./electron-main.js";
 
 // Expose API methods to the renderer process
 contextBridge.exposeInMainWorld("hsm2Api", {
+  getFonts: async () => {
+    if (fontScanner) {
+      try {
+        const fonts = fontScanner.getAvailableFontsSync();
+        const families = Array.from(new Set(fonts.map(f => f.family))).sort();
+        return families;
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  },
   fsWrite: (filePath, data) => {
     // console.log(`[electron-preload.fsWrite] filePath:${filePath}`);
     fs.writeFileSync(filePath, data);

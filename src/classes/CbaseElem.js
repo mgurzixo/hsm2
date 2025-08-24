@@ -152,16 +152,9 @@ export class CbaseElem {
     return [xP / this.scalePhy() - this.geo.x0, yP / this.scalePhy() - this.geo.y0];
   }
 
-  raiseChild(childId) {
-    // const c = [];
-    // let found;
-    // for (let child of this.children) {
-    //   if (child.id != childId) c.push(child);
-    //   else found = child;
-    // }
-    // if (found) c.push(found);
-    // this.children = c;
-    U.raiseElement(this.children, childId);
+
+  raise() {
+    this.myElem.parentElement.appendChild(this.myElem);
   }
 
   idz() {

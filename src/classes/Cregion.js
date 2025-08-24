@@ -70,13 +70,13 @@ export class CregionWithStates extends CbaseRegion {
   }
 
   addNote(noteOptions) {
-    console.log(`[Cregion.addNote] noteOptions:${JSON.stringify(noteOptions)} `);
+    // console.log(`[Cregion.addNote] noteOptions:${JSON.stringify(noteOptions)} `);
     const noteEl = document.createElement("div");
     this.noteElem.append(noteEl);
     noteOptions.myElem = noteEl;
     const myNote = new Cnote(this, noteOptions, "N");
     this.notes.push(myNote);
-    console.log(`[Cregion.addNote] id:${myNote.id} text:${myNote.text}`);
+    // console.log(`[Cregion.addNote] id:${myNote.id} text:${myNote.text}`);
     return myNote;
   }
 
