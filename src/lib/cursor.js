@@ -6,7 +6,7 @@ import { hsm, cCtx, hCtx, modeRef } from "src/classes/Chsm";
 
 function assets(icon, defVal) {
   // return `url(../assets/${icon}) 8 8, ${defVal}`;
-  const assetsDir = new URL(`../assets`, import.meta.url).href;
+  const assetsDir = new URL(/* @vite-ignore */ `../assets`, import.meta.url).href;
   const val = `url(${assetsDir}/cursors/${icon}) 8 8, ${defVal}`;
   // console.log(`[CbaseElem.assets] val:${val}`);
   return val;

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="showDialog" persistent>
+  <q-dialog v-model="showDialog">
     <q-card id="noteCardId" class="my-card-note text-black bg-color-note" :style="cardStyle" ref="qCardRef">
       <q-bar id="noteHeaderId" class="text-grey-9 bg-amber-2 header-bar">
         <div class="my-no-overflow">Note: {{ element.id }}</div>
@@ -7,19 +7,19 @@
         <q-btn flat v-close-popup round dense icon="close" @click="showDialog = false" />
       </q-bar>
       <div id="notePayloadId" class="q-pa-sm column no-wrap my-region-note flex-grow">
-        <div class="col-auto row no-wrap q-pb-sm q-pt-md q-pr-sm">
-          <div class="q-pr-md">Scale:</div>
+        <div class="col-auto row no-wrap q-pb-sm q-pt-md q-pr-sm" style="align-items: center;">
+          <span class="q-pr-md" style="font-size: 13px; color: #757575;">Scale:</span>
           <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="4" :step="0.1" label label-always
-            color="amber-5" />
+            color="amber-5" style="flex: 1 1 0; min-width: 120px;" />
         </div>
         <div id="noteInputOutput" class="row no-wrap note-io-row"
           style="height: 400px; min-height: 200px; max-height: 60vh;">
           <div class="input-scroll-area col-6 mono-font"
             style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
             <label class="native-label">Markdown Text:</label>
-            <textarea v-model="noteText" class="native-textarea styled-textarea" rows="6"
-              style="resize: vertical; width: 100%; min-height: 100px; max-height: 100%; box-sizing: border-box; flex: 1 1 auto;"
-              @input="doCanvas" spellcheck="false" />
+            <textarea v-model="noteText" autofocus class="native-textarea styled-textarea" rows="6"
+              style="resize: none; width: 100%; min-height: 100px; max-height: 100%; box-sizing: border-box; flex: 1 1 auto;"
+              @input="doPainting" spellcheck="false" />
           </div>
           <div class="q-pl-sm col-6 markdown-scroll-area"
             style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
@@ -169,7 +169,6 @@ const mdHtml = V.ref("");
 const htmlRef = V.ref(null);
 const qCardRef = V.ref(null);
 const cardStyle = V.ref({});
-let resizeObserver;
 
 const processor = unified()
   .use(remarkParse)
@@ -179,28 +178,24 @@ const processor = unified()
   .use(rehypeKatex)
   .use(rehypeStringify);
 
-
-async function doCanvas() {
+async function doPainting() {
   const html = String(await processor.process(noteText.value || ""));
   mdHtml.value = html;
-  if (elemNote.value) elemNote.value.text = noteText.value;
+  if (elemNote.value) {
+    elemNote.value.text = noteText.value;
+    elemNote.value.paint();
+  }
 }
 
-V.watch(sliderScale, doCanvas);
-
+V.watch(sliderScale, doPainting);
 
 V.onMounted(async () => {
   elemNote.value = U.getElemById(props.elementId);
   noteText.value = elemNote.value.text || "";
   sliderScale.value = elemNote.value.scale || 1;
-  await doCanvas();
-  resizeObserver = new ResizeObserver(() => {
-    // No need for JS height management
-  });
-  resizeObserver.observe(document.body);
+  await doPainting();
 });
 
 V.onUnmounted(() => {
-  if (resizeObserver) resizeObserver.disconnect();
 });
 </script>

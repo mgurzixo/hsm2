@@ -31,6 +31,7 @@ export class Chsm extends CbaseElem {
     this.canvas = options.canvas; // TODO
     this.setCanvas(this.canvas);
     hsm = this;
+    this.inhibitDrag = false;
     hElems = this.hElems;
     console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
@@ -138,10 +139,9 @@ export class Chsm extends CbaseElem {
   }
 
   dragStart(xP, yP) {
-    // console.log(`[Chsm.click]  (xDown:${xDown}, yDown:${yDown})`);
-    // const [xP, yP] = [xDown * U.getScale(), yDown * U.getScale()];
+    console.log(`[Chsm.click]  (xDown:${xP}, yDown:${xP})`);
     let idz = this.makeIdzP(xP, yP);
-    // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
+    console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
     // if (idz.id == this.id) return;
     const elem = this.hElems.getElemById(idz.id);
@@ -150,26 +150,28 @@ export class Chsm extends CbaseElem {
     switch (mode) {
       case "":
         // folio is responsible when dragging background
-        if (idz.id == this.id) hCtx.folio.dragStart(xP, yP);
-        else elem.dragStart(xP, yP);
-        break;
+        if (idz.id == this.id) return hCtx.folio.dragStart(xP, yP);
+        else return elem.dragStart(xP, yP);
+      // break;
       case "inserting-state":
-        if (elem.canInsertState(idz)) elem.dragStart(xP, yP);
+        if (elem.canInsertState(idz)) return elem.dragStart(xP, yP);
         break;
       case "inserting-trans":
-        if (elem.canInsertTr(idz)) elem.dragStart(xP, yP);
+        if (elem.canInsertTr(idz)) return elem.dragStart(xP, yP);
         break;
       case "inserting-note":
-        if (elem.canInsertNote(idz)) elem.dragStart(xP, yP);
+        if (elem.canInsertNote(idz)) return elem.dragStart(xP, yP);
         break;
     }
+    this.inhibitDrag = true;
   }
 
   drag(dxS, dyS) {
     if (modeRef.value != "") return;
+    if (this.inhibitDrag) return;
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
-    // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
+    console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     // if (dragCtx.id == this.id) return;
     if (dragCtx.id == this.id) hCtx.folio.drag(dxS, dyS);
     else {
@@ -180,6 +182,10 @@ export class Chsm extends CbaseElem {
   }
 
   dragEnd(dxS, dyS) {
+    if (this.inhibitDrag) {
+      this.inhibitDrag = false;
+      return;
+    }
     const [dx, dy] = [dxS * U.getScale(), dyS * U.getScale()];
     // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
     // if (modeRef.value != "") {
@@ -191,6 +197,7 @@ export class Chsm extends CbaseElem {
     if (dragCtx.id == this.id) hCtx.folio.dragEnd(dxS, dyS);
     else {
       const elem = this.hElems.getElemById(dragCtx.id);
+      if (!elem) console.warn(`[Chsm.dragEnd] id:${this.id} dragCtx.id:${dragCtx.id}`);
       const dragEnded = elem.dragEnd(dxS, dyS);
       if (dragEnded) hCtx.dragEnd();
       // else elem.resetDrag() will reset it

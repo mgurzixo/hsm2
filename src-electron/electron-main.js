@@ -4,7 +4,6 @@ import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import fs from "fs";
-import { installExtension, VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 
 const CSS_STACKING_INSPECTOR = "apjeljpachdcjkgnamgppgfkmddadcki";
 

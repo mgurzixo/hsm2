@@ -3,7 +3,7 @@
     <q-dialog v-model="dialogToggle">
       <component :is="dialogComponent" :element="element" :elementId="elementId"></component>
     </q-dialog>
-    <div id="M1">YYY
+    <div id="M1">
       <div></div>
     </div>
     <div style="position:absolute;">
@@ -11,7 +11,6 @@
         <popup-menu :menu="contextMenu"></popup-menu>
       </div>
     </div>
-    <!-- <div id="cursorPlane" class="cursor-plane">XXX</div> -->
     <canvas ref="canvasRef" class="invisible full-size, canvas-cursor"> </canvas>
 
   </div>
@@ -26,22 +25,7 @@
   z-index: auto;
 }
 
-.Xcursor-plane {
-  position: absolute;
-  transform-origin: top left;
-  /* z-index: 100; */
-  /* background: transparent; */
-  /* background: #ff000060; */
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-  cursor: no-drop;
-}
-
-*/ .my-container {
-  /* width: 100%;
-  height: 100%; */
+.my-container {
   overflow: hidden;
 }
 
@@ -49,8 +33,6 @@
   position: absolute;
   transform-origin: top left;
   z-index: 100;
-  /* top: 10px;
-  left: 20px; */
 }
 </style>
 
