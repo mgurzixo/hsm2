@@ -184,6 +184,8 @@ export class Chsm extends CbaseElem {
   dragEnd(dxP, dyP) {
     if (this.inhibitDrag) {
       this.inhibitDrag = false;
+      const idz = this.makeIdzP(mousePos.value.xP, mousePos.value.yP);
+      hCtx.setIdz(idz);
       return;
     }
     const [dx, dy] = [dxP * U.getScale(), dyP * U.getScale()];
