@@ -8,68 +8,37 @@ import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'tr
 import { Cnote } from "src/classes/Cnote";
 import { setDragOffset } from "src/lib/rootElemListeners";
 
-export class CbaseRegion extends CbaseElem {
-  constructor(parent, options, type) {
-    super(parent, options, type);
-  }
-}
-
-export class CregionWithStates extends CbaseRegion {
-  constructor(parent, options, type) {
-    super(parent, options, type);
+export class CregionWithStates extends CbaseElem {
+  constructor(parent, regionOptions, type) {
+    super(parent, regionOptions, type);
     const g = this.geo;
-    // console.log(`[CbaseRegion.constructor] New region (${this.id}) parent:${this.parent.id} x0:${g.x0} y0:${g.y0}`);
     // console.log(`[Cregion.constructor] (${this.id}) mat:${JSON.stringify(g.mat)}`);
     this.setGeometry();
     // this.myElem.innerHTML = `<div>${this.id} of state ${this.parent.id}</div>`;
     this.notes = [];
     this.noteElem = document.createElement("div");
+    this.noteElem.id = "noteElem_" + this.id;
     this.myElem.prepend(this.noteElem);
-    if (options.notes) {
-      for (let noteOptions of options.notes) {
+    if (regionOptions.notes) {
+      for (let noteOptions of regionOptions.notes) {
         this.addNote(noteOptions);
       }
     }
-    if (options.states) {
-      for (let stateOptions of options.states) {
+    if (regionOptions.states) {
+      for (let stateOptions of regionOptions.states) {
         this.addState(stateOptions);
       }
     }
   }
 
-  destroy() {
-    super.destroy();
-    this.noteElem.remove();
-  }
-
-  setGeometry() {
-    // console.log(`[Cregion.setGeometry] (${this.id})`);
-    const s = this.myElem.style;
-    const g = this.geo;
-    g.y0 = hsm.settings.stateTitleHeightMm;
-    g.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
-    g.width = this.parent.geo.width;
-    g.mat.f = g.y0 * U.pxPerMm;
-    this.geo.matR = inverse(g.mat);
-    this.myElem.style.transform = toCSS(this.geo.mat);
-    // console.warn(`[CbaseElem.setGeometry] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
-    s.top = "0px";
-    s.left = "0px";
-    s.width = g.width + "mm";
-    s.height = g.height + "mm";
-    // s.background = "#ff000030";
-    s.background = "transparent";
-  }
-
-  setSelected(val) {
-    // console.log(`[Chsm.setSelected](${ this.id }) } setSelected: ${ val; } `);
-    super.setSelected(val);
+  onLoaded() {
+    super.onLoaded();
     for (let note of this.notes) {
-      note.setSelected(val);
+      note.onLoaded();
     }
   }
 
-  addNote(noteOptions) {
+  async addNote(noteOptions) {
     // console.log(`[Cregion.addNote] noteOptions:${JSON.stringify(noteOptions)} `);
     const noteEl = document.createElement("div");
     this.noteElem.append(noteEl);
@@ -80,7 +49,7 @@ export class CregionWithStates extends CbaseRegion {
     return myNote;
   }
 
-  addState(stateOptions) {
+  async addState(stateOptions) {
     const stEl = document.createElement("div");
     this.childElem.append(stEl);
     stateOptions.myElem = stEl;
@@ -89,12 +58,44 @@ export class CregionWithStates extends CbaseRegion {
     return myState;
   }
 
+  destroy() {
+    super.destroy();
+    this.noteElem.remove();
+  }
+
+  // setGeometry() {
+  //   // console.log(`[Cregion.setGeometry] (${this.id})`);
+  //   const s = this.myElem.style;
+  //   const g = this.geo;
+  //   g.y0 = hsm.settings.stateTitleHeightMm;
+  //   g.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
+  //   g.width = this.parent.geo.width;
+  //   g.mat.f = g.y0 * U.pxPerMm;
+  //   this.geo.matR = inverse(g.mat);
+  //   this.myElem.style.transform = toCSS(this.geo.mat);
+  //   // console.warn(`[CbaseElem.setGeometry] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
+  //   s.top = "0px";
+  //   s.left = "0px";
+  //   s.width = g.width + "mm";
+  //   s.height = g.height + "mm";
+  //   // s.background = "#ff000030";
+  //   s.background = "transparent";
+  // }
+
+  setSelected(val) {
+    // console.log(`[Chsm.setSelected](${ this.id }) } setSelected: ${ val; } `);
+    super.setSelected(val);
+    for (let note of this.notes) {
+      note.setSelected(val);
+    }
+  }
+
   // Returns childrenBB in parent origin
   getChildrenBB(bb) {
+    // console.log(`[Cregion.getChildrenBB] (${this.id}) name:${this.name}`);
     if (this.id.startsWith("E")) return bb;
-    // console.log(`[Cregion.getChildrenBB] geo.y0:${ this.geo.y0; } `);
     for (let child of this.children) {
-      // console.log(`[Cregion.getChildrenBB] ${ child.id; }.geo.y0:${ child.geo.y0; } `);
+      // console.log(`[Cregion.getChildrenBB] ${ child.id}.geo.y0:${ child.geo.y0; } `);
       let u = child.geo.x0;
       if (bb.x0 == null) bb.x0 = u;
       else if (u < bb.x0) bb.x0 = u;
@@ -120,7 +121,7 @@ export class CregionWithStates extends CbaseRegion {
   }
 
   setGrandChildrenDragOrigin() {
-    // console.log(`[Cregion.setChildrenDragOrigin] myId:${ this.id; } `);
+    // console.log(`[Cregion.setChildrenDragOrigin] myId:${ this.id} `);
     for (let child of this.children) {
       child.setDragOrigin();
     }
@@ -133,7 +134,7 @@ export class CregionWithStates extends CbaseRegion {
     }
   }
 
-  insertState(xP, yP) {
+  async insertState(xP, yP) {
     // const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
@@ -155,14 +156,14 @@ export class CregionWithStates extends CbaseRegion {
       justCreated: true,
       parentElem: this.myElem,
     };
-    const myState = this.addState(stateOptions);
+    const myState = await this.addState(stateOptions);
     console.log(`[Cregion.insertState] New state id:${myState?.id} `);
     modeRef.value = "";
     setDragOffset([U.mmToPx(w), U.mmToPx(h)]);
     const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
     // console.log(`[Cregion.insertState] newIdz:${ JSON.stringify(newIdz); } `);
     hCtx.setIdz(newIdz);
-    myState.dragStart(xP, yP); // Will create dragCtx
+    await myState.dragStart(xP, yP); // Will create dragCtx
   }
 
   canInsertState(idz) {
@@ -181,7 +182,7 @@ export class CregionWithStates extends CbaseRegion {
     return true;
   }
 
-  insertNote(x, y) {
+  async insertNote(x, y) {
     console.log(`[Cregion.dragStartP] Inserting note x:${x}`);
     const id = "N" + hsm.newSernum();
     const w = hsm.settings.noteMinWidth;
@@ -200,7 +201,7 @@ export class CregionWithStates extends CbaseRegion {
       justCreated: true,
     };
     setDragOffset([w, h]);
-    const myNote = this.addNote(noteOptions);
+    const myNote = await this.addNote(noteOptions);
     console.log(`[Cregion.addNote] New note:${myNote} id:${myNote?.id} `);
     myNote.onLoaded();
     modeRef.value = "";
@@ -223,7 +224,7 @@ export class CregionWithStates extends CbaseRegion {
     return true;
   }
 
-  dragStart(xP, yP) {
+  async dragStart(xP, yP) {
     console.log(`[Cregion.dragStart]`);
     const idz = this.idz();
     // const [x, y] = [idz.x, idz.y];
@@ -236,7 +237,7 @@ export class CregionWithStates extends CbaseRegion {
         return;
       }
       case "inserting-note": {
-        this.insertNote(x, y);
+        await this.insertNote(x, y);
         return;
       }
       default:
@@ -278,10 +279,6 @@ export class CregionWithStates extends CbaseRegion {
       // console.log(`[Cregion.makeIdz](${ this.id }(${ this.parent.id })) returning`);
       return idz;
     }
-    if (modeRef.value == "inserting-state") {
-      // console.log(`[Cregion.makeIdz] 1(${ this.id }(${ this.parent.id })) x:${ x.toFixed(); } y:${ y.toFixed(); } x0:${ this.geo.x0; } `);
-      idz = { id: this.id, zone: "M", x: x, y: y };
-    }
     for (let note of this.notes) {
       idz = note.makeIdzInParentCoordinates(x, y, idz);
     }
@@ -296,13 +293,13 @@ export class CregionWithStates extends CbaseRegion {
     [xp, yp] = [xp * U.pxPerMm, yp * U.pxPerMm];
     let [x, y] = applyToPoint(this.geo.matR, [xp, yp]);
     [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
-    // console.log(`[Cregion.makeIdzInParentCoordinates](${ this.id }(${ this.parent.id })) yp:${ yp.toFixed(); } y:${ y.toFixed(); } f:${ this.geo.mat.f.toFixed(); } `);
+    // console.log(`[Cregion.makeIdzInParentCoordinates](${this.id}(${this.parent.id})) yp:${yp.toFixed()} y: ${y.toFixed()} f:${this.geo.mat.f.toFixed()} `);
     const idz = this.makeIdz(x, y, myIdz);
     return idz;
   }
 }
 
-export class CExternalRegion extends CbaseRegion {
+export class CExternalRegion extends CbaseElem {
   constructor(parent, options) {
     super(parent, options, "E");
   }
@@ -311,7 +308,27 @@ export class CExternalRegion extends CbaseRegion {
 export class Cregion extends CregionWithStates {
   constructor(parent, options) {
     super(parent, options, "R");
+    // this.myElem.style.background = "lightgreen";
   }
 
-
-};;
+  setGeometry() {
+    // console.log(`[Cregion.setGeometry](${ this.id })`);
+    const s = this.myElem.style;
+    const g = this.geo;
+    g.x0 = 0;
+    g.y0 = hsm.settings.stateTitleHeightMm;
+    g.height = this.parent.geo.height - hsm.settings.stateTitleHeightMm;
+    g.width = this.parent.geo.width;
+    g.mat.e = 0;
+    g.mat.f = g.y0 * U.pxPerMm;
+    this.geo.matR = inverse(g.mat);
+    this.myElem.style.transform = toCSS(this.geo.mat);
+    // console.warn(`[CbaseElem.setGeometry](${ this.id }) geo:${ this.geo; } mat:${ JSON.stringify(mat); } `);
+    s.top = "0px";
+    s.left = "0px";
+    s.width = g.width + "mm";
+    s.height = g.height + "mm";
+    // s.background = "#ff000030";
+    s.background = "transparent";
+  }
+};

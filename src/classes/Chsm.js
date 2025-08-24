@@ -58,7 +58,7 @@ export class Chsm extends CbaseElem {
     cCtx = this.canvas.getContext("2d");
   }
 
-  addFolio(folioOptions) {
+  async addFolio(folioOptions) {
     const foEl = document.createElement("div");
     this.childElem.append(foEl);
     folioOptions.myElem = foEl;
@@ -67,7 +67,7 @@ export class Chsm extends CbaseElem {
     this.children.push(myFolio);
   }
 
-  load(hsmOptions) {
+  async load(hsmOptions) {
     this.hCtx.clear();
     this.settings = hsmOptions.settings;
     this.status = hsmOptions.status;
@@ -76,13 +76,16 @@ export class Chsm extends CbaseElem {
     this.hElems.insertElem(this);
 
     setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
-    for (let folioOptions of hsmOptions.folios) {
-      this.addFolio(folioOptions);
-    }
+    if (hsmOptions.folios)
+      for (let folioOptions of hsmOptions.folios) {
+        await this.addFolio(folioOptions);
+      }
     hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
     hCtx.folio.setFolioDisplay(true);
-    // console.log(`[Chsm.load] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
-    hCtx.folio.onLoaded();
+    for (let folio of this.children) {
+      folio.onLoaded();
+    }
+    // console.log(`[Chsm.constructor] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
     this.makeIdzP();
     return null;
   }

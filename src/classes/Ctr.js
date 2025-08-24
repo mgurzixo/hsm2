@@ -13,8 +13,22 @@ import { applyToPoint } from 'transformation-matrix';
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
-    this.lineWidth = 1.5;
+    this.lineWidth = 1;
     this.isBaseTr = true;
+    this.oldTagText = "";
+    this.segments = [];
+    this.from = options.from || {};
+    this.to = options.to || {};
+    this.isInternal = options.isInternal || false;
+    if (options.color) this.color = options.color;
+    else delete (this.color);
+    this.trigger = options.trigger || "";
+    this.guard = options.guard || "";
+    this.effect = options.effect || "";
+    this.include = options.include || "";
+    this.comment = options.comment || "";
+    // console.log(`[Ctr.constructor] (${this.id}) from:${this.from.id}  to:${this.to.id}`);
+    this.lineWidth = 1.5;
     this.oldTagText = "";
     this.segments = options.segments;
     this.from = options.from;
@@ -29,9 +43,11 @@ export class Ctr extends CbaseElem {
     this.comment = options.comment;
   }
 
+  // Called when hsm has been loaded so that we can get hCtx.folio
   onLoaded() {
-    if (this.segments.length == 0) this.segments = this.createSimpleSegments();
     this.makeTag();
+    // super.onLoaded();
+    if (this.segments.length == 0) this.segments = this.createSimpleSegments();
     const el = this.myElem;
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
     // console.log(`[Ctr.onLoaded] (${this.id}) width:${fx[0]}`);

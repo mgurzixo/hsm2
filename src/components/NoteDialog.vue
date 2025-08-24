@@ -34,9 +34,6 @@
         <div class="q-pl-sm col-6 markdown-scroll-area"
           style="display: flex; flex-direction: column; height: 100%; min-width: 0;">
           <label class="native-label">Markdown Result:</label>
-          <!-- <div ref="htmlRef" class="markdown-container markdown-body" v-html="mdHtml"
-              :style="{ fontSize: (sliderScale * 1.1) + 'em', flex: '1 1 auto', overflow: 'auto', height: '100%' }">
-            </div> -->
           <div ref="htmlRef" class="markdown-container markdown-body" v-html="mdHtml"
             :style="{ fontSize: (sliderScale * 1.1) + 'em', fontFamily: selectedFont, flex: '1 1 auto', overflow: 'auto', height: '100%' }">
           </div>
@@ -187,7 +184,7 @@ const fontList = V.ref([]);
 const selectedFont = V.ref('');
 V.watch(selectedFont, (newFont) => {
   if (elemNote.value) {
-    elemNote.value.font = newFont;
+    elemNote.value.setFont(newFont);
     elemNote.value.paint();
   }
 });
@@ -204,8 +201,8 @@ async function doPainting() {
   const html = String(await processor.process(noteText.value || ""));
   mdHtml.value = html;
   if (elemNote.value) {
-    elemNote.value.text = noteText.value;
-    elemNote.value.geo.scale = sliderScale.value;
+    await elemNote.value.setText(noteText.value);
+    elemNote.value.setScale(sliderScale.value);
     elemNote.value.paint();
   }
 }

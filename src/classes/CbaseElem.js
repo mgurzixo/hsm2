@@ -10,15 +10,12 @@ const inchInMm = 25.4;
 export class CbaseElem {
   constructor(parent, options, type) {
     // console.log(`[CbaseElem.constructor] type:${type} elem:${options.myElem}`);
-    let id = options?.id;
+    let id;
     if (type == "M") id = "M1";
-    else {
-      if (!id) {
-        id = type + hsm.newSernum();
-      }
-      else hsm.checkSernum(Number(id.slice(1)));
-      // console.log(`[CbaseElem.constructor] id:${id}`);
-    }
+    else if (typeof options.id == "string") id = options.id;
+    else id = type + hsm.newSernum();
+    // console.log(`[CbaseElem.constructor] id:${id} type:${typeof options.id}`);
+    // hsm.checkSernum(Number(id.slice(1)));
     this.id = id;
     hsm?.hElems?.insertElem(this);
     this.name = options?.name || `S${id}`;
@@ -26,6 +23,7 @@ export class CbaseElem {
     this.children = [];
     this.myElem = options.myElem;
     this.childElem = document.createElement("div");
+    this.childElem.id = "childElem_" + this.id;
     this.myElem.append(this.childElem);
     // console.log(`[CbaseElem.constructor] (${this.id}) childElem:${this.childElem}`);
     const s = this.myElem.style;
@@ -55,9 +53,10 @@ export class CbaseElem {
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 
-  load(options) {
-    console.warn(`[CbaseElem.load] this:${this.id}`);
-    return true;
+  onLoaded() {
+    for (let child of this.children) {
+      child.onLoaded();
+    }
   }
 
   pxToMyMm(xP, yP) {
@@ -92,11 +91,9 @@ export class CbaseElem {
     hsm.hElems.removeElemById(this.id);
   }
 
-  onLoaded() {
-    // Called when everything is loaded
-    for (let child of this.children) {
-      child.onLoaded();
-    }
+  async load(x) {
+    console.warn(`[CbaseElem.load] this:${this.id}`);
+    return true;
   }
 
   isKindOfState() {
@@ -129,13 +126,14 @@ export class CbaseElem {
   // }
 
   dragEnd(dx, dy) {
-    console.warn(`[CbaseElem.dragEnd] id:${this.id}`);
+    console.log(`[CbaseElem.dragEnd] id:${this.id}`);
     return true;
   }
 
   dragCancel(dx, dy) { }
 
   getOriginXYF() {
+    // console.log(`[CbaseElem.getOriginXYF] (${this.id}) S:${hCtx}`);
     const s = hCtx.folio.geo.scale;
     const bb = this.myElem.getBoundingClientRect();
     const bbFolio = hCtx.folio.myElem.getBoundingClientRect();

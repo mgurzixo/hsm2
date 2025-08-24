@@ -2,11 +2,9 @@
 
 import * as U from "src/lib/utils";
 import * as V from "vue";
-import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
+import { hsm, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { CregionWithStates } from "src/classes/Cregion";
-import { Cnote } from "src/classes/Cnote";
 import { Ctr } from "src/classes/Ctr";
-import { setDragOffset } from "src/lib/rootElemListeners";
 import { fromString, applyToPoint, inverse, toCSS, compose } from 'transformation-matrix';
 import FolioDialog from "src/components/FolioDialog.vue";
 
@@ -19,14 +17,20 @@ export class Cfolio extends CregionWithStates {
     // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
     this.setFolioDisplay(false);
     // Set initial values
-    const s = this.myElem.style;
-    const g = this.geo;
-    this.setGeometry();
-
     this.trElem = document.createElement("div");
+    this.trElem.id = "trElem_" + this.id;
     this.myElem.append(this.trElem);
-    for (let trOptions of folioOptions.trs) {
-      this.addTr(trOptions);
+    this.setGeometry();
+    if (folioOptions.trs)
+      for (let trOptions of folioOptions.trs) {
+        this.addTr(trOptions);
+      }
+  }
+
+  onLoaded() {
+    super.onLoaded();
+    for (let tr of this.trs) {
+      tr.onLoaded();
     }
   }
 
@@ -99,22 +103,7 @@ export class Cfolio extends CregionWithStates {
     this.paintTrs();
   }
 
-  onLoaded() {
-    // console.log(`[Cfolio.onLoaded] xx0:${this.geo.xx0}`);
-    this.isDirty = true;
-    for (let child of this.children) {
-      child.onLoaded();
-    }
-    for (let tr of this.trs) {
-      tr.onLoaded();
-    }
-    return; // ICI
-    for (let note of this.notes) {
-      note.onLoaded();
-    }
-  }
-
-  addTr(trOptions) {
+  async addTr(trOptions) {
     // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     this.trElem.append(svgEl);

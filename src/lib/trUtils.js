@@ -10,6 +10,7 @@ import { patchMouseDown } from "src/lib/rootElemListeners";
 // return anchor in mm in folio frame
 export function anchorToXYF(anchor, pos = anchor.pos) {
   const elem = hElems.getElemById(anchor.id);
+  // console.log(`[trUtils.anchorToXYF] id:${anchor.id} elem:${elem}`);
   if (pos > 1) pos = 1;
   if (pos < 0) pos = 0;
   let [x0, y0] = elem.getOriginXYF();
@@ -28,12 +29,12 @@ export function XYFToAnchorPos(anchor, x, y, doClamp = true) {
     if (pos < 0) pos = 0;
     else if (pos > 1) pos = 1;
   }
-  // console.log(`[Ctr.XYFToAnchorPos] pos:${pos}`);
+  // console.log(`[trUtils.XYFToAnchorPos] pos:${pos}`);
   return pos;
 }
 
 function createSelfSegments(tr) {
-  // console.log(`[Ctr.createSelfSegments]`);
+  // console.log(`[trUtils.createSelfSegments]`);
   let segments = [];
   const dsl = hsm.settings.defaultSegmentLengthMm;
   const [x0, y0] = anchorToXYF(tr.from);
@@ -50,7 +51,7 @@ function createSelfSegments(tr) {
     if (U.isHoriz(side0)) {
       if (tr.isInternal) dirV = side0 == "T" ? "S" : "N";
       else dirV = side0 == "T" ? "N" : "S";
-      // console.log(`[Ctr.createSelfSegments] side:${side0} internal:${tr.isInternal} dirV:${dirV}`);
+      // console.log(`[trUtils.createSelfSegments] side:${side0} internal:${tr.isInternal} dirV:${dirV}`);
     } else {
       if (tr.isInternal) dirH = side0 == "L" ? "E" : "W";
       else dirH = side0 == "L" ? "W" : "E";
@@ -410,7 +411,7 @@ function trySingleSegment(tr, isFrom) {
       patchedAnchor.pos = pos;
     }
   } else if (!U.isHoriz(tr.from.side) && !U.isHoriz(tr.to.side)) {
-    const pos = XYFToAnchorPos(tr.to, isFrom ? xFrom : xTo, isFrom ? yTo : yFrom, false);
+    const pos = XYFToAnchorPos(isFrom ? tr.from : tr.to, isFrom ? xFrom : xTo, isFrom ? yTo : yFrom, false);
     if (pos >= 0 && pos <= 1) {
       if (xTo > xFrom) tr.segments = [{ dir: "E", len: xTo - xFrom }];
       else tr.segments = [{ dir: "W", len: xFrom - xTo }];

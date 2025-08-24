@@ -18,8 +18,12 @@ class CbaseState extends CbaseElem {
     this.isBaseState = true;
     this.isRevertingDrag = false;
     // console.log(`[Cstate.constructor] New state id:${this.id} parent:${this.parent.id} pelId:${this.myElem.parentElement.id} x0:${g.x0} y0:${g.y0}`);
+    this.titleElem = document.createElement("div");
+    this.myElem.append(this.titleElem);
     this.setGeometry();
   }
+
+  async load(stateOptions) { }
 
   setGeometry() {
     // console.log(`[Cfolio.setGeometry]`);
@@ -70,33 +74,24 @@ export class CexitSstate extends CbaseState {
 }
 
 export class Cstate extends CbaseState {
-  constructor(parent, options) {
-    super(parent, options, "S");
-    this.notes = [];
+  constructor(parent, stateOptions) {
+    super(parent, stateOptions, "S");
     this.setStyles();
     this.paint();
-    if (options.regions) {
-      for (let id of Object.keys(options.regions)) {
-        // console.log(`[Cstate.load] RegionId:${ id; } `);
-        const regionOptions = options.regions[id];
+    if (stateOptions.regions) {
+      for (let regionOptions of stateOptions.regions) {
+        // console.log(`[Cstate.constructor] RegionId:${ id; } `);
         this.addRegion(regionOptions);
       }
     }
-    if (this.children.length == 0) this.addRegion({});
-    if (options.notes) {
-      for (let noteOptions of options.notes) {
-        this.addNote(noteOptions);
-      }
-    }
+    if (this.children.length == 0) this.addRegion();
+    // console.log(`[Cstate.constructor] child:${this.childElem.id} `);
   }
 
   setSelected(val) {
     // console.log(`[Cstate.setSelected] (${this.id}) setSelected:${val}`);
     super.setSelected(val);
     this.paintBorder();
-    for (let note of this.notes) {
-      note.setSelected(val);
-    }
     for (let tr of hCtx.folio.trs) {
       if (tr.from.id == this.id) tr.setSelected(val);
     }
@@ -107,23 +102,12 @@ export class Cstate extends CbaseState {
     this.styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
   }
 
-  addNote(noteOptions) {
-    // console.log(`[Cstate.addNote] noteOptions:${JSON.stringify(noteOptions)}`);
-    const noteEl = document.createElement("div");
-    this.noteElem.append(noteEl);
-    noteOptions.myElem = noteEl;
-    const myNote = new Cnote(this, noteOptions, "N");
-    this.notes.push(myNote);
-    // console.log(`[Cstate.addNote] id:${myNote.id}`);
-    return myNote;
-  }
-
-  addRegion(regionOptions) {
+  async addRegion(regionOptions = { notes: [], states: [] }) {
+    // console.log(`[Cstate.addRegion] (${this.id}) Adding region`);
     const reEl = document.createElement("div");
     this.childElem.append(reEl);
     regionOptions.myElem = reEl;
     const myRegion = new Cregion(this, regionOptions);
-    // console.log(`[Cstate.addRegion] (${this.id}) #${this.children.length} added region ${myRegion.id}`);
     this.children.push(myRegion);
   }
 
@@ -140,7 +124,6 @@ export class Cstate extends CbaseState {
   }
 
   paint() {
-    this.myElem.replaceChildren();
     const se = this.myElem.style;
     // const g = this.geo;
     se.borderRadius = hsm.settings.stateRadiusMm + "mm";
@@ -152,9 +135,7 @@ export class Cstate extends CbaseState {
     // Title elem
     let th = hsm.settings.stateTitleHeightMm;
     if (th < hsm.settings.stateRadiusMm) th = hsm.settings.stateRadiusMm;
-    const te = document.createElement("div");
-    this.titleElem = te;
-    this.myElem.append(te);
+    const te = this.titleElem;
     te.style.overflow = "hidden";
     te.style.width = "100%";
     te.style.height = th + "mm";
@@ -171,15 +152,6 @@ export class Cstate extends CbaseState {
     for (let child of this.children) child.setGeometry();
   }
 
-  onLoaded() {
-    for (let child of this.children) {
-      child.onLoaded();
-    }
-    for (let note of this.notes) {
-      note.onLoaded();
-    }
-  }
-
   setGrandchildrenDragOrigin() {
     for (let child of this.children) {
       child.setGrandChildrenDragOrigin();
@@ -188,7 +160,9 @@ export class Cstate extends CbaseState {
 
   getGrandchildrenBB() {
     let bb = { x0: null, y0: null, x1: null, y1: null };
+    // console.log(`[Cstate.getGrandchildrenBB] (${this.id}) children:${this.children} `);
     for (let child of this.children) {
+      // console.log(`[Cstate.getGrandchildrenBB] (${this.id}) child:${Object.keys(child)} name:${child.name}`);
       bb = child.getChildrenBB(bb);
     }
     // console.log(`[Cstate.getGrandchildrenBB] id:${ this.id; } bb:${ JSON.stringify(bb); } `);
@@ -547,23 +521,9 @@ export class Cstate extends CbaseState {
       x > this.geo.width + m ||
       y < - m ||
       y > this.geo.height + m
-    )
-      return idz;
-    let id = this.id;
+    ) return idz;
+    // console.log(`[Cstate.makeIdz](${this.id}) ${this.children?.length} children`);
     let zone = "M";
-    if (modeRef.value == "inserting-state") {
-      let th = hsm.settings.stateTitleHeightMm;
-      if (y < th) {
-        idz = { id: id, zone: zone, x: x, y: y };
-        return idz;
-      }
-      // console.log(`[Cstate.makeIdz](${this.id}) ${this.children?.length} children`);
-      for (let child of this.children) {
-        // console.log(`[Cstate.makeIdz](${this.id}) calling ${child.id} y:${y.toFixed()} `);
-        idz = child.makeIdzInParentCoordinates(x, y, idz);
-      }
-      return idz;
-    }
     if (x <= r) {
       if (y <= r) zone = "TL";
       else if (y >= this.geo.height - r) zone = "BL";
@@ -574,10 +534,7 @@ export class Cstate extends CbaseState {
       else if (x >= this.geo.width - m) zone = "R";
     } else if (y <= m) zone = "T";
     else if (y >= this.geo.height - m) zone = "B";
-    idz = { id: id, zone: zone, x: x, y: y };
-    // for (let note of this.notes) {
-    // idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz); // TODO
-    // }
+    idz = { id: this.id, zone: zone, x: x, y: y };
     for (let child of this.children) {
       // console.log(`[Cstate.makeIdz](${this.id}) calling ${child.id} y:${y.toFixed()}`);
       idz = child.makeIdzInParentCoordinates(x, y, idz);
@@ -688,15 +645,4 @@ export class Cstate extends CbaseState {
     }
     return true;
   }
-
-  updateNotes() {
-    for (let note of this.notes) {
-      note.deleteCanvas();
-    }
-    for (let child of this.children) {
-      child.updateNotes();
-    }
-  }
-
-
-};;;;
+}
