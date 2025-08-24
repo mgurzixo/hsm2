@@ -50,6 +50,17 @@ export class Cnote extends CbaseElem {
     this.paint();
   }
 
+  setGeoFromMat(mat = this.geo.mat) {
+    this.geo.mat = mat;
+    const matR = inverse(mat);
+    this.geo.matR = matR;
+    this.geo.x0 = mat.e / U.pxPerMm;
+    this.geo.y0 = mat.f / U.pxPerMm;
+    this.geo.scale = mat.a;
+    this.myElem.style.transform = toCSS(this.geo.mat);
+    // console.log(`[Cnote.setGeoFromMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
+  }
+
   paint() {
     // console.log(`[Cnote.paint] text:"${this.text}"`);
     const styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
@@ -102,91 +113,82 @@ export class Cnote extends CbaseElem {
     // hsm.openDialog(FolioDialog, this);
   }
 
-  dragStart() {
+
+  dragStart(xP, yP) {
     const idz = this.idz();
-    const [x, y] = [idz.x, idz.y];
-    // [x,y] in mm in this.geo.x/y frame
-    // console.log(`[Cnote.dragStart] (${this.id}) x:${x?.toFixed()} containerId:${this.container.id}`);
-    // console.log(
-    //   `[Cnote.dragStart] ${this.id} yy:${yy?.toFixed()} y:${y?.toFixed()} y0:${this.geo.y0}`,
-    // );
+    const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
+    hsm.setSelected(this.id);
+    this.setDragOrigin();
     const dragCtx = {
       id: this.id,
       x0: this.geo.x0,
       y0: this.geo.y0,
-      xx0: this.geo.xx0,
-      yy0: this.geo.yy0,
       width: this.geo.width,
       height: this.geo.height,
+      mat: { ...this.geo.mat },
     };
-    // console.log(`[Cnote.dragStart] dragCtx:${JSON.stringify(dragCtx)}`);
     hCtx.setDragCtx(dragCtx);
     this.raise();
     return this;
   }
 
-  drag(dx, dy) {
+
+  drag(dxP, dyP) {
     const idz = this.idz();
-    const container = this.container ? this.container : this.parent;
-    // console.log(`[Cnote.drag] (${this.id}) Container:${this.container?.id} ContainerId:${container.id}`);
-    // console.log(`[Cnote.drag] (${this.id}) dx:${dx.toFixed()} dy:${dy.toFixed()}`);
-    // console.log(`[Cnote.drag] (${this.id}) parentId:${this.parent.id}`);
-    const dragCtx = hCtx.getDragCtx();
-    let x0 = dragCtx.x0;
-    let y0 = dragCtx.y0;
-    let xx0 = dragCtx.xx0;
-    let yy0 = dragCtx.yy0;
-    let width = dragCtx.width;
-    let height = dragCtx.height;
+    const s0 = hCtx.folio.geo.mat.a;
+    let [dx, dy] = [dxP / U.pxPerMm / s0, dyP / U.pxPerMm / s0];
+    let [de, df] = [0, 0];
+    const d = hCtx.getDragCtx();
     const m = hsm.settings.minDistanceMm;
-    // console.log(`[Cnote.drag] dragCtx:${JSON.stringify(dragCtx)}`);
+    let x0 = d.x0;
+    let y0 = d.y0;
+    let width = d.width;
+    let height = d.height;
+    const container = this.container ? this.container : this.parent;
     if (idz.zone == "M") {
-      // console.log(`[Cnote.drag] id:${this.id} idz.zone:${idz.zone}`);
-      // console.log(`[Cnote.drag] container.geo.xx0:${container.geo.xx0}`);
-      if (xx0 + dx < container.geo.xx0 + m) dx = container.geo.xx0 + m - xx0;
-      if (xx0 + width + dx > container.geo.xx0 + container.geo.width - m) {
-        dx = container.geo.xx0 + container.geo.width - m - xx0 - width;
-      }
-      if (yy0 + dy < container.geo.yy0 + m) dy = container.geo.yy0 + m - yy0;
-      if (yy0 + height + dy > container.geo.yy0 + container.geo.height - m) {
-        dy = container.geo.yy0 + container.geo.height - m - yy0 - height;
-      }
-      x0 += dx;
-      y0 += dy;
+      if (x0 + dx < m) dx = m - x0;
+      if (x0 + dx + width > container.geo.width - m) dx = container.geo.width - m - x0 - width;
+      if (y0 + dy < m) dy = m - y0;
+      if (y0 + dy + height > container.geo.height - m) dy = container.geo.height - m - y0 - height;
+      x0 = d.x0 + dx;
+      y0 = d.y0 + dy;
+      [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
     } else {
       if (idz.zone.includes("T")) {
         if (height - dy < hsm.settings.noteMinHeight) dy = height - hsm.settings.noteMinHeight;
-        if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
-        // console.log(
-        //   `[Cnote.drag] id:${this.id} y0:${y0} dy:${dy} BB.y0:${this.grandchildrenBB.y0}`,
-        // );
+        if (y0 + dy < m) dy = m - y0;
         y0 += dy;
         height -= dy;
+        df = dy * U.pxPerMm;
       } else if (idz.zone.includes("B")) {
         if (height + dy < hsm.settings.noteMinHeight) dy = hsm.settings.noteMinHeight - height;
-        if (y0 + height + dy > container.geo.height - hsm.settings.minDistanceMm)
-          dy = container.geo.height - height - y0 - hsm.settings.minDistanceMm;
+        if (y0 + height + dy > container.geo.height - m)
+          dy = container.geo.height - height - y0 - m;
         height += dy;
       }
       if (idz.zone.includes("L")) {
         if (width - dx < hsm.settings.noteMinWidth) dx = width - hsm.settings.noteMinWidth;
-        if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
+        if (x0 + dx < m) dx = m - x0;
         x0 += dx;
         width -= dx;
+        de = dx * U.pxPerMm;
       } else if (idz.zone.includes("R")) {
         if (width + dx < hsm.settings.noteMinWidth) dx = hsm.settings.noteMinWidth - width;
-        if (x0 + width + dx > container.geo.width - hsm.settings.minDistanceMm)
-          dx = container.geo.width - width - x0 - hsm.settings.minDistanceMm;
+        if (x0 + width + dx > container.geo.width - m)
+          dx = container.geo.width - width - x0 - m;
         width += dx;
       }
     }
-    // console.log(
-    //   `[Cnote.drag] (${this.id}) type:${idz.zone} Cx0:${dragCtx.x0.toFixed()} dx:${dx.toFixed()} x0:${x0.toFixed()}`,
-    // );
     this.geo.x0 = x0;
     this.geo.y0 = y0;
     this.geo.height = height;
     this.geo.width = width;
+    const mat = {};
+    Object.assign(mat, this.geo.mat);
+    mat.e = d.mat.e + de;
+    mat.f = d.mat.f + df;
+    this.setGeoFromMat(mat);
+    this.setGeometry();
   }
 
   checkOpenDialogAndEndDrag() {
@@ -198,11 +200,16 @@ export class Cnote extends CbaseElem {
     hCtx.dragEnd();
   }
 
-  dragEnd(dx, dy) {
-    // console.log(`[Cnote.dragEnd]`);
-    this.drag(dx, dy);
+
+  dragEnd(dxP, dyP) {
+    this.drag(dxP, dyP);
     this.checkOpenDialogAndEndDrag();
     return true;
+  }
+  setDragOrigin() {
+    let mat = {};
+    Object.assign(mat, this.geo.mat);
+    this.dragOrigin = { x0: this.geo.x0, y0: this.geo.y0, mat: mat };
   }
 
   makeCanvas(text) {

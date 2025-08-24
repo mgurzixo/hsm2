@@ -381,8 +381,6 @@ export class Cstate extends CbaseState {
       if (x0 + dx + this.geo.width > this.parent.geo.width - m) dx = this.parent.geo.width - m - x0 - this.geo.width;
       if (y0 + dy < m) dy = m - y0;
       if (y0 + dy + this.geo.height > this.parent.geo.height - m) dy = this.parent.geo.height - m - y0 - this.geo.height;
-      // dx = U.myClamp(dx, x0, this.geo.width + m, m, this.parent.geo.width - m);
-      // dy = U.myClamp(dy, y0, this.geo.height + m, m, this.parent.geo.height - m);
       x0 = d.x0 + dx;
       y0 = d.y0 + dy;
       [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
