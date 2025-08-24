@@ -39,14 +39,14 @@ export function getPxFromMouseEvent(e) {
 
 export async function handleMouseMove(e) {
   e.preventDefault();
-  let [xS, yS] = getPxFromMouseEvent(e); // px from rootElem
-  const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)]; // mm from rootElem
-  mousePos.value = { xP: xS, yP: yS, x: x, y: y, buttons: e.buttons };
+  let [xP, yP] = getPxFromMouseEvent(e); // px from rootElem
+  const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)]; // mm from rootElem
+  mousePos.value = { xP: xP, yP: yP, x: x, y: y, buttons: e.buttons };
   // console.log(`[canvasListeners.handleMouseMove] [xP:${xP.toFixed()}, yP:${yP.toFixed()}]`);
 
   if (!isDragging && e.buttons & 1) {
-    const dxP = xS - mouseDown.x;
-    const dyP = yS - mouseDown.y;
+    const dxP = xP - mouseDown.x;
+    const dyP = yP - mouseDown.y;
     const dP = dxP * dxP + dyP * dyP;
     // console.log(
     //   `[canvasListeners.handleMouseMove] x:${x} y:${y} isDragging:${isDragging} buttons:${e.buttons} d:${d}`,
@@ -61,10 +61,10 @@ export async function handleMouseMove(e) {
     }
   }
   if (isDragging == true) {
-    const [dxS, dyS] = [xS - mouseDown.x, yS - mouseDown.y];
-    hsm.drag(dxS - dragOffsetS[0], dyS - dragOffsetS[1]);
+    const [dxP, dyP] = [xP - mouseDown.x, yP - mouseDown.y];
+    hsm.drag(dxP - dragOffsetS[0], dyP - dragOffsetS[1]);
   } else {
-    hsm.mouseMove(xS, yS);
+    hsm.mouseMove(xP, yP);
     // console.log(`[canvasListeners.handleMouseMove] elem:${elem} ${JSON.stringify(idz)}`);
   }
 }
@@ -155,8 +155,8 @@ export function handleMouseEnter(e) {
   // console.log(`[canvasListeners.handleMouseEnter] x:${x} y:${y} isDragging:${isDragging}`);
   if (isDragging) {
     if (!e.buttons & 1) {
-      const [dxS, dyS] = [mouseOut.x - mouseDown.x, yP - mouseDown.y];
-      hsm.dragEnd(dxS - dragOffsetS[0], dyS - dragOffsetS[1]);
+      const [dxP, dyP] = [mouseOut.x - mouseDown.x, yP - mouseDown.y];
+      hsm.dragEnd(dxP - dragOffsetS[0], dyP - dragOffsetS[1]);
       isDragging = false;
     }
   }

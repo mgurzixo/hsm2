@@ -297,9 +297,9 @@ export class Cstate extends CbaseState {
     myTr.dragStart();
   }
 
-  dragStart(xS, yS) {
+  dragStart(xP, yP) {
     const idz = this.idz();
-    const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+    const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     // [x,y] in mm in this.geo.x/y frame
     // console.log(`[Cstate.dragStart](${this.id}) x:${x?.toFixed()} `);
     // console.log(
@@ -361,10 +361,10 @@ export class Cstate extends CbaseState {
     this.setGeoFromMat();
   }
 
-  drag(dxS, dyS) {
+  drag(dxP, dyP) {
     const idz = this.idz();
     const s0 = hCtx.folio.geo.mat.a;
-    let [dx, dy] = [dxS / U.pxPerMm / s0, dyS / U.pxPerMm / s0];
+    let [dx, dy] = [dxP / U.pxPerMm / s0, dyP / U.pxPerMm / s0];
     let [de, df] = [0, 0];
     const d = hCtx.getDragCtx();
     const m = hsm.settings.minDistanceMm;
@@ -512,9 +512,9 @@ export class Cstate extends CbaseState {
     window.requestAnimationFrame(myCb);
   }
 
-  dragEnd(dxS, dyS) {
+  dragEnd(dxP, dyP) {
     // console.log(`[Cstate.dragEnd]`);
-    this.drag(dxS, dyS);
+    this.drag(dxP, dyP);
     const dragCtx = hCtx.getDragCtx();
     // if (this.children[0]) {
     //   if (this.geo.height != dragCtx.height || this.geo.width != dragCtx.width) {
@@ -529,7 +529,7 @@ export class Cstate extends CbaseState {
     //   }
     // }
     if (hCtx.getErrorId() == this.id) {
-      this.dragRevert(dxS, dyS);
+      this.dragRevert(dxP, dyP);
       return false;
     }
     this.checkOpenDialogAndEndDrag();

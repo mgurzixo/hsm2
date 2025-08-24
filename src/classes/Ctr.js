@@ -282,10 +282,10 @@ export class Ctr extends CbaseElem {
     return this;
   }
 
-  drag(dxS, dyS) {
+  drag(dxP, dyP) {
     const dragCtx = hCtx.getDragCtx();
     const s0 = hCtx.folio.geo.mat.a;
-    const [dx, dy] = [dxS / U.pxPerMm / s0, dyS / U.pxPerMm / s0];
+    const [dx, dy] = [dxP / U.pxPerMm / s0, dyP / U.pxPerMm / s0];
     if (dragCtx.zone == "FROM") T.dragFromAnchor(dx, dy);
     else if (dragCtx.zone == "TO") T.dragToAnchor(dx, dy);
     else if (dragCtx.zone == 0) T.dragFirstSegment(this, dx, dy);

@@ -76,22 +76,22 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
-  wheelP(xS, yS, dyS) {
-    const deltas = -dyS / hsm.settings.deltaMouseWheel;
+  wheelP(xP, yP, dyP) {
+    const deltas = -dyP / hsm.settings.deltaMouseWheel;
     const mat0 = fromString(getComputedStyle(this.myElem).transform);
     const s0 = mat0.a;
     let s1 = s0 + deltas * hsm.settings.deltaScale;
     if (s1 >= 1.5) s1 += deltas * hsm.settings.deltaScale;
     s1 = Math.min(Math.max(0.1, s1), 5);
     const k = s1 / s0;
-    // Compute the new translation to keep (xS, yS) fixed in screen coords
+    // Compute the new translation to keep (xP, yP) fixed in screen coords
     // const t = this.prevTransform;
     // The translation part of a homothetic transform at (xP, yP):
     // [s1 0 0 s1 tx ty] where
     // tx = (1 - k) * xP + k * t.xT
     // ty = (1 - k) * yP + k * t.yT
-    const matW = { a: k, b: 0, c: 0, d: k, e: xS * (1 - k), f: yS * (1 - k) };
-    // console.log(`[Cfolio.wheelP] k:${k} xS:${xS} dxP:${dxP}`);
+    const matW = { a: k, b: 0, c: 0, d: k, e: xP * (1 - k), f: yP * (1 - k) };
+    // console.log(`[Cfolio.wheelP] k:${k} xP :${xS} dxP:${dxP}`);
     const mat1 = compose(matW, mat0);
     this.geo.scale = mat1.a;
     // console.log(`[Cfolio.wheelP] (${this.id}) scale:${this.geo.scale.toFixed(2)} `);

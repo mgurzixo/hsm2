@@ -166,27 +166,27 @@ export class Chsm extends CbaseElem {
     this.inhibitDrag = true;
   }
 
-  drag(dxS, dyS) {
+  drag(dxP, dyP) {
     if (modeRef.value != "") return;
     if (this.inhibitDrag) return;
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
-    console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
+    // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
     // if (dragCtx.id == this.id) return;
-    if (dragCtx.id == this.id) hCtx.folio.drag(dxS, dyS);
+    if (dragCtx.id == this.id) hCtx.folio.drag(dxP, dyP);
     else {
       const elem = this.hElems.getElemById(dragCtx.id);
-      elem.drag(dxS, dyS);
+      elem.drag(dxP, dyP);
     }
     // console.log(`[Chsm.drag] dragCtx:${dragCtx} id:${dragCtx?.id} idz:${this.idz()} zone:${this.idz().zone}`);
   }
 
-  dragEnd(dxS, dyS) {
+  dragEnd(dxP, dyP) {
     if (this.inhibitDrag) {
       this.inhibitDrag = false;
       return;
     }
-    const [dx, dy] = [dxS * U.getScale(), dyS * U.getScale()];
+    const [dx, dy] = [dxP * U.getScale(), dyP * U.getScale()];
     // console.warn(`[Chsm.dragEnd] id:${this.id} idz.id:${idz.id}`);
     // if (modeRef.value != "") {
     //   modeRef.value = "";
@@ -194,11 +194,11 @@ export class Chsm extends CbaseElem {
     // }
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
-    if (dragCtx.id == this.id) hCtx.folio.dragEnd(dxS, dyS);
+    if (dragCtx.id == this.id) hCtx.folio.dragEnd(dxP, dyP);
     else {
       const elem = this.hElems.getElemById(dragCtx.id);
       if (!elem) console.warn(`[Chsm.dragEnd] id:${this.id} dragCtx.id:${dragCtx.id}`);
-      const dragEnded = elem.dragEnd(dxS, dyS);
+      const dragEnded = elem.dragEnd(dxP, dyP);
       if (dragEnded) hCtx.dragEnd();
       // else elem.resetDrag() will reset it
     }
@@ -220,8 +220,8 @@ export class Chsm extends CbaseElem {
     // hCtx.folio.draw(dCtx);
   }
 
-  wheelP(xS, yS, dyP) {
-    hCtx.folio.wheelP(xS, yS, dyP);
+  wheelP(xP, yP, dyP) {
+    hCtx.folio.wheelP(xP, yP, dyP);
   }
 
   pxToMm(xP, yP) {

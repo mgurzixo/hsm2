@@ -133,8 +133,8 @@ export class CregionWithStates extends CbaseRegion {
     }
   }
 
-  insertState(xS, yS) {
-    // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+  insertState(xP, yP) {
+    // const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     const idz = this.idz();
     const [x, y] = [idz.x, idz.y];
     // console.log(`[Cregion.insertState] Inserting state x:${ x.toFixed(); } y:${ y.toFixed(); } `);
@@ -162,7 +162,7 @@ export class CregionWithStates extends CbaseRegion {
     const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
     // console.log(`[Cregion.insertState] newIdz:${ JSON.stringify(newIdz); } `);
     hCtx.setIdz(newIdz);
-    myState.dragStart(xS, yS); // Will create dragCtx
+    myState.dragStart(xP, yP); // Will create dragCtx
   }
 
   canInsertState(idz) {
@@ -223,16 +223,16 @@ export class CregionWithStates extends CbaseRegion {
     return true;
   }
 
-  dragStart(xS, yS) {
+  dragStart(xP, yP) {
     console.log(`[Cregion.dragStart]`);
     const idz = this.idz();
     // const [x, y] = [idz.x, idz.y];
-    // const [x, y] = [U.pxToMm(xS), U.pxToMm(yS)];
+    // const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     const [x, y] = [idz.x, idz.y];
-    // console.log(`[Cregion.dragStart] xS:${ xS?.toFixed(); } x:${ x.toFixed(); } `);
+    // console.log(`[Cregion.dragStart] xP :${ xP ?.toFixed(); } x:${ x.toFixed(); } `);
     switch (modeRef.value) {
       case "inserting-state": {
-        this.insertState(xS, yS);
+        this.insertState(xP, yP);
         return;
       }
       case "inserting-note": {
@@ -247,20 +247,20 @@ export class CregionWithStates extends CbaseRegion {
     // console.log(`[Cregion.dragStart] matrix:${ getComputedStyle(this.myElem).transform; } `);
   }
 
-  drag(dxS, dyS) {
-    // dxS, dyS are in screen (pixel) space
+  drag(dxP, dyP) {
+    // dxP, dyP are in screen (pixel) space
     const g = this.geo;
     const d = hCtx.getDragCtx();
     const mat = {};
     Object.assign(mat, this.geo.mat);
-    mat.e = d.mat.e + dxS;
-    mat.f = d.mat.f + dyS;
+    mat.e = d.mat.e + dxP;
+    mat.f = d.mat.f + dyP;
     // console.log(`[Cregion.drag] mat1:${ JSON.stringify(mat); } `);
     this.setMat(mat);
   }
 
-  dragEnd(dxS, dyS) {
-    this.drag(dxS, dyS);
+  dragEnd(dxP, dyP) {
+    this.drag(dxP, dyP);
   }
 
 
