@@ -7,10 +7,10 @@
         <q-btn flat v-close-popup round dense icon="close" @click="showDialog = false" />
       </q-bar>
       <div id="notePayloadId" class="q-pa-sm column no-wrap my-region-note flex-grow">
-        <div class="col-auto row no-wrap q-pb-sm q-pt-md q-pr-sm" style="align-items: center;">
+        <div class="col-auto row no-wrap q-pb-sm q-pt-lg q-pr-sm" style="align-items: center;">
           <span class="q-pr-md" style="font-size: 13px; color: #757575;">Scale:</span>
           <q-slider dense v-model="sliderScale" class="slider-css" :min="0.2" :max="4" :step="0.1" label label-always
-            color="amber-5" style="flex: 1 1 0; min-width: 120px;" />
+            thumb-size="14px" color="amber-5" style="flex: 1 1 0; min-width: 120px;" />
         </div>
         <div id="noteInputOutput" class="row no-wrap note-io-row"
           style="height: 400px; min-height: 200px; max-height: 60vh;">
