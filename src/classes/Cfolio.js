@@ -67,10 +67,12 @@ export class Cfolio extends CregionWithStates {
   adjustTrAnchors(changedId) {
     // console.log(`[Cfolio.adjustTrAnchors] id:${this.id}
     for (let tr of this.trs) {
-      if (tr.from.id == changedId || tr.to.id == changedId) {
-        tr.adjustTrAnchors(changedId);
-        tr.paint();
-      }
+      // if (tr.from.id == changedId || tr.to.id == changedId) {
+      // TODO only adjust for state and its descendants
+      // tr.adjustTrAnchors(changedId);
+      tr.adjustTrAnchors();
+      tr.paint();
+      // }
     }
   }
 
@@ -103,7 +105,7 @@ export class Cfolio extends CregionWithStates {
     this.paintTrs();
   }
 
-  async addTr(trOptions) {
+  addTr(trOptions) {
     // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     this.trElem.append(svgEl);
@@ -113,38 +115,6 @@ export class Cfolio extends CregionWithStates {
     // console.log(`[Cfolio.addTr] new tr:${myTr.id}`);
     return myTr;
   }
-
-  // addNote(x, y) {
-  //   console.log(`[Cfolio.dragStartP] Inserting note x:${x}`);
-  //   const id = "N" + hsm.newSernum();
-  //   const w = hsm.settings.noteMinWidth;
-  //   const h = hsm.settings.noteMinHeight;
-  //   const noteOptions = {
-  //     id: id,
-  //     name: "Note " + id,
-  //     color: "blue",
-  //     geo: {
-  //       x0: x - this.geo.x0,
-  //       y0: y - this.geo.y0,
-  //       width: w,
-  //       height: h,
-  //     },
-  //     text: "Text",
-  //     justCreated: true,
-  //   };
-  //   setDragOffset([w, h]);
-  //   const noteEl = document.createElement("div");
-  //   this.noteElem.append(noteEl);
-  //   noteOptions.myElem = noteEl;
-  //   const myNote = new Cnote(noteOptions);
-  //   console.log(`[Cfolio.addNote] New note id:${myNote?.id} `);
-  //   await myNote.onLoaded();
-  //   modeRef.value = "";
-  //   const m = U.pxToMm(hsm.settings.cursorMarginP);
-  //   const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
-  //   hCtx.setIdz(newIdz);
-  //   await myNote.dragStart(); // Will create dragCtx
-  // }
 
   updateNotes() {
     // console.log(`[Cfolio.updateNotes]`);
@@ -168,7 +138,8 @@ export class Cfolio extends CregionWithStates {
     idz = { id: this.id, zone: "M", x: x, y: y };
     const m = U.pxToMm(hsm.settings.cursorMarginP);
     for (let note of this.notes) {
-      idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+      // idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
+      idz = note.makeIdzInParentCoordinates(idz.x, idz.y, idz);
     }
     for (let child of this.children) {
       // console.warn(`[Cregion.Cfolio](${this.id}) calling ${child.id}`);

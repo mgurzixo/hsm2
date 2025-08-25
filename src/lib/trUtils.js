@@ -104,9 +104,9 @@ export function createSegments(tr) {
     if (U.isHoriz(side1)) {
       if (dxa != 0) {
         const dir = dya - dsl >= 0 ? dirV : U.reverseDir(dirV);
-        segments.push({ dir: dirV, len: dsl });
+        segments.push({ dir: dirV, len: dsl / 2 });
         segments.push({ dir: dirH, len: dxa });
-        segments.push({ dir: dir, len: Math.abs(dya - dsl) });
+        segments.push({ dir: dir, len: Math.abs(dya - dsl / 2) });
       } else {
         segments.push({ dir: dirV, len: dya });
       }

@@ -217,7 +217,7 @@ V.onMounted(async () => {
   // Initialize font from elemNote property if present, else default
   selectedFont.value = elemNote.value.font && fontList.value.includes(elemNote.value.font)
     ? elemNote.value.font
-    : (fontList.value[0] || 'Arial');
+    : (fontList.value[0] || 'Noto');
   await doPainting();
 });
 

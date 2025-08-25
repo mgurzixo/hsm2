@@ -40,14 +40,14 @@ export class Cnote extends CbaseElem {
     this.geo.mat = { a: 1, b: 0, c: 0, d: 1, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm };
     this.styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
     this.setGeoFromMat();
-    this.setFont(noteOptions?.font || "arial");
+    this.setFont(noteOptions?.font || hsm.settings.styles.note.defaultFont);
     this.setScale(noteOptions?.scale || 1);
     this.text = noteOptions?.text || "";
     this.setGeometry();
   }
 
   async onLoaded() {
-    console.log(`[Cnote.onLoaded] (${this.id}) text:${this.text}`);
+    // console.log(`[Cnote.onLoaded] (${this.id}) text:${this.text}`);
     await this.setText(this.text);
     this.paint();
   }
@@ -147,7 +147,7 @@ export class Cnote extends CbaseElem {
   drag(dxP, dyP) {
     const idz = this.idz();
     const s0 = hCtx.folio.geo.mat.a;
-    const s = this.geo.scale;
+    const n = hsm.settings.styles.note;
     let [dx, dy] = [dxP / U.pxPerMm / s0, dyP / U.pxPerMm / s0];
     let [de, df] = [0, 0];
     const d = hCtx.getDragCtx();
@@ -156,8 +156,9 @@ export class Cnote extends CbaseElem {
     let y0 = d.y0;
     let width = d.width;
     let height = d.height;
+    const zone = idz.zone.toString(); // Can be numeric
     const container = this.container ? this.container : this.parent;
-    if (idz.zone == "M") {
+    if (zone == "M") {
       if (x0 + dx < m) dx = m - x0;
       if (x0 + dx + width > container.geo.width - m) dx = container.geo.width - m - x0 - width;
       if (y0 + dy < m) dy = m - y0;
@@ -166,26 +167,26 @@ export class Cnote extends CbaseElem {
       y0 = d.y0 + dy;
       [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
     } else {
-      if (idz.zone.includes("T")) {
-        if (height - dy < hsm.settings.noteMinHeight) dy = height - hsm.settings.noteMinHeight;
+      if (zone.includes("T")) {
+        if (height - dy < n.noteMinHeight) dy = height - n.noteMinHeight;
         if (y0 + dy < m) dy = m - y0;
         y0 += dy;
         height -= dy;
         df = dy * U.pxPerMm;
-      } else if (idz.zone.includes("B")) {
-        if (height + dy < hsm.settings.noteMinHeight) dy = hsm.settings.noteMinHeight - height;
+      } else if (zone.includes("B")) {
+        if (height + dy < n.noteMinHeight) dy = n.noteMinHeight - height;
         if (y0 + height + dy > container.geo.height - m)
           dy = container.geo.height - height - y0 - m;
         height += dy;
       }
-      if (idz.zone.includes("L")) {
-        if (width - dx < hsm.settings.noteMinWidth) dx = width - hsm.settings.noteMinWidth;
+      if (zone.includes("L")) {
+        if (width - dx < n.noteMinWidth) dx = width - n.noteMinWidth;
         if (x0 + dx < m) dx = m - x0;
         x0 += dx;
         width -= dx;
         de = dx * U.pxPerMm;
-      } else if (idz.zone.includes("R")) {
-        if (width + dx < hsm.settings.noteMinWidth) dx = hsm.settings.noteMinWidth - width;
+      } else if (zone.includes("R")) {
+        if (width + dx < n.noteMinWidth) dx = n.noteMinWidth - width;
         if (x0 + width + dx > container.geo.width - m)
           dx = container.geo.width - width - x0 - m;
         width += dx;
@@ -309,8 +310,7 @@ export class Cnote extends CbaseElem {
     let id = this.id;
     let zone = "M";
     // console.log(`[Cnote.makeIdz] (${this.id}) id:${id} m:${m.toFixed(1)} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
-    if (this.justCreated) zone = ("BR");
-    else if (x <= m) {
+    if (x <= m) {
       if (y <= m) zone = "TL";
       else if (y >= this.geo.height - m) zone = "BL";
       else if (x <= m) zone = "L";
@@ -323,6 +323,7 @@ export class Cnote extends CbaseElem {
     else if (y <= m) zone = "T";
     else if (y >= this.geo.height - m) zone = "B";
     idz = { id: id, zone: zone, x: x, y: y, dist2P: 0 };
+    // console.log(`[Cnote.makeIdz] idz:${JSON.stringify(idz)}`);
     return idz;
   }
 

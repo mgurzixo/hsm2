@@ -27,7 +27,6 @@ export class Ctr extends CbaseElem {
     this.effect = options.effect || "";
     this.include = options.include || "";
     this.comment = options.comment || "";
-    // console.log(`[Ctr.constructor] (${this.id}) from:${this.from.id}  to:${this.to.id}`);
     this.lineWidth = 1.5;
     this.oldTagText = "";
     this.segments = options.segments;
@@ -41,6 +40,7 @@ export class Ctr extends CbaseElem {
     this.effect = options.effect;
     this.include = options.include;
     this.comment = options.comment;
+    // console.log(`[Ctr.constructor] (${this.id}) from:${this.from.id}  to:${this.to.id}`);
   }
 
   // Called when hsm has been loaded so that we can get hCtx.folio
@@ -529,9 +529,12 @@ export class Ctr extends CbaseElem {
   // }
 
   adjustTrAnchors(changedId) {
-    if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
-      // console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
-      this.adjustSegments();
+    if (!changedId) this.adjustSegments();
+    else {
+      if (changedId == this.from.id || changedId == this.to.id || changedId == this.id) {
+        // console.log(`[Ctr.adjustTrAnchors](${this.id}) changedId:${changedId}`);
+        this.adjustSegments();
+      }
     }
   }
 

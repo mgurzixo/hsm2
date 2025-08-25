@@ -23,24 +23,21 @@
     arrowLengthMm: 3,
     arrowWidthMm: 0.75,
     smallestSegMm: 1,
-    noteMinHeight: 3,
-    noteMinWidth: 3,
-    noteCornerP: 10,
+
     styles: {
       silhouetteSelected: "black",
       folioBackground: "seaShell",
-      note1: {
+      note: {
         marginP: 2,
         border: { color: "#DFDFDF", lineWidth: 1 },
         borderSelected: { color: "grey", lineWidth: 2 },
         bg: { color: "transparent" },
         bgSelected: { color: "white" },
         text: { heightMm: 3, color: "black", font: "sans-serif" },
-        h1: { heightMm: 14, font: "sans-serif" },
-        h2: { heightMm: 10, font: "sans-serif" },
-        h3: { heightMm: 8, font: "sans-serif" },
-        h4: { heightMm: 6, font: "sans-serif" },
-        h5: { heightMm: 2, font: "sans-serif" },
+        defaultFont: "Noto Sans",
+        noteMinHeight: 3,
+        noteMinWidth: 3,
+        noteCornerP: 10,
       },
       state: {
         border: { chroma: 50, light: 30, lineWidth: 1 },
@@ -105,8 +102,8 @@
         },
         {
           segments: [],
-          from: { id: "S2", side: "R", pos: 0.2 },
-          to: { id: "S3", side: "T", pos: 0.7 },
+          from: { id: "S2", side: "B", pos: 0.8 },
+          to: { id: "S3", side: "R", pos: 0.7 },
           isInternal: false,
           trigger: "TRIG1",
           guard: "Guard1",
@@ -120,7 +117,7 @@
         },
         {
           segments: [],
-          from: { id: "S6", side: "R", pos: 0.8 },
+          from: { id: "S6", side: "R", pos: 0.1 },
           to: { id: "S8", side: "L", pos: 0.5 },
           isInternal: false,
         },
@@ -133,12 +130,12 @@
         {
           segments: [],
           from: { id: "S6", side: "R", pos: 0.5 },
-          to: { id: "S7", side: "R", pos: 0.5 },
+          to: { id: "S7", side: "T", pos: 0.3 },
           isInternal: false,
         },
         {
           segments: [],
-          from: { id: "S6", side: "R", pos: 0.9 },
+          from: { id: "S6", side: "B", pos: 0.2 },
           to: { id: "S3", side: "L", pos: 0.3 },
           isInternal: false,
           trigger: "TRIG2",
@@ -158,19 +155,12 @@
               name: "My region",
               notes: [
                 {
-                  geo: { x0: 10, y0: 10, width: 30, height: 30 },
-                  scale: 0.5,
+                  geo: { x0: 100, y0: 10, width: 30, height: 30 },
+                  scale: 1,
                   text: "Hello **World**!",
                 },
               ],
               states: [
-                {
-                  id: "S10",
-                  name: "10th state",
-                  color: "yellow",
-                  geo: { x0: 10, y0: 10, width: 30, height: 30 },
-                  regions: [],
-                },
                 {
                   id: "S6",
                   name: "6th state",
@@ -191,7 +181,7 @@
                         {
                           id: "S7",
                           name: "7th state",
-                          color: "green",
+                          color: "orange",
                           geo: { x0: 10, y0: 10, width: 20, height: 30 },
                         },
                       ],

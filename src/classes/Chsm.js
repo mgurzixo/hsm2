@@ -110,6 +110,13 @@ export class Chsm extends CbaseElem {
     hCtx.setSelectedId(newElem.id);
   }
 
+
+  mouseMove(xL, yL) {
+    // console.log(`[Chsm.mouseMove] xL:${xL.toFixed()} yL:${yL.toFixed()}`);
+    const idz = this.makeIdzP(xL, yL);
+    hCtx.setIdz(idz);
+  }
+
   handleClick(xDown, yDown) {
     // console.log(`[Chsm.click] (xDown:${xDown}, yDown:${yDown})`);
     let idz = this.makeIdzP(xDown, yDown);
@@ -207,12 +214,6 @@ export class Chsm extends CbaseElem {
       if (dragEnded) hCtx.dragEnd();
       // else elem.resetDrag() will reset it
     }
-  }
-
-  mouseMove(xL, yL) {
-    // console.log(`[Chsm.mouseMove] xL:${xL.toFixed()} yL:${yL.toFixed()}`);
-    const idz = this.makeIdzP(xL, yL);
-    hCtx.setIdz(idz);
   }
 
   draw() {

@@ -163,7 +163,7 @@ export class CregionWithStates extends CbaseElem {
     const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
     // console.log(`[Cregion.insertState] newIdz:${ JSON.stringify(newIdz); } `);
     hCtx.setIdz(newIdz);
-    await myState.dragStart(xP, yP); // Will create dragCtx
+    myState.dragStart(xP, yP); // Will create dragCtx
   }
 
   canInsertState(idz) {
@@ -185,19 +185,23 @@ export class CregionWithStates extends CbaseElem {
   async insertNote(x, y) {
     console.log(`[Cregion.dragStartP] Inserting note x:${x}`);
     const id = "N" + hsm.newSernum();
-    const w = hsm.settings.noteMinWidth;
-    const h = hsm.settings.noteMinHeight;
+    const n = hsm.settings.styles.note;
+    const w = n.noteMinWidth;
+    const h = n.noteMinHeight;
+
     const noteOptions = {
       id: id,
       name: "Note " + id,
       color: "blue",
       geo: {
-        x0: x - this.geo.x0,
-        y0: y - this.geo.y0,
+        x0: x,
+        y0: y,
         width: w,
         height: h,
       },
       text: "Text",
+      scale: 1,
+      font: n.defaultFont,
       justCreated: true,
     };
     setDragOffset([w, h]);
@@ -205,22 +209,22 @@ export class CregionWithStates extends CbaseElem {
     console.log(`[Cregion.addNote] New note:${myNote} id:${myNote?.id} `);
     myNote.onLoaded();
     modeRef.value = "";
-    const m = U.pxToMm(hsm.settings.cursorMarginP);
-    const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
+    const newIdz = { id: myNote.id, zone: "BR", x: 0, y: 0 };
     hCtx.setIdz(newIdz);
     myNote.dragStart(); // Will create dragCtx
   }
 
   canInsertNote(idz) {
+    // console.log(`[Cregion.canInsertNote](${this.id}) idz.y:${idz.y} `);
     if (idz.zone != "M") return false;
+    const n = hsm.settings.styles.note;
     const m = hsm.settings.minDistanceMm;
-    const h = hsm.settings.noteMinHeight + m;
-    const w = hsm.settings.noteMinWidth + m;
-    const t = hsm.settings.stateTitleHeightMm;
-    // console.log(`[Cfolio.canInsertNote](${ this.id }) idz.y:${ idz.y; } `);
-    const [x0, y0] = [idz.x - this.geo.x0, idz.y - this.geo.y0];
+    const h = n.noteMinHeight;
+    const w = n.noteMinWidth;
+    const [x0, y0] = [idz.x, idz.y];
     if (x0 < m || x0 >= this.geo.width - w - m) return false;
-    if (y0 < t + m || y0 >= this.geo.height - h - m) return false;
+    if (y0 < m || y0 >= this.geo.height - h - m) return false;
+    // console.log(`[Cregion.canInsertNote] (${this.id}) Yes!`);
     return true;
   }
 
@@ -278,6 +282,9 @@ export class CregionWithStates extends CbaseElem {
     ) {
       // console.log(`[Cregion.makeIdz](${ this.id }(${ this.parent.id })) returning`);
       return idz;
+    }
+    if (modeRef.value == "inserting-state" || modeRef.value == "inserting-note") {
+      idz = { id: this.id, zone: "M", x: x, y: y };
     }
     for (let note of this.notes) {
       idz = note.makeIdzInParentCoordinates(x, y, idz);

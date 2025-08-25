@@ -68,7 +68,7 @@ export function doCanvas(parsedStr, scale = 1, textColor = "black", bgColor = "t
   }
 
   // console.log(`[md.doCanvas] scale:${scale}`);
-  const s = hsm.settings.styles.note1;
+  const s = hsm.settings.styles.note;
   const w0 = hCtx.folio.geo.width * scale * 2;
   const h0 = s.h1.heightMm * scale * 2;
   // console.log(`[md.doCanvas] s:${JSON.stringify(s)}`);
@@ -236,7 +236,7 @@ export function mdToCanvas(str, scale = 1, textColor = "black", bgColor = "trans
     return canvas2;
   }
   // console.log(`[md.doCanvas] Null str`);
-  const s = hsm.settings.styles.note1;
+  const s = hsm.settings.styles.note;
   const hMarginP = s.marginP;
   const wMarginP = s.marginP;
   const canvas2 = document.createElement("canvas");
