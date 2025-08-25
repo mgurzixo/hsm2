@@ -6,8 +6,6 @@ import { CbaseElem } from "src/classes/CbaseElem";
 import { Cregion } from "src/classes/Cregion";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { stateStyles } from "src/lib/styles";
-import { Cnote } from "src/classes/Cnote";
-import { setDragOffset } from "src/lib/rootElemListeners";
 import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
 import StateDialog from "src/components/StateDialog.vue";
 
