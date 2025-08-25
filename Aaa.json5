@@ -17,12 +17,9 @@
     stateMinHeight: 10,
     minDistanceMm: 1,
     dragResetSpeed: 15,
-    maxTransRadiusMm: 4,
     // initialTransLengthMm: 2,
     initialTransLengthMm: 10,
     defaultSegmentLengthMm: 10,
-    arrowLengthMm: 3,
-    arrowWidthMm: 0.75,
     smallestSegMm: 1,
 
     styles: {
@@ -72,6 +69,10 @@
         line: { chroma: 100, light: 30, lineWidth: 1.5 },
         lineError: { color: "red", lineWidth: 2 },
         lineSelected: { lineWidth: 2.5 },
+        errorDotRadiusMm: 3,
+        maxTransRadiusMm: 4,
+        arrowLengthMm: 3,
+        arrowWidthMm: 0.75,
       },
       defaultColor: "darkorange",
     },

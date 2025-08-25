@@ -60,7 +60,8 @@ export class Ctr extends CbaseElem {
     const g = hCtx.folio.geo;
     const u = U.pxPerMm;
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
-    const r = hsm.settings.maxTransRadiusMm;
+    const t = hsm.settings.styles.tr;
+    const r = t.maxTransRadiusMm;
     const segments = this.segments;
 
     function svgSegment(dir, len) {
@@ -90,8 +91,8 @@ export class Ctr extends CbaseElem {
     // Make an arrow @ current location in @dir direction
     function svgArrow(dir) {
       const u = U.pxPerMm;
-      let lenP = hsm.settings.arrowLengthMm * u;
-      let widthP = hsm.settings.arrowWidthMm * u;
+      let lenP = t.arrowLengthMm * u;
+      let widthP = t.arrowWidthMm * u;
       let res = "";
       switch (dir) {
         case "N":
@@ -128,72 +129,84 @@ export class Ctr extends CbaseElem {
       else lineWidth = s.trLineWidth;
       strokeStyle = s.trLine;
     }
+    let svg;
+    // console.log(`[Ctr.paint] (${this.id}) ${segments.length} segments len0:${segments[0].len}`);
+    if (!segments.length || (segments.length == 1 && segments[0].len == 0)) {
+      console.log(`[Ctr.paint] (${this.id}) Degenerate`);
+      let [x0, y0] = T.anchorToXYF(this.from);
+      svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
+  xmlns="http://www.w3.org/2000/svg">
+  <circle stroke="transparent"  fill="${strokeStyle}" cx="${x0}mm" cy="${y0}mm" r="${t.errorDotRadiusMm}mm" />
+  > </svg>`;
 
-    let svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
+
+    } else {
+      svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
   <path stroke="${strokeStyle}" stroke-width="${lineWidth}" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
-    let [x0, y0] = T.anchorToXYF(this.from);
-    let [x1, y1] = T.anchorToXYF(this.to);
-    // console.log(`[Ctr.paint] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
+      let [x0, y0] = T.anchorToXYF(this.from);
+      let [x1, y1] = T.anchorToXYF(this.to);
+      // console.log(`[Ctr.paint] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
-    svg += `"M ${x0 * u} ${y0 * u}\n`;
-    let radius1 = 0;
-    let curDir;
-    const maxIdx = segments.length - 1;
-    for (let idx in segments) {
-      idx = Number(idx);
-      let segment = segments[idx];
-      let len = segment.len;
-      if (len == 0) continue;
-      if (len <= 0) console.error(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
-      // console.warn(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
-      let nextSeg = null;
-      for (let idn = idx + 1; idn <= maxIdx; idn++) {
-        if (segments[idn].len == 0) continue;
-        nextSeg = segments[idn];
-        break;
-      }
-      curDir = segment.dir;
-      let radius2 = r;
-      if (radius2 > segment.len / 2) radius2 = segment.len / 2;
-      if (!nextSeg) radius2 = 0;
-      else if (radius2 > nextSeg.len / 2) radius2 = nextSeg.len / 2;
-      len = len - radius1 - radius2;
-      svg += svgSegment(segment.dir, len);
-      let [x, y] = [0, 0];
-      let [cpx, cpy] = [x, y];
-      // console.log(`[Ctr.paint] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
-      if (radius2) {
-        switch (segment.dir) {
-          case "N":
-            y -= radius2;
-            x += nextSeg.dir == "E" ? radius2 : -radius2;
-            cpy = y;
-            break;
-          case "S":
-            y += radius2;
-            x += nextSeg.dir == "E" ? radius2 : -radius2;
-            cpy = y;
-            break;
-          case "E":
-            x += radius2;
-            y += nextSeg?.dir == "S" ? radius2 : -radius2;
-            cpx = x;
-            break;
-          case "W":
-            x -= radius2;
-            y += nextSeg?.dir == "S" ? radius2 : -radius2;
-            cpx = x;
-            break;
+      svg += `"M ${x0 * u} ${y0 * u}\n`;
+      let radius1 = 0;
+      let curDir;
+      const maxIdx = segments.length - 1;
+      for (let idx in segments) {
+        idx = Number(idx);
+        let segment = segments[idx];
+        let len = segment.len;
+        if (len == 0) continue;
+        if (len <= 0) console.error(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+        // console.warn(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+        let nextSeg = null;
+        for (let idn = idx + 1; idn <= maxIdx; idn++) {
+          if (segments[idn].len == 0) continue;
+          nextSeg = segments[idn];
+          break;
         }
-        svg += svgQuadraticCurveTo(cpx, cpy, x, y);
-        // svg += "q 10 0 10 10";
-        radius1 = radius2;
+        curDir = segment.dir;
+        let radius2 = r;
+        if (radius2 > segment.len / 2) radius2 = segment.len / 2;
+        if (!nextSeg) radius2 = 0;
+        else if (radius2 > nextSeg.len / 2) radius2 = nextSeg.len / 2;
+        len = len - radius1 - radius2;
+        svg += svgSegment(segment.dir, len);
+        let [x, y] = [0, 0];
+        let [cpx, cpy] = [x, y];
+        // console.log(`[Ctr.paint] (${this.id}) radius1:${radius1.toFixed()} radius2:${radius2.toFixed()}`);
+        if (radius2) {
+          switch (segment.dir) {
+            case "N":
+              y -= radius2;
+              x += nextSeg.dir == "E" ? radius2 : -radius2;
+              cpy = y;
+              break;
+            case "S":
+              y += radius2;
+              x += nextSeg.dir == "E" ? radius2 : -radius2;
+              cpy = y;
+              break;
+            case "E":
+              x += radius2;
+              y += nextSeg?.dir == "S" ? radius2 : -radius2;
+              cpx = x;
+              break;
+            case "W":
+              x -= radius2;
+              y += nextSeg?.dir == "S" ? radius2 : -radius2;
+              cpx = x;
+              break;
+          }
+          svg += svgQuadraticCurveTo(cpx, cpy, x, y);
+          // svg += "q 10 0 10 10";
+          radius1 = radius2;
+        }
       }
+      // svg += `L ${x1 * u} ${y1 * u} \n`;
+      if (curDir) svg += svgArrow(curDir);
+      svg += `"> </svg>`;
     }
-    // svg += `L ${x1 * u} ${y1 * u} \n`;
-    if (curDir) svg += svgArrow(curDir);
-    svg += `"> </svg>`;
     // console.log(`[Ctr.paint] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
@@ -363,7 +376,7 @@ export class Ctr extends CbaseElem {
 
   adjustXy(dx, dy, minseg = 0) {
     // console.log(`[Ctr.adjustXy] dx:${dx} dy:${dy}`);
-    const r = hsm.settings.maxTransRadiusMm;
+    const r = hsm.settings.styles.tr.maxTransRadiusMm;
     for (let idx in this.segments) {
       idx = Number(idx);
       const segment = this.segments[idx];
@@ -430,7 +443,8 @@ export class Ctr extends CbaseElem {
 
   isLegal() {
     // console.log(`[Ctr.isLegal] id:${this.id} segments:${this.segments}`);
-    if (this.segments.length == 0) return true;
+    if (this.segments.length == 0) return false;
+    if (this.segments.length == 1 && this.segments[0].len == 0) return false;
     const fromState = hElems.getElemById(this.from.id);
     const goesToOutside = U.goesToOutside(this.from.side, this.segments[0].dir);
     const goesToInside = U.goesToInside(this.from.side, this.segments[0].dir);

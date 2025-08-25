@@ -76,7 +76,7 @@ export async function isIdle() {
 
 export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
   // console.log(`[utils.connectPoints] side0:${side0} side1:${side1}`);
-  const r = hsm.settings.maxTransRadiusMm * 1.5;
+  const r = hsm.settings.styles.tr.maxTransRadiusMm;
   let segments = [];
   const [dx, dy] = [Math.abs(x1 - x0), Math.abs(y1 - y0)];
   if (x1 == x0) {
