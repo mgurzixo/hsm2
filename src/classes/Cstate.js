@@ -183,8 +183,8 @@ export class Cstate extends CbaseState {
     return bb;
   }
 
-  insertNote(x, y) {
-    // console.log(`[Cstate.insertState] Inserting note x:${ x.toFixed(); } `);
+  async insertNote(x, y) {
+    // console.log(`[Cstate.insertNote] Inserting note x:${ x.toFixed(); } `);
     const id = "N" + hsm.newSernum();
     const n = hsm.settings.styles.note;
     const w = n.noteMinWidth;
@@ -205,12 +205,12 @@ export class Cstate extends CbaseState {
     setDragOffset([w, h]);
     const myNote = this.addNote(noteOptions);
     console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
-    myNote.onLoaded();
+    await myNote.onLoaded();
     modeRef.value = "";
     const m = U.pxToMm(hsm.settings.cursorMarginP);
     const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
     hCtx.setIdz(newIdz);
-    myNote.dragStart(); // Will create dragCtx
+    await myNote.dragStart(); // Will create dragCtx
   }
 
   // Returns [x,y] of (side,pos) in state frame
@@ -247,7 +247,7 @@ export class Cstate extends CbaseState {
     return pos;
   }
 
-  insertTr(x, y) {
+  async insertTr(x, y) {
     // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
     // console.log(`[Cstate.insertTr] idz:${ JSON.stringify(this.idz()); } `);
     const idz = this.idz();
@@ -275,7 +275,7 @@ export class Cstate extends CbaseState {
       justCreated: true,
     };
     const myTr = hCtx.folio.addTr(trOptions);
-    myTr.onLoaded();
+    await myTr.onLoaded();
 
     const newIdz = {
       id: myTr.id,
@@ -283,10 +283,10 @@ export class Cstate extends CbaseState {
     };
     modeRef.value = "";
     hCtx.setIdz(newIdz);
-    myTr.dragStart();
+    await myTr.dragStart();
   }
 
-  dragStart(xP, yP) {
+  async dragStart(xP, yP) {
     const idz = this.idz();
     const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     // [x,y] in mm in this.geo.x/y frame
@@ -297,15 +297,15 @@ export class Cstate extends CbaseState {
     hsm.setSelected(this.id);
     switch (modeRef.value) {
       case "inserting-state": {
-        this.insertState(x, y);
-        return;
+        console.error(`[Cstate.dragStart](${this.id}) Error!`);
+        return this;
       }
       case "inserting-trans": {
-        this.insertTr(x, y);
+        await this.insertTr(x, y);
         return;
       }
       case "inserting-note": {
-        this.insertNote(x, y);
+        await this.insertNote(x, y);
         return;
       }
       default:
@@ -504,7 +504,7 @@ export class Cstate extends CbaseState {
 
   makeIdz(x, y, idz) {
     // [x,y] in mm of mousePos in this.geo.[x0,y0] frame
-    if (this.id == "S2") console.log(`[Cstate.makeIdz](${this.id})[x:${x.toFixed()}, y:${y.toFixed()}] x0:${this.geo.x0}`);
+    // if (this.id == "S2") console.log(`[Cstate.makeIdz](${this.id})[x:${x.toFixed()}, y:${y.toFixed()}] x0:${this.geo.x0} e:${this.geo.mat.e}`);
     const m = (hsm.settings.cursorMarginP / U.pxPerMm) / hCtx.folio.geo.scale;
     const r = hsm.settings.stateRadiusMm;
     if (
@@ -530,7 +530,7 @@ export class Cstate extends CbaseState {
       // console.log(`[Cstate.makeIdz](${ this.id }) calling ${ child.id; } y:${ y.toFixed(); } `);
       idz = child.makeIdzInParentCoordinates(x, y, idz);
     }
-    // console.log(`[Cstate.makeIdz](${ this.id }) id:${ id; } zone:${ zone; } (x: ${ x.toFixed(1)} y: ${ y.toFixed(1)})`);
+    // console.log(`[Cstate.makeIdz](${this.id}) id:${idz.id} zone:${idz.zone} (xz:${idz.x.toFixed(1)} yz:${idz.y.toFixed(1)})`);
     return idz;
   }
 

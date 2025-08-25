@@ -14,8 +14,8 @@ export class CbaseElem {
     if (type == "M") id = "M1";
     else if (typeof options.id == "string") id = options.id;
     else id = type + hsm.newSernum();
-    // console.log(`[CbaseElem.constructor] id:${id} type:${typeof options.id}`);
-    // hsm.checkSernum(Number(id.slice(1)));
+    // console.log(`[CbaseElem.constructor] id:${id} options.id:${typeof options.id}`);
+    hsm?.checkSernum(Number(id.slice(1)));
     this.id = id;
     hsm?.hElems?.insertElem(this);
     this.name = options?.name || `S${id}`;
@@ -53,9 +53,10 @@ export class CbaseElem {
     // console.log(`[CbaseElem.constructor] Created:${this.id}`);
   }
 
-  onLoaded() {
+  async onLoaded() {
+    // console.log(`[CbaseElem.onLoaded] (${this.id}) this.children:"${this.children}"`);
     for (let child of this.children) {
-      child.onLoaded();
+      await child.onLoaded();
     }
   }
 
@@ -65,11 +66,12 @@ export class CbaseElem {
   }
 
   destroy() {
-    // console.log(`[CbaseElem.destroy] this:${this.id}`);
-    for (let child of this.children) {
-      // console.log(`[CbaseElem.destroy] this:${this.id} child:${child} childId:${child.id}`);
-      child.destroy();
-    }
+    // console.log(`[CbaseElem.destroy] (${this.id})`);
+    if (this.children)
+      for (let child of this.children) {
+        // console.log(`[CbaseElem.destroy] this:${this.id} child:${child} childId:${child.id}`);
+        child.destroy();
+      }
     hsm.hElems.removeElemById(this.id);
     this.myElem.remove();
     delete this.id;
@@ -115,7 +117,7 @@ export class CbaseElem {
   }
 
   doubleClick(x, y) { }
-  dragStart(xP, yP) { }
+  async dragStart(xP, yP) { return this; }
   drag(dx, dy) { }
 
   // adjustTrAnchors(changedId) {

@@ -19,6 +19,8 @@ export class CregionWithStates extends CbaseElem {
     this.noteElem = document.createElement("div");
     this.noteElem.id = "noteElem_" + this.id;
     this.myElem.prepend(this.noteElem);
+    // console.log(`[Cregion.constructor] (${this.id}) children:"${this.children}"`);
+
     if (regionOptions.notes) {
       for (let noteOptions of regionOptions.notes) {
         this.addNote(noteOptions);
@@ -31,14 +33,15 @@ export class CregionWithStates extends CbaseElem {
     }
   }
 
-  onLoaded() {
-    super.onLoaded();
+  async onLoaded() {
+    // console.log(`[Cregion.onLoaded] (${this.id}) this.children:"${this.children}"`);
+    await super.onLoaded();
     for (let note of this.notes) {
-      note.onLoaded();
+      await note.onLoaded();
     }
   }
 
-  async addNote(noteOptions) {
+  addNote(noteOptions) {
     // console.log(`[Cregion.addNote] noteOptions:${JSON.stringify(noteOptions)} `);
     const noteEl = document.createElement("div");
     this.noteElem.append(noteEl);
@@ -49,7 +52,7 @@ export class CregionWithStates extends CbaseElem {
     return myNote;
   }
 
-  async addState(stateOptions) {
+  addState(stateOptions) {
     const stEl = document.createElement("div");
     this.childElem.append(stEl);
     stateOptions.myElem = stEl;
@@ -59,6 +62,7 @@ export class CregionWithStates extends CbaseElem {
   }
 
   destroy() {
+    // console.log(`[Cregion.destroy] (${this.id})`);
     super.destroy();
     this.noteElem.remove();
   }
@@ -112,18 +116,6 @@ export class CregionWithStates extends CbaseElem {
 
     for (let child of this.children) {
       // console.log(`[Cregion.getChildrenBB] ${ child.id}.geo.y0:${ child.geo.y0; } `);
-      // let u = child.geo.x0;
-      // if (bb.x0 == null) bb.x0 = u;
-      // else if (u < bb.x0) bb.x0 = u;
-      // u = child.geo.y0;
-      // if (bb.y0 == null) bb.y0 = u;
-      // else if (u < bb.y0) bb.y0 = u;
-      // u = this.geo.x0 + child.geo.x0 + child.geo.width;
-      // if (bb.x1 == null) bb.x1 = u;
-      // else if (u > bb.x1) bb.x1 = u;
-      // u = this.geo.y0 + child.geo.y0 + child.geo.height;
-      // if (bb.y1 == null) bb.y1 = u;
-      // else if (u > bb.y1) bb.y1 = u;
       updateBB(child.geo);
     }
     for (let note of this.notes) {
@@ -183,7 +175,7 @@ export class CregionWithStates extends CbaseElem {
     const newIdz = { id: myState.id, zone: "BR", x: 0, y: 0 };
     // console.log(`[Cregion.insertState] newIdz:${ JSON.stringify(newIdz); } `);
     hCtx.setIdz(newIdz);
-    myState.dragStart(xP, yP); // Will create dragCtx
+    await myState.dragStart(xP, yP); // Will create dragCtx
   }
 
   canInsertState(idz) {
@@ -227,11 +219,11 @@ export class CregionWithStates extends CbaseElem {
     setDragOffset([w, h]);
     const myNote = await this.addNote(noteOptions);
     console.log(`[Cregion.addNote] New note:${myNote} id:${myNote?.id} `);
-    myNote.onLoaded();
+    await myNote.onLoaded();
     modeRef.value = "";
     const newIdz = { id: myNote.id, zone: "BR", x: 0, y: 0 };
     hCtx.setIdz(newIdz);
-    myNote.dragStart(); // Will create dragCtx
+    await myNote.dragStart(); // Will create dragCtx
   }
 
   canInsertNote(idz) {
@@ -257,12 +249,12 @@ export class CregionWithStates extends CbaseElem {
     // console.log(`[Cregion.dragStart] xP :${ xP ?.toFixed(); } x:${ x.toFixed(); } `);
     switch (modeRef.value) {
       case "inserting-state": {
-        this.insertState(xP, yP);
-        return;
+        await this.insertState(xP, yP);
+        return this;
       }
       case "inserting-note": {
         await this.insertNote(x, y);
-        return;
+        return this;
       }
       default:
         modeRef.value = "";
@@ -270,6 +262,7 @@ export class CregionWithStates extends CbaseElem {
     hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
     // console.log(`[Cregion.dragStart] dragCtx:${JSON.stringify(hCtx.getDragCtx())} `);
     // console.log(`[Cregion.dragStart] matrix:${ getComputedStyle(this.myElem).transform; } `);
+    return this;
   }
 
   drag(dxP, dyP) {

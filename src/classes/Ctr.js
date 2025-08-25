@@ -44,7 +44,7 @@ export class Ctr extends CbaseElem {
   }
 
   // Called when hsm has been loaded so that we can get hCtx.folio
-  onLoaded() {
+  async onLoaded() {
     this.makeTag();
     // super.onLoaded();
     if (this.segments.length == 0) this.segments = this.createSimpleSegments();
@@ -273,7 +273,7 @@ export class Ctr extends CbaseElem {
   }
 
 
-  dragStart() {
+  async dragStart() {
     // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
     // if (modeRef.value == "") {

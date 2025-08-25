@@ -23,34 +23,72 @@ export let ctxMenu = V.ref(null);
 export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(null, options, "M");
-    this.settings = {};
-    this.sernum = 2;
-    this.hElems = new ChElems();
-    this.hCtx = new ChCtx();
-    hCtx = this.hCtx;
     this.canvas = options.canvas; // TODO
     this.setCanvas(this.canvas);
+    this.initialise();
+    // console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
+  }
+
+  initialise() {
+    this.settings = {};
+    this.children = [];
+    this.status = { serNum: 2 };
+    this.hElems = new ChElems();
+    hElems = this.hElems;
+    this.hCtx = new ChCtx();
+    hCtx = this.hCtx;
     hsm = this;
     this.inhibitDrag = false;
-    hElems = this.hElems;
-    // console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
   }
 
 
   destroy() {
-    super.destroy();
+    // console.log(`[Chsm.destroy] id:${this.id}`);
+    for (let child of this.children) {
+      child.destroy();
+    }
+    hCtx.clear();
     delete this.activeFolio;
-    hCtx.folio = null;
     this.canvas = null;
-    hsm = null;
+    this.hElems.clearElems();
+    this.hElems.insertElem(this);
   }
 
+  async load(hsmOptions) {
+    this.destroy();
+    this.initialise();
+
+    this.settings = hsmOptions.settings;
+    this.status = hsmOptions.status;
+    this.status.serNum = hsmOptions.status?.serNum || 2;
+    // console.log(`[Chsm.load] (${this.id}) serNum:${this.status.serNum}`);
+
+    setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
+    if (hsmOptions.folios)
+      for (let folioOptions of hsmOptions.folios) {
+        await this.addFolio(folioOptions);
+      }
+    hCtx.folio = this.hElems.getElemById(this.status.activeFolio) || this.children[0];
+    hCtx.folio.setFolioDisplay(true);
+    // console.log(`[Chsm.load] (${this.id}) children:${this.children}`);
+    for (let folio of this.children) {
+      // console.log(`[Chsm.load] (${this.id}) calling folio:${folio?.id} f_keys:${Object.keys(folio)}`);
+      await folio.onLoaded();
+    }
+    // console.log(`[Chsm.constructor] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
+    this.makeIdzP();
+    return null;
+  }
+
+  save() { }
+
   checkSernum(num) {
-    if (this.sernum <= num) this.sernum = num + 1;
+    if (this.status.serNum <= num) this.status.serNum = num + 1;
   }
 
   newSernum() {
-    return this.sernum++;
+    // console.log(`[Chsm.newSernum] old serNum:${this.status.serNum}`);
+    return this.status.serNum++;
   }
 
   setCanvas(myCanvas) { // TODO
@@ -65,32 +103,9 @@ export class Chsm extends CbaseElem {
     // console.log(`[Chsm.addFolio]`);
     const myFolio = new Cfolio(this, folioOptions);
     this.children.push(myFolio);
+    return myFolio;
   }
 
-  async load(hsmOptions) {
-    this.hCtx.clear();
-    this.settings = hsmOptions.settings;
-    this.status = hsmOptions.status;
-    this.serNum = hsmOptions.serNum;
-    this.hElems.clearElems();
-    this.hElems.insertElem(this);
-
-    setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
-    if (hsmOptions.folios)
-      for (let folioOptions of hsmOptions.folios) {
-        await this.addFolio(folioOptions);
-      }
-    hCtx.folio = this.hElems.getElemById(this.status.activeFolio);
-    hCtx.folio.setFolioDisplay(true);
-    for (let folio of this.children) {
-      folio.onLoaded();
-    }
-    // console.log(`[Chsm.constructor] id:${this.status.activeFolio} Active folio: ${folio?.id}`);
-    this.makeIdzP();
-    return null;
-  }
-
-  save() { }
 
   adjustTrAnchors(changedId) {
     // console.log(`[CbaseElem.adjustTrAnchors] id:${this.id} TODO`);
@@ -148,7 +163,7 @@ export class Chsm extends CbaseElem {
     elem?.openDialog();
   }
 
-  dragStart(xP, yP) {
+  async dragStart(xP, yP) {
     // console.log(`[Chsm.click]  (xDown:${xP}, yDown:${xP})`);
     let idz = this.makeIdzP(xP, yP);
     // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
@@ -160,20 +175,21 @@ export class Chsm extends CbaseElem {
     switch (mode) {
       case "":
         // folio is responsible when dragging background
-        if (idz.id == this.id) return hCtx.folio.dragStart(xP, yP);
-        else return elem.dragStart(xP, yP);
+        if (idz.id == this.id) return await hCtx.folio.dragStart(xP, yP);
+        else return await elem.dragStart(xP, yP);
       // break;
       case "inserting-state":
-        if (elem.canInsertState(idz)) return elem.dragStart(xP, yP);
+        if (elem.canInsertState(idz)) return await elem.dragStart(xP, yP);
         break;
       case "inserting-trans":
-        if (elem.canInsertTr(idz)) return elem.dragStart(xP, yP);
+        if (elem.canInsertTr(idz)) return await elem.dragStart(xP, yP);
         break;
       case "inserting-note":
-        if (elem.canInsertNote(idz)) return elem.dragStart(xP, yP);
+        if (elem.canInsertNote(idz)) return await elem.dragStart(xP, yP);
         break;
     }
     this.inhibitDrag = true;
+    return this;
   }
 
   drag(dxP, dyP) {

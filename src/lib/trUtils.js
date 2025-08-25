@@ -103,10 +103,11 @@ export function createSegments(tr) {
   if (U.isHoriz(side0)) {
     if (U.isHoriz(side1)) {
       if (dxa != 0) {
-        const dir = dya - dsl >= 0 ? dirV : U.reverseDir(dirV);
-        segments.push({ dir: dirV, len: dsl / 2 });
+        const dl = Math.min(dsl, dya);
+        const dir = dya >= 0 ? dirV : U.reverseDir(dirV);
+        segments.push({ dir: dirV, len: dl / 2 });
         segments.push({ dir: dirH, len: dxa });
-        segments.push({ dir: dir, len: Math.abs(dya - dsl / 2) });
+        segments.push({ dir: dir, len: Math.abs(dya - dl / 2) });
       } else {
         segments.push({ dir: dirV, len: dya });
       }
@@ -126,9 +127,12 @@ export function createSegments(tr) {
     } else {
       // Side1 vertical
       if (dya != 0) {
-        segments.push({ dir: dirH, len: dxa / 2 });
+        // Side2 vertical
+        const dl = Math.min(dsl, dxa);
+        const dir = dxa >= 0 ? dirH : U.reverseDir(dirH);
+        segments.push({ dir: dirH, len: dl / 2 });
         segments.push({ dir: dirV, len: dya });
-        segments.push({ dir: dirH, len: dxa - dxa / 2 });
+        segments.push({ dir: dirH, len: dxa - dl / 2 });
       } else {
         segments.push({ dir: dirH, len: dxa });
       }

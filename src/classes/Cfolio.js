@@ -27,10 +27,11 @@ export class Cfolio extends CregionWithStates {
       }
   }
 
-  onLoaded() {
-    super.onLoaded();
+  async onLoaded() {
+    // console.log(`[Cfolio.onLoaded] (${this.id}) this.children:"${this.children}"`);
+    await super.onLoaded();
     for (let tr of this.trs) {
-      tr.onLoaded();
+      await tr.onLoaded();
     }
   }
 

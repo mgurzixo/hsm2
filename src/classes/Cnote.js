@@ -127,7 +127,7 @@ export class Cnote extends CbaseElem {
     // hsm.openDialog(FolioDialog, this);
   }
 
-  dragStart(xP, yP) {
+  async dragStart(xP, yP) {
     const idz = this.idz();
     const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     hsm.setSelected(this.id);

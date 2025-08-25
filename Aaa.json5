@@ -82,7 +82,6 @@
   },
   folios: [
     {
-      id: "F1",
       name: "Main Folio",
       geo: { x0: 0, y0: 0, width: 210, height: 297, scale: 1 },
       // geo: { x0: 0, y0: 0, width: 100, height: 100, scale: 1 },
@@ -94,54 +93,54 @@
         },
       ],
       trs: [
-        // {
-        //   segments: [],
-        //   from: { id: "S2", side: "B", pos: 0.2 },
-        //   to: { id: "S3", side: "T", pos: 0.8 },
-        //   isInternal: false,
-        // },
-        // {
-        //   segments: [],
-        //   from: { id: "S2", side: "B", pos: 0.8 },
-        //   to: { id: "S3", side: "R", pos: 0.7 },
-        //   isInternal: false,
-        //   trigger: "TRIG1",
-        //   guard: "Guard1",
-        //   effect: "effect1()",
-        // },
-        // {
-        //   segments: [],
-        //   from: { id: "S2", side: "T", pos: 0.6 },
-        //   to: { id: "S2", side: "T", pos: 0.7 },
-        //   isInternal: true,
-        // },
-        // {
-        //   segments: [],
-        //   from: { id: "S6", side: "R", pos: 0.1 },
-        //   to: { id: "S8", side: "L", pos: 0.5 },
-        //   isInternal: false,
-        // },
-        // {
-        //   segments: [],
-        //   from: { id: "S2", side: "L", pos: 0.6 },
-        //   to: { id: "S6", side: "L", pos: 0.3 },
-        //   isInternal: true,
-        // },
-        // {
-        //   segments: [],
-        //   from: { id: "S6", side: "R", pos: 0.5 },
-        //   to: { id: "S7", side: "T", pos: 0.3 },
-        //   isInternal: false,
-        // },
-        // {
-        //   segments: [],
-        //   from: { id: "S6", side: "B", pos: 0.2 },
-        //   to: { id: "S3", side: "L", pos: 0.3 },
-        //   isInternal: false,
-        //   trigger: "TRIG2",
-        //   guard: "Guard2",
-        //   effect: "effect2()",
-        // },
+        {
+          segments: [],
+          from: { id: "S2", side: "B", pos: 0.2 },
+          to: { id: "S3", side: "T", pos: 0.8 },
+          isInternal: false,
+        },
+        {
+          segments: [],
+          from: { id: "S2", side: "B", pos: 0.8 },
+          to: { id: "S3", side: "R", pos: 0.7 },
+          isInternal: false,
+          trigger: "TRIG1",
+          guard: "Guard1",
+          effect: "effect1()",
+        },
+        {
+          segments: [],
+          from: { id: "S2", side: "T", pos: 0.6 },
+          to: { id: "S2", side: "T", pos: 0.7 },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          from: { id: "S6", side: "R", pos: 0.1 },
+          to: { id: "S8", side: "L", pos: 0.5 },
+          isInternal: false,
+        },
+        {
+          segments: [],
+          from: { id: "S2", side: "L", pos: 0.6 },
+          to: { id: "S6", side: "L", pos: 0.3 },
+          isInternal: true,
+        },
+        {
+          segments: [],
+          from: { id: "S6", side: "R", pos: 0.5 },
+          to: { id: "S7", side: "T", pos: 0.3 },
+          isInternal: false,
+        },
+        {
+          segments: [],
+          from: { id: "S6", side: "B", pos: 0.2 },
+          to: { id: "S3", side: "L", pos: 0.3 },
+          isInternal: false,
+          trigger: "TRIG2",
+          guard: "Guard2",
+          effect: "effect2()",
+        },
       ],
       states: [
         {
@@ -151,7 +150,6 @@
           geo: { x0: 10, y0: 15, width: 140, height: 110 },
           regions: [
             {
-              id: "R4",
               name: "My region",
               notes: [
                 {
@@ -175,7 +173,6 @@
                   geo: { x0: 40, y0: 40, width: 60, height: 60 },
                   regions: [
                     {
-                      id: "R5",
                       name: "My region",
                       states: [
                         {
@@ -198,12 +195,12 @@
             },
           ],
         },
-        // {
-        //   id: "S3",
-        //   name: "3rd state",
-        //   color: "gold",
-        //   geo: { x0: 50, y0: 130, width: 30, height: 30 },
-        // },
+        {
+          id: "S3",
+          name: "3rd state",
+          color: "gold",
+          geo: { x0: 50, y0: 130, width: 30, height: 30 },
+        },
       ],
     },
   ],
