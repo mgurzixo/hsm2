@@ -139,21 +139,17 @@ export class Cfolio extends CregionWithStates {
     idz = { id: this.id, zone: "M", x: x, y: y };
     const m = U.pxToMm(hsm.settings.cursorMarginP);
     for (let note of this.notes) {
-      // idz = note.makeIdz(x - this.geo.x0, y - this.geo.y0, idz);
-      idz = note.makeIdzInParentCoordinates(idz.x, idz.y, idz);
+      idz = note.makeIdzInParentCoordinates(x, y, idz);
     }
     for (let child of this.children) {
-      // console.warn(`[Cregion.Cfolio](${this.id}) calling ${child.id}`);
-      idz = child.makeIdzInParentCoordinates(idz.x, idz.y, idz);
+      idz = child.makeIdzInParentCoordinates(x, y, idz);
     }
-    // console.log(`[Cfolio.makeIdz] S id: ${ idz.id; } zone: ${ idz.zone; } `);
     let bestTIdz = { dist2P: Number.MAX_VALUE };
     for (let tr of this.trs) {
       const tIdz = tr.makeIdzInParentCoordinates(x, y, idz);
       if (tIdz.dist2P <= bestTIdz.dist2P) {
         bestTIdz = tIdz;
       }
-      // if (tr.id == "T5") console.log(`[Cfolio.makeIdz](${tIdz.id}) dist2P: ${tIdz.dist2P.toFixed()} zone: ${tIdz.zone} type: ${tIdz.type} `);
     }
     if (bestTIdz.dist2P < m) {
       idz = bestTIdz;
