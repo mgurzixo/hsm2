@@ -37,7 +37,10 @@ export class Cnote extends CbaseElem {
     // console.log(`[Cnote.constructor] (${this.id}) text:${noteOptions.text}`);
     // console.log(`[Cnote.constructor] noteOptions:${noteOptions}`);
     const g = this.geo;
+    const n = hsm.settings.styles.note;
     this.geo.mat = { a: 1, b: 0, c: 0, d: 1, e: g.x0 * U.pxPerMm, f: g.y0 * U.pxPerMm };
+    g.width = noteOptions.geo.width || n.noteMinWidth;
+    g.height = noteOptions.geo.height || n.noteMinHeight;
     this.styles = this.tagStyle ? this.tagStyle : noteStyles(this.color || hsm.settings.styles.defaultColor);
     this.setGeoFromMat();
     this.setFont(noteOptions?.font || hsm.settings.styles.note.defaultFont);
@@ -124,12 +127,10 @@ export class Cnote extends CbaseElem {
     // hsm.openDialog(FolioDialog, this);
   }
 
-
   dragStart(xP, yP) {
     const idz = this.idz();
     const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     hsm.setSelected(this.id);
-    this.setDragOrigin();
     const dragCtx = {
       id: this.id,
       x0: this.geo.x0,
@@ -143,9 +144,9 @@ export class Cnote extends CbaseElem {
     return this;
   }
 
-
   drag(dxP, dyP) {
     const idz = this.idz();
+    // console.log(`[Cnote.drag] (${this.id}) idz:${JSON.stringify(idz)} `);
     const s0 = hCtx.folio.geo.mat.a;
     const n = hsm.settings.styles.note;
     let [dx, dy] = [dxP / U.pxPerMm / s0, dyP / U.pxPerMm / s0];
@@ -213,17 +214,12 @@ export class Cnote extends CbaseElem {
     hCtx.dragEnd();
   }
 
-
   dragEnd(dxP, dyP) {
     this.drag(dxP, dyP);
     this.checkOpenDialogAndEndDrag();
     return true;
   }
-  setDragOrigin() {
-    let mat = {};
-    Object.assign(mat, this.geo.mat);
-    this.dragOrigin = { x0: this.geo.x0, y0: this.geo.y0, mat: mat };
-  }
+
 
   makeCanvas(text) {
     // // console.warn(`[Cnote.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);

@@ -94,20 +94,40 @@ export class CregionWithStates extends CbaseElem {
   getChildrenBB(bb) {
     // console.log(`[Cregion.getChildrenBB] (${this.id}) name:${this.name}`);
     if (this.id.startsWith("E")) return bb;
-    for (let child of this.children) {
-      // console.log(`[Cregion.getChildrenBB] ${ child.id}.geo.y0:${ child.geo.y0; } `);
-      let u = child.geo.x0;
+
+    const updateBB = (geo) => {
+      let u = geo.x0;
       if (bb.x0 == null) bb.x0 = u;
       else if (u < bb.x0) bb.x0 = u;
-      u = child.geo.y0;
+      u = geo.y0;
       if (bb.y0 == null) bb.y0 = u;
       else if (u < bb.y0) bb.y0 = u;
-      u = this.geo.x0 + child.geo.x0 + child.geo.width;
+      u = this.geo.x0 + geo.x0 + geo.width;
       if (bb.x1 == null) bb.x1 = u;
       else if (u > bb.x1) bb.x1 = u;
-      u = this.geo.y0 + child.geo.y0 + child.geo.height;
+      u = this.geo.y0 + geo.y0 + geo.height;
       if (bb.y1 == null) bb.y1 = u;
       else if (u > bb.y1) bb.y1 = u;
+    };
+
+    for (let child of this.children) {
+      // console.log(`[Cregion.getChildrenBB] ${ child.id}.geo.y0:${ child.geo.y0; } `);
+      // let u = child.geo.x0;
+      // if (bb.x0 == null) bb.x0 = u;
+      // else if (u < bb.x0) bb.x0 = u;
+      // u = child.geo.y0;
+      // if (bb.y0 == null) bb.y0 = u;
+      // else if (u < bb.y0) bb.y0 = u;
+      // u = this.geo.x0 + child.geo.x0 + child.geo.width;
+      // if (bb.x1 == null) bb.x1 = u;
+      // else if (u > bb.x1) bb.x1 = u;
+      // u = this.geo.y0 + child.geo.y0 + child.geo.height;
+      // if (bb.y1 == null) bb.y1 = u;
+      // else if (u > bb.y1) bb.y1 = u;
+      updateBB(child.geo);
+    }
+    for (let note of this.notes) {
+      updateBB(note.geo);
     }
     return bb;
   }
@@ -120,10 +140,10 @@ export class CregionWithStates extends CbaseElem {
     return false;
   }
 
-  setGrandChildrenDragOrigin() {
+  setChildrenDragOrigin() {
     // console.log(`[Cregion.setChildrenDragOrigin] myId:${ this.id} `);
-    for (let child of this.children) {
-      child.setDragOrigin();
+    for (let state of this.children) {
+      state.setDragOrigin();
     }
   }
 
@@ -229,7 +249,7 @@ export class CregionWithStates extends CbaseElem {
   }
 
   async dragStart(xP, yP) {
-    console.log(`[Cregion.dragStart]`);
+    // console.log(`[Cregion.dragStart]`);
     const idz = this.idz();
     // const [x, y] = [idz.x, idz.y];
     // const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
@@ -248,7 +268,7 @@ export class CregionWithStates extends CbaseElem {
         modeRef.value = "";
     }
     hCtx.setDragCtx({ id: this.id, x0: this.geo.x0, y0: this.geo.y0, type: "M", mat: this.geo.mat });
-    // console.log(`[Cregion.dragStart] dragCtx:${ JSON.stringify(hCtx.getDragCtx()); } `);
+    // console.log(`[Cregion.dragStart] dragCtx:${JSON.stringify(hCtx.getDragCtx())} `);
     // console.log(`[Cregion.dragStart] matrix:${ getComputedStyle(this.myElem).transform; } `);
   }
 
