@@ -23,7 +23,7 @@
           </div>
         </div>
         <q-checkbox dense v-if="element.from.id == element.to.id" class="q-pt-xs color-from "
-          v-model="element.isInternal" label="Internal transition" @click="hsm.draw()" />
+          v-model="element.isInternal" label="Internal transition" @click="onUpdate" />
       </div>
       <div class="q-py-sm" spellcheck="false">
         <q-input dense v-model="element.trigger" label="Trigger:" outlined @update:model-value="onUpdate" />
@@ -106,8 +106,10 @@ const props = defineProps({
 
 function onUpdate() {
   // console.log(`[trDialog.fixTrigger] m:${m}`);
-  // eslint-disable-next-line vue/no-mutating-props
-  props.element.trigger = U.underscorize(props.element.trigger.toUpperCase());
+  if (props.element.trigger) {
+    // eslint-disable-next-line vue/no-mutating-props
+    props.element.trigger = U.underscorize(props.element.trigger.toUpperCase());
+  }
   props.element.makeTag();
   props.element.paint();
 }

@@ -245,6 +245,7 @@ function bpsRemoveLoops(tabBps) {
 
 function mergeSameDirSegments(segments) {
   // console.log(`[segments.mergeSameDirSegments] res:${JSON.stringify(segments)}`);
+  if (!segments[0]) return segments;
   const res = [segments[0]];
   let hv = U.isHoriz(segments[0].dir);
   segments.shift();
