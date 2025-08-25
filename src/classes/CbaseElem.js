@@ -134,6 +134,7 @@ export class CbaseElem {
 
   dragCancel(dx, dy) { }
 
+  // Return my origin in folio frame in mm
   getOriginXYF() {
     // console.log(`[CbaseElem.getOriginXYF] (${this.id}) S:${hCtx}`);
     const s = hCtx.folio.geo.scale;

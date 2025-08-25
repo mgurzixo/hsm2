@@ -351,7 +351,7 @@ export class Ctext extends Cnote {
     const newIdz = super.makeIdz(x, y, idz);
     if (newIdz.id == this.id) {
       const m = U.pxToMm(hsm.settings.cursorMarginP);
-      if (x >= this.geo.x0 + this.geo.width - m) newIdz.zone = "R";
+      if (x >= this.geo.width - m) newIdz.zone = "R";
       else newIdz.zone = "M";
     }
     return newIdz;

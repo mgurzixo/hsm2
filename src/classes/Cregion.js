@@ -217,10 +217,11 @@ export class CregionWithStates extends CbaseElem {
       justCreated: true,
     };
     setDragOffset([w, h]);
-    const myNote = await this.addNote(noteOptions);
+    const myNote = this.addNote(noteOptions);
     console.log(`[Cregion.addNote] New note:${myNote} id:${myNote?.id} `);
     await myNote.onLoaded();
     modeRef.value = "";
+    setDragOffset([w, h]);
     const newIdz = { id: myNote.id, zone: "BR", x: 0, y: 0 };
     hCtx.setIdz(newIdz);
     await myNote.dragStart(); // Will create dragCtx

@@ -183,36 +183,6 @@ export class Cstate extends CbaseState {
     return bb;
   }
 
-  async insertNote(x, y) {
-    // console.log(`[Cstate.insertNote] Inserting note x:${ x.toFixed(); } `);
-    const id = "N" + hsm.newSernum();
-    const n = hsm.settings.styles.note;
-    const w = n.noteMinWidth;
-    const h = n.noteMinHeight;
-    const noteOptions = {
-      id: id,
-      name: "Note " + id,
-      color: "blue",
-      geo: {
-        x0: x - this.geo.x0,
-        y0: y - this.geo.y0,
-        width: w,
-        height: h,
-      },
-      text: "Text",
-      justCreated: true,
-    };
-    setDragOffset([w, h]);
-    const myNote = this.addNote(noteOptions);
-    console.log(`[Cfolio.insertNote] New note id:${myNote?.id} `);
-    await myNote.onLoaded();
-    modeRef.value = "";
-    const m = U.pxToMm(hsm.settings.cursorMarginP);
-    const newIdz = myNote.makeIdz(x - this.geo.x0 - m, y - this.geo.y0 - m, this.idz());
-    hCtx.setIdz(newIdz);
-    await myNote.dragStart(); // Will create dragCtx
-  }
-
   // Returns [x,y] of (side,pos) in state frame
   makeTrXY(side, pos) {
     const r = hsm.settings.stateRadiusMm;
@@ -233,32 +203,58 @@ export class Cstate extends CbaseState {
     return [x, y];
   }
 
-  makeTrPos(side, x, y) {
+  makeTrPos(side, x, y, doClamp = false) {
     const r = hsm.settings.stateRadiusMm;
-    let len = this.geo.width;
-    let p0 = this.geo.x0;
-    let p1 = x;
-    if (side == "L" || side == "R") {
-      len = this.geo.height;
-      p0 = this.geo.y0;
-      p1 = y;
+    let l0, l1, res;
+    if (side == "T" || side == "B") {
+      l0 = r;
+      l1 = this.geo.width - r;
+      res = (x - l0) / (l1 - l0);
+    } else {
+      l0 = r;
+      l1 = this.geo.height - r;
+      res = (y - l0) / (l1 - l0);
     }
-    const pos = (p1 - (p0 + r)) / (len - 2 * r);
-    return pos;
+    if (!doClamp) return res;
+    res = Math.min(Math.max(0, res), 1);
+    return res;
   }
 
+  canInsertTr(idz) {
+    if (idz.zone != "T" &&
+      idz.zone != "R" &&
+      idz.zone != "B" &&
+      idz.zone != "L") return false;
+    const t = hsm.settings.initialTransLengthMm;
+    const r = hsm.settings.stateRadiusMm;
+    const [x0, y0] = [idz.x, idz.y];
+    switch (idz.zone) {
+      case "R":
+      case "L":
+        if (y0 < t + r) return false;
+        break;
+      case "T":
+      case "B":
+        if (x0 < t + r) return false;
+        break;
+    }
+    return true;
+  }
+
+  // (x, y) mm in state frame
   async insertTr(x, y) {
     // console.log(`[Cstate.insertTr] Inserting tr x:${x.toFixed()} y:${y.toFixed()}`);
-    // console.log(`[Cstate.insertTr] idz:${ JSON.stringify(this.idz()); } `);
+    // console.log(`[Cstate.insertTr] idz:${JSON.stringify(this.idz())} `);
     const idz = this.idz();
     const side = idz.zone;
     const pos2 = this.makeTrPos(side, x, y);
     // console.log(`[Cstate.insertTr] pos2:${ pos2.toFixed(2); } `);
     let [xp, yp] = [x, y];
-    if (side == "L" || side == "R") yp -= hsm.settings.initialTransLength;
-    else xp -= hsm.settings.initialTransLength;
+    if (side == "L" || side == "R") yp -= hsm.settings.initialTransLengthMm;
+    else xp -= hsm.settings.initialTransLengthMm;
     const pos1 = this.makeTrPos(side, xp, yp);
     // console.log(`[Cstate.insertTr](x: ${(x - this.geo.x0).toFixed(1)} y: ${(y - this.geo.y0).toFixed(1)})`);
+    // console.log(`[Cstate.insertTr] pos1:${pos1} pos2:${pos2}`);
     const trOptions = {
       segments: [],
       from: {
@@ -276,11 +272,8 @@ export class Cstate extends CbaseState {
     };
     const myTr = hCtx.folio.addTr(trOptions);
     await myTr.onLoaded();
-
-    const newIdz = {
-      id: myTr.id,
-      zone: "TO", x: x, y: y
-    };
+    const [x0, y0] = this.getOriginXYF(); // tr origin is folio
+    const newIdz = { id: myTr.id, zone: "TO", x: x0 + x, y: y0 + y };
     modeRef.value = "";
     hCtx.setIdz(newIdz);
     await myTr.dragStart();
@@ -297,15 +290,15 @@ export class Cstate extends CbaseState {
     hsm.setSelected(this.id);
     switch (modeRef.value) {
       case "inserting-state": {
-        console.error(`[Cstate.dragStart](${this.id}) Error!`);
+        console.error(`[Cstate.dragStart](${this.id}) Error: Cant insert state!`);
         return this;
       }
       case "inserting-trans": {
-        await this.insertTr(x, y);
+        await this.insertTr(idz.x, idz.y);
         return;
       }
       case "inserting-note": {
-        await this.insertNote(x, y);
+        console.error(`[Cstate.dragStart](${this.id}) Error: Cant insert note!`);
         return;
       }
       default:
@@ -564,26 +557,6 @@ export class Cstate extends CbaseState {
         console.log(`[Cstate.canInsertNote](${this.id}) gCId:${child.id} `);
         if (U.rectsIntersect(grandChild.geo, geo)) return false;
       }
-    }
-    return true;
-  }
-
-  canInsertTr(idz) {
-    if (idz.zone != "T" &&
-      idz.zone != "R" &&
-      idz.zone != "B" &&
-      idz.zone != "L") return false;
-    const r = hsm.settings.initialTransLength;
-    const [x0, y0] = [idz.x, idz.y];
-    switch (idz.zone) {
-      case "R":
-      case "L":
-        if (y0 < r) return false;
-        break;
-      case "T":
-      case "B":
-        if (x0 < r) return false;
-        break;
     }
     return true;
   }
