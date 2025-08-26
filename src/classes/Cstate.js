@@ -17,6 +17,7 @@ class CbaseState extends CbaseElem {
     this.isRevertingDrag = false;
     // console.log(`[Cstate.constructor] New state id:${this.id} parent:${this.parent.id} pelId:${this.myElem.parentElement.id} x0:${g.x0} y0:${g.y0}`);
     this.titleElem = document.createElement("div");
+    this.titleElem.id = "titleElem_" + this.id;
     this.myElem.append(this.titleElem);
     this.setGeometry();
   }

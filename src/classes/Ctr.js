@@ -138,8 +138,6 @@ export class Ctr extends CbaseElem {
   xmlns="http://www.w3.org/2000/svg">
   <circle stroke="transparent"  fill="${strokeStyle}" cx="${x0}mm" cy="${y0}mm" r="${t.errorDotRadiusMm}mm" />
   > </svg>`;
-
-
     } else {
       svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
