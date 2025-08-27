@@ -117,8 +117,8 @@ app.whenReady().then(() => {
   // creating a hidden window for print
   printWindow = new BrowserWindow({
     useContentSize: true,
-    show: true,
-    backgroundColor: '#0ff',
+    show: false,
+    // backgroundColor: '#0ff',
     webPreferences: {
       contextIsolation: false,
       sandbox: false,
@@ -145,7 +145,7 @@ app.whenReady().then(() => {
   printWindow.loadURL(data0);
 
   ipcMain.handle('doPrint', async (event, data) => {
-    console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(data.mdCss)}`);
+    // console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(data.mdCss)}`);
     await printWindow.loadURL(data.html);
     await printWindow.webContents.insertCSS(data.mdCss, { cssOrigin: 'author' });
     await printWindow.webContents.insertCSS(data.katexCss, { cssOrigin: 'author' });

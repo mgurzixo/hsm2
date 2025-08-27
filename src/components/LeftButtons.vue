@@ -107,10 +107,6 @@ async function openWindow(url, options = '_blank') {
   });
 }
 
-
-
-
-
 // async function doTest() {
 //   hsm.setPrinting(true);
 //   const XMLS = new XMLSerializer();
