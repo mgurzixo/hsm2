@@ -37,7 +37,6 @@ try {
 } catch (e) {
   fontScanner = null;
 }
-// import { mainWindow } from "./electron-main.js";
 
 // Expose API methods to the renderer process
 contextBridge.exposeInMainWorld("hsm2Api", {
@@ -77,9 +76,9 @@ contextBridge.exposeInMainWorld("hsm2Api", {
     let res = await ipcRenderer.invoke("doPrint", data);
     return res;
   },
-  toPrintWindow: async (data) => {
-    console.log(`[electron-preload.toPrintWindow] data:${data}`);
-    let res = ipcRenderer.invoke("doPrint", data);
-    return res;
-  },
+  // toPrintWindow: async (data) => {
+  //   console.log(`[electron-preload.toPrintWindow] data:${data}`);
+  //   let res = ipcRenderer.invoke("doPrint", data);
+  //   return res;
+  // },
 });

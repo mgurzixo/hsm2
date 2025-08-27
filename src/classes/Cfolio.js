@@ -83,6 +83,12 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
+  rePaint() {
+    this.setGeometry();
+    super.rePaint();
+    this.paintTrs();
+  }
+
   wheelP(xP, yP, dyP) {
     const deltas = -dyP / hsm.settings.deltaMouseWheel;
     const mat0 = fromString(getComputedStyle(this.myElem).transform);
@@ -109,6 +115,7 @@ export class Cfolio extends CregionWithStates {
   addTr(trOptions) {
     // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
     const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    // const svgEl = document.createElement("div");
     this.trElem.append(svgEl);
     trOptions.myElem = svgEl;
     const myTr = new Ctr(this, trOptions, "T");
@@ -119,13 +126,13 @@ export class Cfolio extends CregionWithStates {
 
   updateNotes() {
     // console.log(`[Cfolio.updateNotes]`);
-    for (let note of hCtx.folio.notes) {
+    for (let note of this.notes) {
       note.deleteCanvas();
     }
-    for (let child of hCtx.folio.children) {
+    for (let child of this.children) {
       child.updateNotes();
     }
-    for (let tr of hCtx.folio.trs) {
+    for (let tr of this.trs) {
       tr.updateNotes();
     }
   }

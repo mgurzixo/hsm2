@@ -54,7 +54,8 @@ import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/rootElemListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
-import { doPdf } from "src/lib/doPdf";
+import mdCss from "src/css/markdown.css?raw";
+import katexCss from "src/css/katex.min.css?raw";
 
 async function doLoadHsm() {
   await loadHsm();
@@ -81,20 +82,105 @@ V.watch(modeRef, (newMode, oldMode) => {
   }
 });
 
+let myWin;
+
+
+async function openWindow(url, options = '_blank') {
+  return new Promise((resolve, reject) => {
+    let win = window.open(url, options);
+    if (!win) {
+      reject(new Error('Failed to open window'));
+      return;
+    }
+    // Wait for load
+    win.onload = () => {
+      console.log(`[LeftButtons.openWindow] Loaded`);
+      resolve(win);
+    };
+    // Fallback: if window is closed before load
+    let checkClosed = setInterval(() => {
+      if (win.closed) {
+        clearInterval(checkClosed);
+        reject(new Error('Window was closed before load'));
+      }
+    }, 100);
+  });
+}
+
+
+
+
+
+// async function doTest() {
+//   hsm.setPrinting(true);
+//   const XMLS = new XMLSerializer();
+//   const elSrc = document.getElementById("F1");
+//   const myHtml = XMLS.serializeToString(elSrc);
+//   hsm.setPrinting(false);
+//   const myData = `
+//         data:text/html;charset=utf-8,<head>
+//         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+//         <style type="text/css">${myCss}</style>
+//         <title>${hCtx.folio.name}</title>
+//         </head>
+//         <body style="margin: 0; padding: 0;">
+//   ${myHtml}
+//         </body>`;
+//   doPdf(myData);
+//   // const blob = new Blob([myData], { type: 'text/html' });
+//   // const url = URL.createObjectURL(blob);
+//   // const winDest = await openWindow(url);
+//   // const docDest = winDest.document;
+//   // const elDest = docDest.getElementById("F1");
+// }
+
+// async function doPdf(myHtml) {
+//   console.log(`[LeftButtons.doPdf]`);
+//   let pdfString = await window.hsm2Api.printToPDF(myHtml);
+//   const blob = new Blob([pdfString], { type: 'application/pdf' });
+//   const url = URL.createObjectURL(blob);
+//   myWin = window.open(url, '_blank');
+// }
+
+async function doPdf(page) {
+  console.log(`[LeftButtons.doPdf]`);
+  let pdfString = await window.hsm2Api.printToPDF(page);
+  const blob = new Blob([pdfString], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  myWin = window.open(url, '_blank');
+}
+
 async function doTest() {
-  const XMLS = new XMLSerializer();
-  const el = document.getElementById("inserting-state");
-  el.style.color = "red";
-  const myHtml = XMLS.serializeToString(el);
   // console.log(`[LeftButtons.doTest] res:${myHtml}`);
-  const toto = '<button class="" tabindex="0" type="button" id="inserting-state" style="color: red; width:100mm;height:100mm;">Hello World!</button>';
-  doPdf(toto);
-  // const res = await window.hsm2Api.toPrintWindow(toto);
+  // const blob = new Blob([myHtml], { type: 'text/html' });
+  // const url = URL.createObjectURL(blob);
+  // myWin = window.open(url, '_blank');
+  hsm.setPrinting(true);
+  const XMLS = new XMLSerializer();
+  const el = document.getElementById("F1");
+  const myBody = XMLS.serializeToString(el);
+  const myHtml = `
+        data:text/html;charset=utf-8,<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>${hCtx.folio.name}</title>
+        </head>
+        <body style="margin: 0; padding: 0;">
+  ${myBody}
+        </body>`;
+
+  const page = {
+    html: myHtml,
+    title: hCtx.folio.name,
+    mdCss: mdCss,
+    katexCss: katexCss,
+    options: { printBackground: true, pageSize: "A4", margins: { top: 0, bottom: 0, left: 0, right: 0 } },
+  };
+  doPdf(page);
+  hsm.setPrinting(false);
 }
 
 V.onMounted(async () => {
 });
-
 
 // export function setZoom(x, y, scale) {
 //   const oldScale = theVp.scale;

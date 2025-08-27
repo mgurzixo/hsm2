@@ -41,6 +41,15 @@ export class CregionWithStates extends CbaseElem {
     }
   }
 
+  rePaint() {
+    for (let note of this.notes) {
+      note.rePaint();
+    }
+    for (let child of this.children) {
+      child.rePaint();
+    }
+  }
+
   addNote(noteOptions) {
     // console.log(`[Cregion.addNote] noteOptions:${JSON.stringify(noteOptions)} `);
     const noteEl = document.createElement("div");

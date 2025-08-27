@@ -41,7 +41,7 @@
         border: { chroma: 50, light: 30, lineWidth: 1 },
         borderError: { color: "red", lineWidth: 2 },
         borderSelected: { lineWidth: 2 },
-        titleLine: { chroma: 50, light: 20, lineWidth: 1 },
+        titleLine: { chroma: 50, light: 30, lineWidth: 1 },
         bg: { chroma: 30, light: 98 },
         titleBg: { chroma: 50, lights: [80, 95] },
         titleText: { chroma: 100, light: 5, font: "sans-serif", sizePc: 70 },
@@ -84,25 +84,26 @@
   },
   folios: [
     {
+      id: "F1",
       name: "Main Folio",
       geo: { x0: 0, y0: 0, width: 210, height: 297, scale: 1 },
       // geo: { x0: 0, y0: 0, width: 100, height: 100, scale: 1 },
       notes: [
         {
-          geo: { x0: 20, y0: 5, width: 50, height: 50 },
+          id: "N4",
+          geo: { x0: 40, y0: 5, width: 140, height: 30 },
           // text: "Hello **World**! This is a very very very very very very very very very very very long note",
           text: "### Heplo **Worljd** H",
+          // text: "# 学习手记｜“济济一堂、共商大计",
         },
       ],
       trs: [
         {
-          segments: [],
           from: { id: "S2", side: "B", pos: 0.2 },
           to: { id: "S3", side: "T", pos: 0.8 },
           isInternal: false,
         },
         {
-          segments: [],
           from: { id: "S2", side: "B", pos: 0.8 },
           to: { id: "S3", side: "R", pos: 0.7 },
           isInternal: false,
@@ -111,31 +112,26 @@
           effect: "effect1()",
         },
         {
-          segments: [],
           from: { id: "S2", side: "T", pos: 0.6 },
           to: { id: "S2", side: "T", pos: 0.7 },
           isInternal: true,
         },
         {
-          segments: [],
           from: { id: "S6", side: "R", pos: 0.1 },
           to: { id: "S8", side: "L", pos: 0.5 },
           isInternal: false,
         },
         {
-          segments: [],
           from: { id: "S2", side: "L", pos: 0.6 },
           to: { id: "S6", side: "L", pos: 0.3 },
           isInternal: true,
         },
         {
-          segments: [],
           from: { id: "S6", side: "R", pos: 0.5 },
           to: { id: "S7", side: "T", pos: 0.3 },
           isInternal: false,
         },
         {
-          segments: [],
           from: { id: "S6", side: "B", pos: 0.2 },
           to: { id: "S3", side: "L", pos: 0.3 },
           isInternal: false,
@@ -149,15 +145,21 @@
           id: "S2",
           name: "First state",
           color: "blue",
-          geo: { x0: 10, y0: 15, width: 140, height: 110 },
+          geo: { x0: 20, y0: 30, width: 180, height: 130 },
           regions: [
             {
               name: "My region",
               notes: [
                 {
-                  geo: { x0: 100, y0: 10, width: 30, height: 30 },
+                  geo: { x0: 100, y0: 35, width: 45, height: 35 },
                   scale: 1,
-                  text: "Hello **World**!",
+                  // text: "Hello **World**!",
+                  text: "### Table\n| a | b  |  c |  d  |\n| - | - | - | - |\n| 1 | 2 | 3 | 4 |",
+                },
+                {
+                  geo: { x0: 90, y0: 75, width: 80, height: 40 },
+                  scale: 1,
+                  text: "## Math\n\nLift Coefficient ($$C_L$$):\n$$\nL = \\frac{1}{2} \\rho v^2 S C_L\n$$\n",
                 },
               ],
               states: [
@@ -172,7 +174,7 @@
                   id: "S9",
                   name: "9th state",
                   color: "green",
-                  geo: { x0: 40, y0: 40, width: 60, height: 60 },
+                  geo: { x0: 20, y0: 50, width: 60, height: 60 },
                   regions: [
                     {
                       name: "My region",
@@ -181,7 +183,7 @@
                           id: "S7",
                           name: "7th state",
                           color: "orange",
-                          geo: { x0: 10, y0: 10, width: 20, height: 30 },
+                          geo: { x0: 20, y0: 10, width: 20, height: 30 },
                         },
                       ],
                     },
@@ -191,7 +193,7 @@
                   id: "S8",
                   name: "8th state with a very long name",
                   color: "purple",
-                  geo: { x0: 60, y0: 10, width: 30, height: 20 },
+                  geo: { x0: 60, y0: 10, width: 70, height: 20 },
                 },
               ],
             },
@@ -201,7 +203,7 @@
           id: "S3",
           name: "3rd state",
           color: "gold",
-          geo: { x0: 50, y0: 130, width: 30, height: 30 },
+          geo: { x0: 50, y0: 180, width: 30, height: 30 },
         },
       ],
     },

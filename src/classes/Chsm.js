@@ -39,8 +39,8 @@ export class Chsm extends CbaseElem {
     hCtx = this.hCtx;
     hsm = this;
     this.inhibitDrag = false;
+    this.isPrinting = false;
   }
-
 
   destroy() {
     // console.log(`[Chsm.destroy] id:${this.id}`);
@@ -89,6 +89,11 @@ export class Chsm extends CbaseElem {
   newSernum() {
     // console.log(`[Chsm.newSernum] old serNum:${this.status.serNum}`);
     return this.status.serNum++;
+  }
+
+  setPrinting(val) {
+    this.isPrinting = val;
+    hCtx.folio.rePaint();
   }
 
   setCanvas(myCanvas) { // TODO

@@ -47,7 +47,7 @@ export class Ctr extends CbaseElem {
   async onLoaded() {
     this.makeTag();
     // super.onLoaded();
-    if (this.segments.length == 0) this.segments = this.createSimpleSegments();
+    if (!this.segments || this.segments.length == 0) this.segments = this.createSimpleSegments();
     const el = this.myElem;
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
     // console.log(`[Ctr.onLoaded] (${this.id}) width:${fx[0]}`);
@@ -129,7 +129,7 @@ export class Ctr extends CbaseElem {
       else lineWidth = s.trLineWidth;
       strokeStyle = s.trLine;
     }
-    let svg;
+    let svg = "";
     // console.log(`[Ctr.paint] (${this.id}) ${segments.length} segments len0:${segments[0].len}`);
     if (!segments.length || (segments.length == 1 && segments[0].len == 0)) {
       console.log(`[Ctr.paint] (${this.id}) Degenerate`);
@@ -139,11 +139,10 @@ export class Ctr extends CbaseElem {
   <circle stroke="transparent"  fill="${strokeStyle}" cx="${x0}mm" cy="${y0}mm" r="${t.errorDotRadiusMm}mm" />
   > </svg>`;
     } else {
-      svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
-  xmlns="http://www.w3.org/2000/svg">
-  <path stroke="${strokeStyle}" stroke-width="${lineWidth}" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
+      // svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<path stroke="${strokeStyle}" stroke-width="${lineWidth}" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
       let [x0, y0] = T.anchorToXYF(this.from);
-      let [x1, y1] = T.anchorToXYF(this.to);
+      // let [x1, y1] = T.anchorToXYF(this.to);
       // console.log(`[Ctr.paint] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
       svg += `"M ${x0 * u} ${y0 * u}\n`;
@@ -203,8 +202,11 @@ export class Ctr extends CbaseElem {
       }
       // svg += `L ${x1 * u} ${y1 * u} \n`;
       if (curDir) svg += svgArrow(curDir);
-      svg += `"> </svg>`;
+      svg += `">`;
+      // svg +=`</svg>`;
     }
+    svg = svg.replace(/ +/g, " ");
+    svg = svg.replace(/\n/g, " "); // Poses problem when printing to PDF
     // console.log(`[Ctr.paint] (${this.id}) svg:${svg}`);
     this.myElem.innerHTML = svg;
   }
@@ -212,6 +214,11 @@ export class Ctr extends CbaseElem {
   updateNotes() {
     // console.log(`[Ctr.updateNotes] (${this.id})}`);
     if (this.tag) this.tag.deleteCanvas();
+  }
+
+  rePaint() {
+    this.paint();
+    if (this.tag) this.tag.rePaint();
   }
 
   makeTag() {

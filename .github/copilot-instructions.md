@@ -28,9 +28,10 @@ The project is being switched from using a canvas to using DOM elements for disp
 
 - **Units:** Geometry is managed in millimeters (mm) for precision, with utility conversions in `src/lib/utils.js` (e.g., `U.pxToMm`).
 - **Transformations:** Homothetic (uniform scaling) transforms are applied using CSS `matrix()` or `scale()` on elements, with custom logic for transform origins and scaling factors.
-- **Deferred Updates:** Some updates (e.g., notes) are deferred using `setTimeout` to batch DOM changes (`deferredNotesUpdate`).
+- **Deferred Updates:** Some updates (e.g., notes) are deferred using `setTimeout` to batch DOM changes (`deferredNotesUpdate`). This was true when the system was drawing on a canvas. As the project has switched to HTML elements, this is not true anymore and the notes updates are done synchronously. But the conversion mdText->html is cached in the element
 - **ID Generation:** New states/notes/transitions use `hsm.newSernum()` for unique IDs.
 - **Settings:** App-wide settings (scaling, styles, min sizes) are accessed via `hsm.settings`.
+- **Comments and logs:** The logs starts with the module and function name like this: [module.functionName]. Do not remove commented logs, and feel free to add signifiant (but not too large or too many) logs to help the developer understand and check the new elements.
 
 ## Integration Points
 

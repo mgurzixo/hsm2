@@ -3,7 +3,10 @@ import { initialize, enable } from "@electron/remote/main/index.js";
 import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
-import fs from "fs";
+import windowStateKeeper from 'electron-window-state';
+
+import mdCss from "./markdown.css?raw";
+console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(mdCss)}`);
 
 // For now, removes Gtk-ERROR **: 15:43:19.630: GTK 2/3 symbols detected.
 // cf. https://github.com/electron/electron/issues/46538
@@ -18,19 +21,28 @@ const platform = process.platform || os.platform();
 const currentDir = fileURLToPath(new URL(".", import.meta.url));
 
 export let mainWindow;
+let printWindow;
 
 async function createWindow() {
   /**
    * Initial window options
    */
   Menu.setApplicationMenu(null);
+  // Load the previous state with fallback to defaults
+  let mainWindowState = windowStateKeeper({
+    defaultWidth: 1000,
+    defaultHeight: 800
+  });
   mainWindow = new BrowserWindow({
     icon: path.resolve(currentDir, "icons/icon.png"), // tray icon
-    width: 1400,
-    height: 700,
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     minWidth: 360,
     minHeight: 270,
     useContentSize: true,
+    backgroundColor: '#fff',
     webPreferences: {
       contextIsolation: true,
       sandbox: false,
@@ -44,6 +56,8 @@ async function createWindow() {
       ),
     },
   });
+
+  mainWindowState.manage(mainWindow);
 
   if (process.env.DEV) {
     await mainWindow.loadURL(process.env.APP_URL);
@@ -69,10 +83,7 @@ async function createWindow() {
 }
 
 ipcMain.handle('doPdf', async (event, data) => {
-  // console.log(`[electron-main.writePdf] 2 data:${data} `);
-  // Use default printing options
   const pdfContent = await mainWindow.webContents.printToPDF({});
-  // mainWindow.webContents.executeJavaScript("window.print();");
   const pdfPath = path.join(os.homedir(), 'Desktop', 'temp.pdf');
   try {
     // console.log(`[electron-main.writePdf] pdfPath:${pdfPath} `);
@@ -87,8 +98,6 @@ ipcMain.handle('doPdf', async (event, data) => {
   return null;
 });
 
-app.whenReady().then(createWindow);
-
 app.on("window-all-closed", () => {
   if (platform !== "darwin") {
     // app.exit(0);
@@ -102,51 +111,47 @@ app.on("activate", () => {
   }
 });
 
-let printWindow;
 
 app.whenReady().then(() => {
+  createWindow();
   // creating a hidden window for print
   printWindow = new BrowserWindow({
     useContentSize: true,
-    show: false,
+    show: true,
+    backgroundColor: '#0ff',
     webPreferences: {
       contextIsolation: false,
       sandbox: false,
+      // webSecurity: false,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
-
     },
   });
-  mainWindow.webContents.openDevTools();
-  const myData = `
-      data:text/html;charset=utf-8,<head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <meta name="viewport" content="width=400mm, initial-scale=1.0" />
-      <title>My Title</title>
-      <style type="text/css">img{page-break-before: always;}@page{margin: 0;} </style>
-      </head>
-      <body style="margin: 0; padding: 0;">
-      </body>`;
-  // printWindow.webContents.loadUrl(myData);
-  const blob = new Blob([myData], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  printWindow.loadURL(myData);
-});
 
-ipcMain.handle('doPrint', async (event, data) => {
-  console.log(`[electron-main.writePdf2] 3 data:${data} `);
-  const myData = `
-      data:text/html;charset=utf-8,<head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <meta name="viewport" content="width=400, initial-scale=1.0" />
-      <title>My Title</title>
-      <style type="text/css">img{page-break-before: always;}@page{margin: 0;} </style>
-      </head>
-      <body style="margin: 0; padding: 0;">
-${data}
-      </body>`;
-  const blob = new Blob([myData], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  await printWindow.loadURL(myData);
-  const pdfContent = await printWindow.webContents.printToPDF({});
-  return pdfContent;
+  // mainWindow.webContents.openDevTools();
+  printWindow.webContents.openDevTools();
+
+  const data0 = `
+        data:text/html;charset=utf-8,<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <meta name="viewport" content="width=400mm, initial-scale=1.0" />
+        <title>My Title</title>
+        <style type="text/css">page-break-before: always; @page{margin: 0;} </style>
+        </head>
+        <body style="margin: 0; padding: 0;">
+        HELLO!!!
+        </body>`;
+  // printWindow.webContents.loadUrl(myData);
+  // const blob = new Blob([myData], { type: 'text/html' });
+  // const url = URL.createObjectURL(blob);
+  printWindow.loadURL(data0);
+
+  ipcMain.handle('doPrint', async (event, data) => {
+    console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(data.mdCss)}`);
+    await printWindow.loadURL(data.html);
+    await printWindow.webContents.insertCSS(data.mdCss, { cssOrigin: 'author' });
+    await printWindow.webContents.insertCSS(data.katexCss, { cssOrigin: 'author' });
+    const pdfContent = await printWindow.webContents.printToPDF(data.options);
+    return pdfContent;
+  });
 })
 
 

@@ -101,11 +101,17 @@ export class Cnote extends CbaseElem {
       ss = styles.borderSelectedColor;
     }
     this.myElem.replaceChildren();
-    s.fontSize = this.scale + "em";
-    s.fontFamily = this.font;
+    // s.fontSize = this.scale + "em";
+    // s.fontFamily = this.font;
+    s.font = `${this.scale + "em"} ${this.font}`;
     this.myElem.innerHTML = this.mdHTML;
-    s.border = `solid ${lw + "px"} ${ss}`;
+    if (hsm.isPrinting) s.border = "";
+    else s.border = `solid ${lw + "px"} ${ss}`;
     s.transform = toCSS(g.mat);
+  }
+
+  rePaint() {
+    this.paint();
   }
 
   setSelected(val) {

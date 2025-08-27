@@ -6,7 +6,6 @@
   margin: 0;
   color: #1f2328;
   background-color: transparent;
-  // background-color: #ffffff;
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji";
@@ -51,7 +50,7 @@
 }
 
 .markdown-body a {
-  // background-color: transparent;
+  background-color: transparent;
   color: #0969da;
   text-decoration: none;
 }
@@ -64,7 +63,6 @@
 
 .markdown-body b,
 .markdown-body strong {
-  // font-weight: 600;
   font-weight: bolder;
 }
 
@@ -81,7 +79,6 @@
 }
 
 .markdown-body mark {
-  // background-color: #fff8c5;
   color: #1f2328;
 }
 
@@ -131,7 +128,6 @@
   height: 0.25em;
   padding: 0;
   margin: 1.5rem 0;
-  // background-color: #d1d9e0;
   border: 0;
 }
 
@@ -266,7 +262,6 @@
   line-height: 10px;
   color: #1f2328;
   vertical-align: middle;
-  // background-color: #f6f8fa;
   border: solid 1px #d1d9e0b3;
   border-bottom-color: #d1d9e0b3;
   border-radius: 6px;
@@ -600,16 +595,13 @@
 }
 
 .markdown-body table tr {
-  // background-color: #ffffff;
   border-top: 1px solid #d1d9e0b3;
 }
 
 .markdown-body table tr:nth-child(2n) {
-  // background-color: #f6f8fa;
 }
 
 .markdown-body table img {
-  // background-color: transparent;
 }
 
 .markdown-body img[align="right"] {
@@ -623,7 +615,6 @@
 .markdown-body .emoji {
   max-width: none;
   vertical-align: text-top;
-  // background-color: transparent;
 }
 
 .markdown-body span.frame {
@@ -720,7 +711,6 @@
   margin: 0;
   font-size: 85%;
   white-space: break-spaces;
-  // background-color: #818b981f;
   border-radius: 6px;
 }
 
@@ -766,7 +756,6 @@
   font-size: 85%;
   line-height: 1.45;
   color: #1f2328;
-  // background-color: #f6f8fa;
   border-radius: 6px;
 }
 
@@ -779,7 +768,7 @@
   overflow: visible;
   line-height: inherit;
   word-wrap: normal;
-  // background-color: transparent;
+  background-color: transparent;
   border: 0;
 }
 
@@ -946,22 +935,18 @@
 
 .markdown-body .pl-md {
   color: #82071e;
-  // background-color: #ffebe9;
 }
 
 .markdown-body .pl-mi1 {
   color: #116329;
-  // background-color: #dafbe1;
 }
 
 .markdown-body .pl-mc {
   color: #953800;
-  // background-color: #ffd8b5;
 }
 
 .markdown-body .pl-mi2 {
   color: #d1d9e0;
-  // background-color: #0550ae;
 }
 
 .markdown-body .pl-mdr {

@@ -144,11 +144,18 @@ export class Cstate extends CbaseState {
     // console.log(`[Cstate.draw] tbg:${tbg}`);
     te.style.backgroundImage = tbg;
     // Draw title text
-    te.style.font = s.titleTextFont;
-    te.style.fontSize = (s.titleTextSizePc / 100) * th + "mm";
+    te.style.font = `${(s.titleTextSizePc / 100) * th + "mm"} ${s.titleTextFont}`;
     te.style.color = s.titleText;
     te.innerHTML = `<div style="height:100%; display:flex; align-items: center; justify-content:center; text-wrap: nowrap; ">${this.id}: ${this.name}</div></div>`;
     for (let child of this.children) child.setGeometry();
+  }
+
+
+  rePaint() {
+    this.paint();
+    for (let child of this.children) {
+      child.rePaint();
+    }
   }
 
   setGrandchildrenDragOrigin() {
