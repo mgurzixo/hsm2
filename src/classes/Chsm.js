@@ -93,8 +93,8 @@ export class Chsm extends CbaseElem {
 
   setPrinting(val) {
     this.isPrinting = val;
-    this.clearSelections();
-    hCtx.folio.rePaint();
+    if (val) this.clearSelections();
+    hCtx.folio.setPrinting(val);
   }
 
   setCanvas(myCanvas) { // TODO

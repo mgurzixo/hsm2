@@ -1,30 +1,28 @@
 <template>
-  <div class="col-auto left-buttons overflow-auto" @click="modeRef = ''">
-    <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap text-black">
-      <button-burger class=""></button-burger>
-      <q-btn class="bg-amber-2 q-btn--active" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
+  <div class="col-auto left-buttons left-container overflow-auto column q-pr-xs q-pb-xs q-gutter-xs text-black yblue"
+    @click="modeRef = ''">
+    <!-- <div class="column q-pr-xs q-pb-xs q-gutter-xs left-container no-wrap text-black yblue"> -->
+    <button-burger class=""></button-burger>
+    <q-btn class="bg-amber-2 q-btn--active" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
 
-      <q-btn id="inserting-state" class="bg-amber-2 elem-button" outline round icon="mdi-rectangle-outline"
-        @click.stop="modeRef = 'inserting-state'" />
-      <q-btn id="inserting-trans" class="bg-amber-2 elem-button" outline round icon="mdi-arrow-right-top"
-        @click.stop="modeRef = 'inserting-trans'" />
-      <q-btn id="inserting-choice" class="bg-amber-2 elem-button" outline round icon="mdi-rhombus-outline"
-        @click.stop="modeRef = 'inserting-choice'" />
-      <q-btn id="inserting-note" class="bg-amber-2 elem-button" outline round icon="mdi-note-outline"
-        @click.stop="modeRef = 'inserting-note'" />
-      <div></div>
-      <q-btn class="bg-amber-1" outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
-      <q-btn class="bg-amber-1" outline round icon="mdi-magnify-minus" @click="doZoom(-1)" />
-      <q-btn class="bg-red-2" outline round icon="mdi-bomb" @click="doTest" />
-      <div>
-        x:{{ mousePos.x.toFixed() }}
-      </div>
-      <div>
-        y:{{ mousePos.y.toFixed() }}
-
-      </div>
-    </div>
+    <q-btn id="inserting-state" class="bg-amber-2 elem-button" outline round icon="mdi-rectangle-outline"
+      @click.stop="modeRef = 'inserting-state'" />
+    <q-btn id="inserting-trans" class="bg-amber-2 elem-button" outline round icon="mdi-arrow-right-top"
+      @click.stop="modeRef = 'inserting-trans'" />
+    <q-btn id="inserting-choice" class="bg-amber-2 elem-button" outline round icon="mdi-rhombus-outline"
+      @click.stop="modeRef = 'inserting-choice'" />
+    <q-btn id="inserting-note" class="bg-amber-2 elem-button" outline round icon="mdi-note-outline"
+      @click.stop="modeRef = 'inserting-note'" />
+    <div></div>
+    <!-- <q-btn class="bg-amber-1" outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
+      <q-btn class="bg-amber-1" outline round icon="mdi-magnify-minus" @click="doZoom(-1)" /> -->
+    <q-btn class="bg-red-2" outline round icon="mdi-bomb" @click="doTest" />
+    <div> x:{{ mousePos.x.toFixed() }} </div>
+    <div> y:{{ mousePos.y.toFixed() }} </div>
+    <div class="col-grow"></div>
+    <q-btn id="toPdf" class="bg-amber-2 self-end" outline round icon="mdi-file-pdf-box" @click.stop="doPdf" />
   </div>
+  <!-- </div> -->
 </template>
 
 <style lang="scss">
@@ -82,79 +80,7 @@ V.watch(modeRef, (newMode, oldMode) => {
   }
 });
 
-// let myWin;
-
-
-
-
-// async function doTest() {
-//   hsm.setPrinting(true);
-//   const XMLS = new XMLSerializer();
-//   const elSrc = document.getElementById("F1");
-//   const myHtml = XMLS.serializeToString(elSrc);
-//   hsm.setPrinting(false);
-//   const myData = `
-//         data:text/html;charset=utf-8,<head>
-//         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-//         <style type="text/css">${myCss}</style>
-//         <title>${hCtx.folio.name}</title>
-//         </head>
-//         <body style="margin: 0; padding: 0;">
-//   ${myHtml}
-//         </body>`;
-//   doPdf(myData);
-//   // const blob = new Blob([myData], { type: 'text/html' });
-//   // const url = URL.createObjectURL(blob);
-//   // const winDest = await openWindow(url);
-//   // const docDest = winDest.document;
-//   // const elDest = docDest.getElementById("F1");
-// }
-
-// async function doPdf(myHtml) {
-//   console.log(`[LeftButtons.doPdf]`);
-//   let pdfString = await window.hsm2Api.printToPDF(myHtml);
-//   const blob = new Blob([pdfString], { type: 'application/pdf' });
-//   const url = URL.createObjectURL(blob);
-//   myWin = window.open(url, '_blank');
-// }
-
-// async function doPdf(page) {
-//   console.log(`[LeftButtons.doPdf]`);
-//   let pdfString = await window.hsm2Api.printToPDF(page);
-//   const blob = new Blob([pdfString], { type: 'application/pdf' });
-//   const url = URL.createObjectURL(blob);
-//   myWin = window.open(url, '_blank');
-// }
-
 async function doTest() {
-  doPdf();
-
-  // // console.log(`[LeftButtons.doTest] res:${myHtml}`);
-  // // const blob = new Blob([myHtml], { type: 'text/html' });
-  // // const url = URL.createObjectURL(blob);
-  // // myWin = window.open(url, '_blank');
-  // hsm.setPrinting(true);
-  // const XMLS = new XMLSerializer();
-  // const el = document.getElementById("F1");
-  // const myBody = XMLS.serializeToString(el);
-  // const myHtml = `
-  //       data:text/html;charset=utf-8,<head>
-  //       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  //       <title>${hCtx.folio.name}</title>
-  //       </head>
-  //       <body style="margin: 0; padding: 0;">
-  // ${myBody}
-  //       </body>`;
-
-  // const page = {
-  //   html: myHtml,
-  //   title: hCtx.folio.name,
-  //   mdCss: mdCss,
-  //   katexCss: katexCss,
-  //   options: { printBackground: true, pageSize: "A4", margins: { top: 0, bottom: 0, left: 0, right: 0 } },
-  // };
-  // doPdf(page);
-  // hsm.setPrinting(false);
 }
 
 V.onMounted(async () => {

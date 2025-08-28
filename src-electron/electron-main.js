@@ -111,7 +111,6 @@ app.on("activate", () => {
   }
 });
 
-
 app.whenReady().then(() => {
   createWindow();
   // creating a hidden window for print
@@ -146,8 +145,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle('doPrint', async (event, data) => {
     // console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(data.mdCss)}`);
-    if (data.css) for (let css in data.css) await printWindow.webContents.insertCSS(css, { cssOrigin: 'author' });
     await printWindow.loadURL(data.html);
+    if (data.css) for (let css of data.css) await printWindow.webContents.insertCSS(css, { cssOrigin: 'author' });
     const pdfContent = await printWindow.webContents.printToPDF(data.options);
     return pdfContent;
   });

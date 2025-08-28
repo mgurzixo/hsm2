@@ -46,8 +46,22 @@ export class Cfolio extends CregionWithStates {
     else this.myElem.style.display = "none";
   }
 
+
+  adjustTrAnchors(changedId) {
+    // console.log(`[Cfolio.adjustTrAnchors] id:${this.id}
+    for (let tr of this.trs) {
+      // if (tr.from.id == changedId || tr.to.id == changedId) {
+      // TODO only adjust for state and its descendants
+      // tr.adjustTrAnchors(changedId);
+      tr.adjustTrAnchors();
+      tr.paint();
+      // }
+    }
+  }
+
   setMat(mat) {
     this.geo.mat = mat;
+    this.geo.scale = mat.a;
     const matR = inverse(mat);
     this.geo.matR = matR;
     this.myElem.style.transform = toCSS(this.geo.mat);
@@ -65,18 +79,6 @@ export class Cfolio extends CregionWithStates {
     s.background = hsm.settings.styles.folioBackground;
   }
 
-  adjustTrAnchors(changedId) {
-    // console.log(`[Cfolio.adjustTrAnchors] id:${this.id}
-    for (let tr of this.trs) {
-      // if (tr.from.id == changedId || tr.to.id == changedId) {
-      // TODO only adjust for state and its descendants
-      // tr.adjustTrAnchors(changedId);
-      tr.adjustTrAnchors();
-      tr.paint();
-      // }
-    }
-  }
-
   paintTrs() {
     for (let tr of this.trs) {
       tr.paint();
@@ -87,6 +89,18 @@ export class Cfolio extends CregionWithStates {
     this.setGeometry();
     super.rePaint();
     this.paintTrs();
+  }
+
+  setPrinting(val) {
+    if (val) {
+      this.savedMat = this.geo.mat;
+      this.setMat({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 });
+    }
+    else {
+      this.setMat(this.savedMat);
+    }
+    this.geo.scale = this.geo.mat.a;
+    this.rePaint();
   }
 
   wheelP(xP, yP, dyP) {

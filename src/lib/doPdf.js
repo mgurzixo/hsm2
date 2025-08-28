@@ -10,10 +10,15 @@ let myWin;
 let first = true;
 
 export async function doPdf() {
-  hsm.setPrinting(true);
   const XMLS = new XMLSerializer();
   const el = document.getElementById("F1");
+  // Tricky, but it works and there is no flickering :)
+  const m1 = document.getElementById("M1");
+  m1.style.display = "hidden";
+  hsm.setPrinting(true);
   const myBody = XMLS.serializeToString(el);
+  hsm.setPrinting(false);
+  m1.style.display = "block";
   const myHtml = `
         data:text/html;charset=utf-8,<head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -27,6 +32,7 @@ export async function doPdf() {
     html: myHtml,
     title: hCtx.folio.name,
     options: { printBackground: true, pageSize: "A4", margins: { top: 0, bottom: 0, left: 0, right: 0 } },
+    css: [mdCss, katexCss],
   };
   if (first) {
     page.css = [mdCss, katexCss];
@@ -37,5 +43,4 @@ export async function doPdf() {
   const blob = new Blob([pdfString], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   myWin = window.open(url, '_blank');
-  hsm.setPrinting(false);
 }
