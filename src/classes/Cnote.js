@@ -322,7 +322,7 @@ export class Cnote extends CbaseElem {
     }
     else if (y <= m) zone = "T";
     else if (y >= this.geo.height - m) zone = "B";
-    idz = { id: id, zone: zone, x: x, y: y, dist2P: 0 };
+    idz = { id: id, zone: zone, x: x, y: y, dist2: 0 };
     // console.log(`[Cnote.makeIdz] idz:${JSON.stringify(idz)}`);
     return idz;
   }

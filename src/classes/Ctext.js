@@ -90,7 +90,9 @@ export class Ctext extends CbaseElem {
     s.font = `${sz}mm ${styles?.tagTextFont}`;
     s.color = `${styles?.tagTextColor}`;
     s.width = g.width + "mm";
-    s.height = `${sz * 1.5}mm`;
+    g.height = sz * 1.5;
+    s.height = `${g.height}mm`;
+    s.backgroundColor = styles?.tagBg;
     // console.log(`[Ctext.paint] (${this.id}) s.width:${s.width} s.height:${s.height} s.font:${s.font}`);
     s.paddingTop = `${sz * 0.1 + "mm"}`;
     s.paddingLeft = `${sz * 0.2 + "mm"}`;
@@ -116,11 +118,9 @@ export class Ctext extends CbaseElem {
   }
 
   openDialog() {
-    // if (this.togetherSelected) this.parent.openDialog();
-    // else hsm.openDialog(NoteDialog, this);
     hsm.setSelected(this.id);
-    hsm.openDialog(NoteDialog, this);
-    // hsm.openDialog(FolioDialog, this);
+    if (this.togetherSelected) this.parent.openDialog();
+    else hsm.openDialog(NoteDialog, this);
   }
 
   async dragStart(xP, yP) {
@@ -204,13 +204,12 @@ export class Ctext extends CbaseElem {
     )
       return idz;
 
-
     // console.log(`[Ctext.makeIdz] (${this.id}) In note x:${x} y:${y} curId:${idz.id}`);
     let id = this.id;
     let zone = "M";
-    // console.log(`[Ctext.makeIdz] (${this.id}) id:${id} m:${m.toFixed(1)} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)})`);
+    // console.log(`[Ctext.makeIdz] (${this.id}) id:${id} m:${m.toFixed(1)} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)}) ${this.geo.height}`);
     if (x >= this.geo.width - m) zone = "R";
-    idz = { id: id, zone: zone, x: x, y: y, dist2P: 0 };
+    idz = { id: id, zone: zone, x: x, y: y, dist2: 0 };
     // console.log(`[Ctext.makeIdz] idz:${JSON.stringify(idz)}`);
     return idz;
   }

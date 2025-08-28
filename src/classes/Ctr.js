@@ -585,10 +585,10 @@ export class Ctr extends CbaseElem {
     const m = U.pxToMm(hsm.settings.cursorMarginP);
     const m2 = m * m;
     if (((x - x0) ** 2 + (y - y0) ** 2 <= m2)) {
-      return { id: this.id, zone: "FROM", type: "A", dist2P: 0, x: x, y: y }; // Force an anchor
+      return { id: this.id, zone: "FROM", type: "A", dist2: 0, x: x, y: y }; // Force an anchor
     }
     if (((x - xt) ** 2 + (y - yt) ** 2 <= m2)) {
-      return { id: this.id, zone: "TO", type: "A", dist2P: 0, x: x, y: y }; // Force an anchor
+      return { id: this.id, zone: "TO", type: "A", dist2: 0, x: x, y: y }; // Force an anchor
     }
     for (let idx in this.segments) {
       idx = Number(idx);
@@ -613,7 +613,7 @@ export class Ctr extends CbaseElem {
       [x0, y0] = [x1, y1];
       if ((idx == this.segments.length - 1) && ((x - x1) ** 2 + (y - y1) ** 2 < m2)) {
         return {
-          id: this.id, zone: "TO", type: "A", dist2P: 0, x: x, y: y
+          id: this.id, zone: "TO", type: "A", dist2: 0, x: x, y: y
         };
       }
       if (d2 <= bestD2) {
@@ -626,7 +626,7 @@ export class Ctr extends CbaseElem {
 
       }
     }
-    newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: bestD2, x: x, y: y };
+    newIdz = { id: this.id, zone: bestZone, type: bestType, dist2: bestD2, x: x, y: y };
     for (let child of this.children) {
       newIdz = child.makeIdzInParentCoordinates(x, y, newIdz);
     }

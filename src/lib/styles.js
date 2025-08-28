@@ -68,7 +68,7 @@ export function stateStyles(baseColor, id) {
     trLineError: t.lineError.color,
     trLineErrorWidth: t.lineError.lineWidth,
 
-    tagBg: "transparent",
+    tagBg: bg + "",
     tagBorderColor: tagBorderColor || "black",
     tagBorderWidth: x.borderWidth,
     tagBorderSelectedColor: borderSelected || "red",

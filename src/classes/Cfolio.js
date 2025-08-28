@@ -165,17 +165,17 @@ export class Cfolio extends CregionWithStates {
     for (let child of this.children) {
       idz = child.makeIdzInParentCoordinates(x, y, idz);
     }
-    let bestTIdz = { dist2P: Number.MAX_VALUE };
+    let bestTIdz = { dist2: Number.MAX_VALUE };
     for (let tr of this.trs) {
       const tIdz = tr.makeIdzInParentCoordinates(x, y, idz);
-      if (tIdz.dist2P <= bestTIdz.dist2P) {
+      if (tIdz.dist2 <= bestTIdz.dist2) {
         bestTIdz = tIdz;
       }
     }
-    if (bestTIdz.dist2P < m) {
+    if (bestTIdz.dist2 < m) {
       idz = bestTIdz;
     }
-    // console.log(`[Cfolio.makeIdz] T id: ${bestTIdz.id} dist2P: ${bestTIdz.dist2P.toFixed()} zone: ${bestTIdz.zone} type: ${bestTIdz.type} `);
+    // console.log(`[Cfolio.makeIdz] T id: ${bestTIdz.id} dist2: ${bestTIdz.dist2.toFixed()} zone: ${bestTIdz.zone} type: ${bestTIdz.type} `);
     return idz;
   }
 

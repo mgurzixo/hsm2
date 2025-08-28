@@ -48,9 +48,8 @@
       },
       text: {
         sizeMm: 2.5,
-        marginVMm: 0.1,
         textFont: "sans-serif",
-        textChroma: 70,
+        textChroma: 90,
         textLight: 20,
         borderWidth: 1,
         borderChroma: 30,

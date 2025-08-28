@@ -148,10 +148,10 @@ export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
   return segments;
 }
 
+export function dist2(v, w) { return (v.x - w.x) ** 2 + (v.y - w.y) ** 2; }
 
 // cf. https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 export function distToSegmentSquared(p, v, w) {
-  function dist2(v, w) { return (v.x - w.x) ** 2 + (v.y - w.y) ** 2; }
   var l2 = dist2(v, w);
   if (l2 == 0) return [dist2(p, v), 0];
   var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
