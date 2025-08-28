@@ -128,10 +128,10 @@ export class Cfolio extends CregionWithStates {
 
   addTr(trOptions) {
     // Cf. https://stackoverflow.com/questions/57769851/how-do-i-set-the-size-of-an-svg-element-using-javascript
-    const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    // const svgEl = document.createElement("div");
-    this.trElem.append(svgEl);
-    trOptions.myElem = svgEl;
+    // const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const trEl = document.createElement("div");
+    this.trElem.append(trEl);
+    trOptions.myElem = trEl;
     const myTr = new Ctr(this, trOptions, "T");
     this.trs.push(myTr);
     // console.log(`[Cfolio.addTr] new tr:${myTr.id}`);

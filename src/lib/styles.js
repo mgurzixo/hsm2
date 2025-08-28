@@ -4,10 +4,12 @@ import * as U from "src/lib/utils";
 import { hsm } from "src/classes/Chsm";
 import Color from "colorjs.io";
 
-export function stateStyles(baseColor) {
+export function stateStyles(baseColor, id) {
   // Background
   let bg = new Color(baseColor);
   const s = hsm.settings.styles.state;
+  const x = hsm.settings.styles.text;
+
   bg.lch.c = s.bg.chroma;
   bg.lch.l = s.bg.light;
   // Title backgrounds
@@ -28,21 +30,24 @@ export function stateStyles(baseColor) {
   titleLine.lch.l = s.titleLine.light;
 
   const t = hsm.settings.styles.tr;
-  const x = hsm.settings.styles.tag;
   // Line
   const trLine = new Color(baseColor);
   trLine.lch.c = t.line.chroma;
   trLine.lch.l = t.line.light;
   const colLine = trLine.to("srgb") + "";
-  trLine.lch.c = x.textChroma;
-  trLine.lch.l = x.textLight;
-  const tagColor = trLine.to("srgb") + "";
-  trLine.lch.c = x.borderChroma;
-  trLine.lch.l = x.borderLight;
-  const tagBorderColor = trLine.to("srgb") + "";
+
+  const tagLine = new Color(baseColor);
+  tagLine.lch.c = x.textChroma;
+  tagLine.lch.l = x.textLight;
+  const tagColor = tagLine.to("srgb") + "";
+  tagLine.lch.c = x.borderChroma;
+  tagLine.lch.l = x.borderLight;
+  const tagBorderColor = tagLine.to("srgb") + "";
+  tagLine.lch.c = x.borderSelectedChroma;
+  tagLine.lch.l = x.borderSelectedLight;
+  const borderSelected = tagLine.to("srgb") + "";
 
 
-  const n = hsm.settings.styles.tag;
   return {
     bg: bg + "",
     border: border.to("srgb") + "",
@@ -63,18 +68,47 @@ export function stateStyles(baseColor) {
     trLineError: t.lineError.color,
     trLineErrorWidth: t.lineError.lineWidth,
 
-    // TODO ICI
     tagBg: "transparent",
-    tagBorderColor: tagBorderColor,
-    tagBorderWidth: n.borderWidth,
-    tagBorderSelectedColor: colLine,
-    tagBorderSelectedWidth: n.borderSelectedWidth,
-    tagTextColor: tagColor,
-    tagTextSelectedColor: n.textColor,
-    tagTextFont: n.textFfont,
-    tagCornerP: n.tagCornerP,
+    tagBorderColor: tagBorderColor || "black",
+    tagBorderWidth: x.borderWidth,
+    tagBorderSelectedColor: borderSelected || "red",
+    tagBorderSelectedWidth: x.borderSelectedWidth,
+    tagTextColor: tagColor || "green",
+    tagTextSelectedColor: x.textColor,
+    tagTextFont: x.textFont,
+    tagTextSize: x.sizeMm,
+    tagCornerP: x.tagCornerP,
+
+    id: id,
   };
 }
+
+export function textStyles(baseColor) {
+  const x = hsm.settings.styles.text;
+  const trLine = new Color(baseColor);
+  trLine.lch.c = x.textChroma;
+  trLine.lch.l = x.textLight;
+  const tagColor = trLine.to("srgb") + "";
+  trLine.lch.c = x.borderChroma;
+  trLine.lch.l = x.borderLight;
+  const tagBorderColor = trLine.to("srgb") + "";
+  trLine.lch.c = x.borderSelectedChroma;
+  trLine.lch.l = x.borderSelectedLight;
+  const borderSelected = trLine.to("srgb") + "";
+
+  return {
+    tagBg: "transparent",
+    tagBorderColor: tagBorderColor,
+    tagBorderWidth: x.borderWidth,
+    tagBorderSelectedColor: borderSelected,
+    tagBorderSelectedWidth: x.borderSelectedWidth,
+    tagTextColor: tagColor,
+    tagTextSelectedColor: x.textColor,
+    tagTextFont: x.textFfont,
+    tagCornerP: x.tagCornerP,
+  };
+}
+
 
 export function noteStyles(baseColor) {
   const t = hsm.settings.styles.note;

@@ -98,7 +98,7 @@ export class Cstate extends CbaseState {
 
   setStyles() {
     // console.log(`[Cstate.setStyles] id:${this.id}`);
-    this.styles = stateStyles(this.color || hsm.settings.styles.defaultColor);
+    this.styles = stateStyles(this.color || hsm.settings.styles.defaultColor, this.id);
   }
 
   async addRegion(regionOptions = { notes: [], states: [] }) {

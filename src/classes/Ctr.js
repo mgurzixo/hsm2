@@ -4,7 +4,7 @@ import * as U from "src/lib/utils";
 import * as T from "src/lib/trUtils";
 import { hsm, cCtx, hElems, hCtx, modeRef } from "src/classes/Chsm";
 import { CbaseElem } from "src/classes/CbaseElem";
-import { Ctext } from "src/classes/Cnote";
+import { Ctext } from "src/classes/Ctext";
 // import { Ctext } from "src/classes/Ctext";
 import { removeNullSegments, segsNormalise } from "src/lib/segments";
 import TrDialog from "src/components/TrDialog.vue";
@@ -13,6 +13,12 @@ import { applyToPoint } from 'transformation-matrix';
 export class Ctr extends CbaseElem {
   constructor(parent, options, type) {
     super(parent, options, type);
+    this.svgElem = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    this.svgElem.id = "svgElem_" + this.id;
+    this.myElem.prepend(this.svgElem);
+
+
+
     this.lineWidth = 1;
     this.isBaseTr = true;
     this.oldTagText = "";
@@ -40,15 +46,29 @@ export class Ctr extends CbaseElem {
     this.effect = options.effect;
     this.include = options.include;
     this.comment = options.comment;
+    // childElem is positionned @ FROM
+    this.childElem.style.position = "absolute";
+    const tagEl = document.createElement("div");
+    this.childElem.append(tagEl);
+    this.tag = new Ctext(this, {
+      myElem: tagEl,
+      geo: { x0: 1, y0: 1, width: 20 },
+      text: "",
+      container: hCtx.folio, // Null at that time
+      togetherSelected: true,
+      tagStyle: "parentStyle",
+    });
+    this.children.push(this.tag);
+    this.makeTag();
     // console.log(`[Ctr.constructor] (${this.id}) from:${this.from.id}  to:${this.to.id}`);
   }
 
   // Called when hsm has been loaded so that we can get hCtx.folio
   async onLoaded() {
+    this.tag.container = hCtx.folio;
     this.makeTag();
-    // super.onLoaded();
     if (!this.segments || this.segments.length == 0) this.segments = this.createSimpleSegments();
-    const el = this.myElem;
+    const el = this.svgElem;
     const fx = [hCtx.folio.geo.width, hCtx.folio.geo.height];
     // console.log(`[Ctr.onLoaded] (${this.id}) width:${fx[0]}`);
     el.setAttribute("width", fx[0] + "mm");
@@ -115,14 +135,16 @@ export class Ctr extends CbaseElem {
       return res;
     }
 
-    const s = hElems.getElemById(this.from.id).styles;
-    // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
+    this.styles = hElems.getElemById(this.from.id).styles;
+    const s = this.styles;
+    // console.log(`[Ctr.paint] (${this.id}) styles:${JSON.stringify(this.styles)}`);
+    // console.log(`[Ctr.paint] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
     let lineWidth, strokeStyle;
     if (!this.isLegal()) {
       lineWidth = s.trLineErrorWidth;
       strokeStyle = s.trLineError;
       if (this.tag) this.tag.color = s.trLineError;
-      // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
+      // console.log(`[Ctr.paint] (${this.id}) tag.color:${this.tag.color}`);
     }
     else {
       if (this.isSelected || this.id == hCtx.selectedId) lineWidth = s.trLineSelectedWidth;
@@ -131,9 +153,12 @@ export class Ctr extends CbaseElem {
     }
     let svg = "";
     // console.log(`[Ctr.paint] (${this.id}) ${segments.length} segments len0:${segments[0].len}`);
+    let [x0, y0] = T.anchorToXYF(this.from);
+    this.childElem.style.top = y0 * U.pxPerMm + "px";
+    this.childElem.style.left = x0 * U.pxPerMm + "px";
+    // console.log(`[Ctr.paint] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()}`);
     if (!segments.length || (segments.length == 1 && segments[0].len == 0)) {
       console.log(`[Ctr.paint] (${this.id}) Degenerate`);
-      let [x0, y0] = T.anchorToXYF(this.from);
       svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
   <circle stroke="transparent"  fill="${strokeStyle}" cx="${x0}mm" cy="${y0}mm" r="${t.errorDotRadiusMm}mm" />
@@ -141,7 +166,6 @@ export class Ctr extends CbaseElem {
     } else {
       // svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}" xmlns="http://www.w3.org/2000/svg">`;
       svg += `<path stroke="${strokeStyle}" stroke-width="${lineWidth}" stroke-linecap="butt" stroke-linejoin="bevel" fill="transparent" d=`;
-      let [x0, y0] = T.anchorToXYF(this.from);
       // let [x1, y1] = T.anchorToXYF(this.to);
       // console.log(`[Ctr.paint] (${this.id}) dx:${(x1 - x0).toFixed()} dx:${(y1 - y0).toFixed()}`);
 
@@ -154,7 +178,7 @@ export class Ctr extends CbaseElem {
         let segment = segments[idx];
         let len = segment.len;
         if (len == 0) continue;
-        if (len <= 0) console.error(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
+        if (len <= 0) console.error(`[Ctr.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
         // console.warn(`[segments.paint] (${idx}) seg#${idx}: len:${segment.len} dir:${segment.dir}`);
         let nextSeg = null;
         for (let idn = idx + 1; idn <= maxIdx; idn++) {
@@ -208,7 +232,8 @@ export class Ctr extends CbaseElem {
     svg = svg.replace(/ +/g, " ");
     svg = svg.replace(/\n/g, " "); // Poses problem when printing to PDF
     // console.log(`[Ctr.paint] (${this.id}) svg:${svg}`);
-    this.myElem.innerHTML = svg;
+    this.svgElem.innerHTML = svg;
+    this.tag.paint();
   }
 
   updateNotes() {
@@ -226,23 +251,9 @@ export class Ctr extends CbaseElem {
     if (this.trigger) text += `[${this.trigger}]`;
     if (this.guard) text += `[${this.guard}]`;
     if (this.effect) text += `/${this.effect}`;
-    if (!this.tag) {
-      // console.log(`[Ctr.makeTag] (${this.id}) } hCtx.folio:${hCtx}`);
-      const t = hsm.settings.styles.tag;
-      const noEl = document.createElement("div");
-      this.childElem.append(noEl);
-      this.tag = new Ctext(this, {
-        myElem: noEl,
-        geo: { x0: 1, y0: 1, width: 20 },
-        text: text,
-        container: hCtx.folio,
-        togetherSelected: true,
-      });
-    }
-    else {
-      if (this.text == text) return;
-      this.tag.text = text;
-    }
+    if (this.text == text) return;
+    this.text = text;
+    this.tag.setText(text);
     // console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
   }
 
@@ -616,7 +627,9 @@ export class Ctr extends CbaseElem {
       }
     }
     newIdz = { id: this.id, zone: bestZone, type: bestType, dist2P: bestD2, x: x, y: y };
-    if (this.tag) newIdz = this.tag.makeIdz(x - this.geo.x0, y - this.geo.y0, newIdz);
+    for (let child of this.children) {
+      newIdz = child.makeIdzInParentCoordinates(x, y, newIdz);
+    }
     return newIdz;
   }
 

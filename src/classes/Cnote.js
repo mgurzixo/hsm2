@@ -5,9 +5,8 @@ import { R, RR } from "src/lib/utils";
 import { CbaseElem } from "src/classes/CbaseElem";
 import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { noteStyles } from "src/lib/styles";
-import { mdToCanvas } from "src/lib/md";
 import NoteDialog from "src/components/NoteDialog.vue";
-import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
+import { inverse, toCSS, applyToPoint } from 'transformation-matrix';
 import rehypeStringify from 'rehype-stringify';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -15,7 +14,6 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { unified } from 'unified';
-import FolioDialog from "src/components/FolioDialog.vue";
 
 const processor = unified()
   .use(remarkParse)
@@ -339,46 +337,4 @@ export class Cnote extends CbaseElem {
   }
 }
 
-export class Ctext extends Cnote {
-  constructor(parent, options) {
-    super(parent, options, "X");
-    // console.log(`[Cnote.Ctext] New Ctext id:${this.id} parentId:${this.parent.id} containerId:${this.container.id}`);
-    this.geo.width = options?.width || 20;
-    // console.log(`[Cnote.Ctext] (${this.id}) text:${this.text} scale:${this.scale}`);
-    this.geo.height = hsm.settings.styles.tag.sizeMm + 2 * (hsm.settings.styles.tag.marginVMm);
-    // console.log(`[Ctext.constructor] this.geo.height:${this.geo.height} ${JSON.stringify(hsm.settings.styles.tag)}`);
-  }
 
-  paint() {
-    // TODO ICI
-  }
-
-  makeIdz(x, y, idz) {
-    const newIdz = super.makeIdz(x, y, idz);
-    if (newIdz.id == this.id) {
-      const m = U.pxToMm(hsm.settings.cursorMarginP);
-      if (x >= this.geo.width - m) newIdz.zone = "R";
-      else newIdz.zone = "M";
-    }
-    return newIdz;
-  }
-
-  drag(dx, dy) {
-    super.drag(dx, dy, hCtx.folio);
-  }
-
-  draw(xx0, yy0) {
-    // if (!this.text) super.draw(xx0, yy0, this.parent.id);
-    // else super.draw(xx0, yy0);
-  }
-
-  makeCanvas(text) {
-    // // console.warn(`[Ctext.makeCanvas] 0 (${this.id}) scale:${this.scale.toFixed(2)} geoScale:${hCtx.folio.geo.scale.toFixed(3)}`);
-    // const canvasScale = this.scale * hCtx.folio.geo.scale;
-    // // console.log(`[Ctext.makeCanvas] (${this.id}) canvasScale:${canvasScale.toFixed(2)} text:${text}`);
-    // this.canvas = mdToCanvas(this.text, canvasScale, this.tagStyle.textColor, this.tagStyle.bg);
-    // this.canvasScale = canvasScale;
-    // // console.log(`[Ctext.makeCanvas] 1 (${this.id}) canvas:${this.canvas}`);
-  }
-
-}
