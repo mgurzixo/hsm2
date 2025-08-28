@@ -386,9 +386,24 @@ export function underscorize(str) {
   return str.replace(/ /g, "_");
 }
 
-// export function matToMm(mat) {
-//   return {
-//     a: mat.a, b: mat.b, c: mat.c, d: mat.d,
-//     e: mat.e * pxPerMm, f: mat.f * pxPerMm
-//   };
-// }
+export async function openWindow(url, options = '_blank') {
+  return new Promise((resolve, reject) => {
+    let win = window.open(url, options);
+    if (!win) {
+      reject(new Error('Failed to open window'));
+      return;
+    }
+    // Wait for load
+    win.onload = () => {
+      console.log(`[LeftButtons.openWindow] Loaded`);
+      resolve(win);
+    };
+    // Fallback: if window is closed before load
+    let checkClosed = setInterval(() => {
+      if (win.closed) {
+        clearInterval(checkClosed);
+        reject(new Error('Window was closed before load'));
+      }
+    }, 100);
+  });
+}

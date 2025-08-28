@@ -48,14 +48,14 @@
 import * as V from "vue";
 import * as U from "src/lib/utils";
 import ButtonBurger from "components/ButtonBurger.vue";
-// import ButtonBurgerBak from "components/ButtonBurgerBak.vue";
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/rootElemListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
-import mdCss from "src/css/markdown.css?raw";
-import katexCss from "src/css/katex.min.css?raw";
+// import mdCss from "src/css/markdown.css?raw";
+// import katexCss from "src/css/katex.min.css?raw";
+import { doPdf } from "src/lib/doPdf";
 
 async function doLoadHsm() {
   await loadHsm();
@@ -82,30 +82,10 @@ V.watch(modeRef, (newMode, oldMode) => {
   }
 });
 
-let myWin;
+// let myWin;
 
 
-async function openWindow(url, options = '_blank') {
-  return new Promise((resolve, reject) => {
-    let win = window.open(url, options);
-    if (!win) {
-      reject(new Error('Failed to open window'));
-      return;
-    }
-    // Wait for load
-    win.onload = () => {
-      console.log(`[LeftButtons.openWindow] Loaded`);
-      resolve(win);
-    };
-    // Fallback: if window is closed before load
-    let checkClosed = setInterval(() => {
-      if (win.closed) {
-        clearInterval(checkClosed);
-        reject(new Error('Window was closed before load'));
-      }
-    }, 100);
-  });
-}
+
 
 // async function doTest() {
 //   hsm.setPrinting(true);
@@ -138,41 +118,43 @@ async function openWindow(url, options = '_blank') {
 //   myWin = window.open(url, '_blank');
 // }
 
-async function doPdf(page) {
-  console.log(`[LeftButtons.doPdf]`);
-  let pdfString = await window.hsm2Api.printToPDF(page);
-  const blob = new Blob([pdfString], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  myWin = window.open(url, '_blank');
-}
+// async function doPdf(page) {
+//   console.log(`[LeftButtons.doPdf]`);
+//   let pdfString = await window.hsm2Api.printToPDF(page);
+//   const blob = new Blob([pdfString], { type: 'application/pdf' });
+//   const url = URL.createObjectURL(blob);
+//   myWin = window.open(url, '_blank');
+// }
 
 async function doTest() {
-  // console.log(`[LeftButtons.doTest] res:${myHtml}`);
-  // const blob = new Blob([myHtml], { type: 'text/html' });
-  // const url = URL.createObjectURL(blob);
-  // myWin = window.open(url, '_blank');
-  hsm.setPrinting(true);
-  const XMLS = new XMLSerializer();
-  const el = document.getElementById("F1");
-  const myBody = XMLS.serializeToString(el);
-  const myHtml = `
-        data:text/html;charset=utf-8,<head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>${hCtx.folio.name}</title>
-        </head>
-        <body style="margin: 0; padding: 0;">
-  ${myBody}
-        </body>`;
+  doPdf();
 
-  const page = {
-    html: myHtml,
-    title: hCtx.folio.name,
-    mdCss: mdCss,
-    katexCss: katexCss,
-    options: { printBackground: true, pageSize: "A4", margins: { top: 0, bottom: 0, left: 0, right: 0 } },
-  };
-  doPdf(page);
-  hsm.setPrinting(false);
+  // // console.log(`[LeftButtons.doTest] res:${myHtml}`);
+  // // const blob = new Blob([myHtml], { type: 'text/html' });
+  // // const url = URL.createObjectURL(blob);
+  // // myWin = window.open(url, '_blank');
+  // hsm.setPrinting(true);
+  // const XMLS = new XMLSerializer();
+  // const el = document.getElementById("F1");
+  // const myBody = XMLS.serializeToString(el);
+  // const myHtml = `
+  //       data:text/html;charset=utf-8,<head>
+  //       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  //       <title>${hCtx.folio.name}</title>
+  //       </head>
+  //       <body style="margin: 0; padding: 0;">
+  // ${myBody}
+  //       </body>`;
+
+  // const page = {
+  //   html: myHtml,
+  //   title: hCtx.folio.name,
+  //   mdCss: mdCss,
+  //   katexCss: katexCss,
+  //   options: { printBackground: true, pageSize: "A4", margins: { top: 0, bottom: 0, left: 0, right: 0 } },
+  // };
+  // doPdf(page);
+  // hsm.setPrinting(false);
 }
 
 V.onMounted(async () => {

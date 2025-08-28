@@ -146,9 +146,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle('doPrint', async (event, data) => {
     // console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(data.mdCss)}`);
+    if (data.css) for (let css in data.css) await printWindow.webContents.insertCSS(css, { cssOrigin: 'author' });
     await printWindow.loadURL(data.html);
-    await printWindow.webContents.insertCSS(data.mdCss, { cssOrigin: 'author' });
-    await printWindow.webContents.insertCSS(data.katexCss, { cssOrigin: 'author' });
     const pdfContent = await printWindow.webContents.printToPDF(data.options);
     return pdfContent;
   });
