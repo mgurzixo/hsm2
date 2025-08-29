@@ -73,6 +73,7 @@ export function stateStyles(baseColor, id) {
     tagBorderWidth: x.borderWidth,
     tagBorderSelectedColor: borderSelected || "red",
     tagBorderSelectedWidth: x.borderSelectedWidth,
+    tagBorderPrintingColor: tagBorderColor,
     tagTextColor: tagColor || "green",
     tagTextSelectedColor: x.textColor,
     tagTextFont: x.textFont,

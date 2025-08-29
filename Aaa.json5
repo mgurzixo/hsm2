@@ -56,8 +56,8 @@
         borderLight: 80,
         // borderLight: 20,
         borderSelectedWidth: 1,
-        borderSelectedChroma: 30,
-        borderSelectedLight: 50,
+        borderSelectedChroma: 50,
+        borderSelectedLight: 90,
       },
       tr: {
         line: { chroma: 100, light: 30, lineWidth: 1.5 },

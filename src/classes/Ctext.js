@@ -97,7 +97,9 @@ export class Ctext extends CbaseElem {
     s.paddingTop = `${sz * 0.1 + "mm"}`;
     s.paddingLeft = `${sz * 0.2 + "mm"}`;
     this.myElem.innerHTML = this.text;
-    if (hsm.isPrinting) s.border = "";
+    if (hsm.isPrinting) {
+      s.border = `solid ${lw + "px"} ${ss}`;
+    }
     else s.border = `solid ${lw + "px"} ${ss}`;
     s.transform = toCSS(g.mat);
   }

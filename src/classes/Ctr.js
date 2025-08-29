@@ -260,6 +260,7 @@ export class Ctr extends CbaseElem {
   setSelected(val) {
     // console.log(`[Ctr.setSelected] (${this.id}) } setSelected:${val}`);
     super.setSelected(val);
+    if (val) this.raise();
     if (this.tag.isSelected != val) this.tag.setSelected(val);
     this.paint();
   }
