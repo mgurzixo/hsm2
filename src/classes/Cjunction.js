@@ -49,7 +49,7 @@ export class Cjunction extends CbaseElem {
     let color = new Color(j.color);
     color.lch.c = j.bgChroma;
     color.lch.l = j.bgLight;
-    const bgColor = color.to("srgb") + "";
+    let bgColor = color.to("srgb") + "";
     color.lch.c = j.tagBgChroma;
     color.lch.l = j.tagBgLight;
     const tagBgColor = color.to("srgb") + "";
@@ -68,7 +68,9 @@ export class Cjunction extends CbaseElem {
       tagTextColor: bgColor,
       tagTextFont: "sans-serif",
       tagTextSize: j.tagTextSizeMm,
-      tagBg: tagBgColor
+      tagBg: tagBgColor,
+      tagBgOpacity: j.tagBgOpacity,
+      // tagBg: `tcolor-mix(in srgb, ${tagBgColor} 95%, transparent 5%)`,
     };
   }
 
@@ -77,7 +79,7 @@ export class Cjunction extends CbaseElem {
     if (this.text == text) return;
     this.text = text;
     this.tag.setText(text);
-    // console.log(`[Ctr.makeTag] (${this.id}) } text:${text}`);
+    // console.log(`[Ctr.makeTag](${this.id}) } text: ${text} `);
   }
 
   setGeometry() {
@@ -111,11 +113,11 @@ export class Cjunction extends CbaseElem {
     this.geo.y0 = mat.f / U.pxPerMm;
     this.geo.scale = mat.a;
     this.myElem.style.transform = toCSS(this.geo.mat);
-    // console.log(`[Cjunction.setGeoFromMat] (${this.id}) geo:${this.geo} mat:${JSON.stringify(mat)}`);
+    // console.log(`[Cjunction.setGeoFromMat](${ this.id }) geo:${ this.geo; } mat:${ JSON.stringify(mat); } `);
   }
 
   setSelected(val) {
-    // console.log(`[Cjunction.setSelected] (${this.id}) } setSelected:${val}`);
+    // console.log(`[Cjunction.setSelected](${ this.id });  } setSelected: ${ val; } `);
     super.setSelected(val);
     if (val) this.raise();
     if (this.tag.isSelected != val) this.tag.setSelected(val);
@@ -123,15 +125,15 @@ export class Cjunction extends CbaseElem {
   }
 
   paint() {
-    // console.log(`[Cjunction.paint] text:"${this.text}"`);
+    // console.log(`[Cjunction.paint] text: "${this.text}"`);
     const s = this.myElem.style;
     const g = this.geo;
     const styles = this.styles == "parentStyle" ? this.parent.styles : this.styles;
     s.width = g.width + "mm";
-    s.height = `${g.height}mm`;
+    s.height = `${g.height} mm`;
     if (hCtx.getErrorId() == this.id) s.backgroundColor = "red";
     else s.backgroundColor = this.styles.backgroundColor;
-    // console.log(`[Cjunction.paint] (${this.id}) s.width:${s.width} s.height:${s.height} s.font:${s.font}`);
+    // console.log(`[Cjunction.paint](${ this.id }) s.width:${ s.width; } s.height:${ s.height; } s.font:${ s.font; } `);
     s.transform = toCSS(g.mat);
     this.tag.paint();
   }
@@ -168,7 +170,7 @@ export class Cjunction extends CbaseElem {
         dragCtx.trsSegments[tr.id] = structuredClone(tr.segments);
       }
     }
-    console.log(`[Cjunction.dragStart](${this.id}) (width:${dragCtx.width.toFixed()}, height:${dragCtx.height.toFixed()}) (x:${x.toFixed()}, y:${y.toFixed()}), (x0:${dragCtx.x0.toFixed()}, y0:${dragCtx.y0.toFixed()}) (dx0:${dragCtx.dx0.toFixed()}, dy0:${dragCtx.dy0.toFixed()})`);
+    console.log(`[Cjunction.dragStart](${this.id})(width: ${dragCtx.width.toFixed()}, height: ${dragCtx.height.toFixed()})(x: ${x.toFixed()}, y: ${y.toFixed()}), (x0: ${dragCtx.x0.toFixed()}, y0:${dragCtx.y0.toFixed()}) (dx0: ${dragCtx.dx0.toFixed()}, dy0:${dragCtx.dy0.toFixed()})`);
     hCtx.setDragCtx(dragCtx);
     this.raise();
     this.parent.raiseJunctions();
@@ -219,12 +221,12 @@ export class Cjunction extends CbaseElem {
     }
     this.geo.x0 = x0;
     this.geo.y0 = y0;
-    // console.log(`[Cjunction.drag](${this.id}) width:${width} `);
+    // console.log(`[Cjunction.drag](${ this.id }) width:${ width; } `);
     const mat = {};
     Object.assign(mat, this.geo.mat);
     mat.e = d.mat.e + de;
     mat.f = d.mat.f + df;
-    // console.log(`Cjunction.drag] mat1:${ JSON.stringify(mat) } `);
+    // console.log(`Cjunction.drag]mat1:${ JSON.stringify(mat); } `);
     this.setGeoFromMat(mat);
     if (!this.isRevertingDrag) {
       if (this.parent.childIntersect(this)) hCtx.setErrorId(this.id);
@@ -239,7 +241,7 @@ export class Cjunction extends CbaseElem {
   }
 
   checkOpenDialogAndEndDrag() {
-    // console.log(`Cjunction.checkOpenDialogAndEndDrag](${ this.id }) justCreated:${ this.justCreated; } `);
+    // console.log(`Cjunction.checkOpenDialogAndEndDrag](${ this.id; }) justCreated:${ this.justCreated; } `);
     if (this.justCreated == true) {
       this.openDialog();
       delete this.justCreated;
@@ -252,7 +254,7 @@ export class Cjunction extends CbaseElem {
     const dragCtx = hCtx.getDragCtx();
     const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const totalIterations = Math.ceil(dist / hsm.settings.dragResetSpeed);
-    // console.log(`Cjunction.dragRevert] dist:${dist.toFixed()} totalIterations:${totalIterations} `);
+    // console.log(`Cjunction.dragRevert]dist:${ dist.toFixed(); } totalIterations:${ totalIterations; } `);
     let currentIteration = 0;
     const [changeX, changeY] = [deltaX / totalIterations, deltaY / totalIterations];
 
@@ -260,7 +262,7 @@ export class Cjunction extends CbaseElem {
     function myCb() {
       const elem = U.getElemById(hCtx.draggedId);
       const ease = Math.pow(currentIteration / totalIterations - 1, 3) + 1;
-      // console.log(`Cjunction.dragRevert] #${currentIteration} ease:${ease.toFixed(2)} `);
+      // console.log(`Cjunction.dragRevert]#${ currentIteration; } ease:${ ease.toFixed(2); } `);
       const dx = deltaX * (1 - ease);
       const dy = deltaY * (1 - ease);
       hsm.makeIdz;
@@ -294,6 +296,27 @@ export class Cjunction extends CbaseElem {
     }
     this.checkOpenDialogAndEndDrag();
     return true;
+  }
+  // Returns [x,y] of (side,pos) in state frame
+  makeTrXY(side, pos) {
+    const r = 1; // px TODO
+    let len;
+    let [x, y] = [0, 0];
+    if (side == "L" || side == "R") {
+      if (this.orientation == "horizontal") return null;
+      len = this.geo.height - 2 * r;
+      y = r + len * pos;
+      if (side == "R") x += this.geo.width;
+    }
+    else {
+      if (this.orientation == "vertical") return null;
+      len = this.geo.width - 2 * r;
+      x = r + len * pos;
+      if (side == "B") y += this.geo.height;
+    }
+    // console.log(`[Cstate.makeTrXY] side:${ side; } pos:${ pos.toFixed(2); } (x: ${ x.toFixed(1);
+    // } y: ${ y.toFixed(1)})`);
+    return [x, y];
   }
 
   makeIdz(x, y, idz) {

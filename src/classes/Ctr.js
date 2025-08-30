@@ -259,12 +259,13 @@ export class Ctr extends CbaseElem {
     let bestPos;
 
     function visit(myElem) {
-      if (myElem.id.startsWith("S")) {
+      if (myElem.id.startsWith("S") || myElem.id.startsWith("J")) {
         for (let mySide of ["T", "R", "B", "L"]) {
           // if ((anchor.id == myElem.id) && (anchor.side != mySide)) continue;
-          const geo = myElem.geo;
+          let myV = myElem.makeTrXY(mySide, 0);
+          if (!myV) continue; // Manage junctions
+          let [myX0, myY0] = myV;
           const elemXYF = myElem.getOriginXYF();
-          let [myX0, myY0] = myElem.makeTrXY(mySide, 0);
           myX0 += elemXYF[0]; myY0 += elemXYF[1];
           let [myX1, myY1] = myElem.makeTrXY(mySide, 1);
           myX1 += elemXYF[0]; myY1 += elemXYF[1];
@@ -282,6 +283,10 @@ export class Ctr extends CbaseElem {
       for (let elem1 of myElem.children) {
         visit(elem1);
       }
+      if (myElem.junctions)
+        for (let elem1 of myElem.junctions) {
+          visit(elem1);
+        }
     }
     visit(hCtx.folio);
     return [bestElem, bestSide, bestPos];

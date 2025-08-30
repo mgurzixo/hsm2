@@ -32,11 +32,12 @@
         minLengthMm: 7,
         bgChroma: 50,
         bgLight: 10,
-        tagBgChroma: 30,
-        tagBgLight: 98,
         tagBorderChroma: 30,
         tagBorderLight: 95,
         tagTextSizeMm: 2.5,
+        tagBgChroma: 10,
+        tagBgLight: 95,
+        tagBgOpacity: 0.5,
       },
       note: {
         marginP: 2,
@@ -71,6 +72,7 @@
         borderSelectedWidth: 1,
         borderSelectedChroma: 50,
         borderSelectedLight: 10,
+        bgOpacity: 0.5,
       },
       tr: {
         line: { chroma: 100, light: 30, lineWidth: 1.5 },

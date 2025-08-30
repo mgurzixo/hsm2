@@ -82,6 +82,13 @@ export class Ctext extends CbaseElem {
   }
 
   paint() {
+    function rgbToRgba(rgb, opacity) {
+      if (!rgb) return rgb;
+      const transparencyPc = ((1 - opacity) * 100).toFixed();
+      const rgba = rgb.replace(")", ` /${opacity})`);
+      console.log(`[Ctext.rgbToRgba] rgb:"${rgb}" rgba:"${rgba}"`);
+      return rgba;
+    }
     // console.log(`[Ctext.paint] text:"${this.text}"`);
     const s = this.myElem.style;
     const g = this.geo;
@@ -102,7 +109,7 @@ export class Ctext extends CbaseElem {
     else s.width = g.width + "mm";
     g.height = sz * 1.5;
     s.height = `${g.height}mm`;
-    s.backgroundColor = styles?.tagBg;
+    s.backgroundColor = styles?.tagBgOpacity ? rgbToRgba(styles?.tagBg, styles?.tagBgOpacity) : styles?.tagBg;
     // console.log(`[Ctext.paint] (${this.id}) s.width:${s.width} s.height:${s.height} s.font:${s.font}`);
     s.paddingTop = `${sz * 0.1 + "mm"}`;
     s.paddingLeft = `${sz * 0.2 + "mm"}`;
