@@ -46,6 +46,22 @@ export class Cfolio extends CregionWithStates {
     else this.myElem.style.display = "none";
   }
 
+  setSelected(val) {
+    super.setSelected(val);
+    for (let tr of this.trs) {
+      tr.setSelected(val);
+    }
+  }
+
+  raiseStates() {
+    super.raiseStates();
+    this.myElem.append(this.trElem);
+  }
+
+  raiseJunctions() {
+    super.raiseJunctions();
+    this.myElem.append(this.trElem);
+  }
 
   adjustTrAnchors(changedId) {
     // console.log(`[Cfolio.adjustTrAnchors] id:${this.id}

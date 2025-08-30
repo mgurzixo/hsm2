@@ -13,7 +13,9 @@ export function anchorToXYF(anchor, pos = anchor.pos) {
   // console.log(`[trUtils.anchorToXYF] id:${anchor.id} elem:${elem}`);
   if (pos > 1) pos = 1;
   if (pos < 0) pos = 0;
-  let [x0, y0] = elem.getOriginXYF();
+  let v = elem.getOriginXYF();
+  if (!v) return v;
+  let [x0, y0] = v;
   const [x, y] = elem.makeTrXY(anchor.side, pos);
   return [x + x0, y + y0];
 }

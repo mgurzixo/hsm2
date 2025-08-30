@@ -177,7 +177,7 @@ export class CregionWithStates extends CbaseElem {
     await myState.dragStart(xP, yP); // Will create dragCtx
   }
 
-  addState(stateOptions) {
+  async addState(stateOptions) {
     const stEl = document.createElement("div");
     this.childElem.append(stEl);
     stateOptions.myElem = stEl;

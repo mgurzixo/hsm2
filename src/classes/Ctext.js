@@ -39,7 +39,6 @@ export class Ctext extends CbaseElem {
   async onLoaded(options) {
     // console.log(`[Ctext.onLoaded] (${this.id}) text:${this.text}`);
     await this.setText(this.text);
-    this.paint();
   }
 
   setContainer(container) {
@@ -75,6 +74,7 @@ export class Ctext extends CbaseElem {
 
   async setText(text) {
     this.text = text;
+    this.paint();
   }
 
   setFont(font) {
@@ -86,7 +86,7 @@ export class Ctext extends CbaseElem {
       if (!rgb) return rgb;
       const transparencyPc = ((1 - opacity) * 100).toFixed();
       const rgba = rgb.replace(")", ` /${opacity})`);
-      console.log(`[Ctext.rgbToRgba] rgb:"${rgb}" rgba:"${rgba}"`);
+      // console.log(`[Ctext.rgbToRgba] rgb:"${rgb}" rgba:"${rgba}"`);
       return rgba;
     }
     // console.log(`[Ctext.paint] text:"${this.text}"`);
@@ -186,8 +186,8 @@ export class Ctext extends CbaseElem {
     let height = d.height;
     const zone = idz.zone.toString(); // Can be numeric
     const container = this.container;
-    console.log(`[Ctext.drag] (${this.id}) this.container:${this.container?.id}`);
-    console.log(`[Ctext.drag] (${this.id}) (x0:${x0.toFixed()} y0:${y0.toFixed()}) (xCt:${d.xCt.toFixed()} yCt:${d.yCt.toFixed()})`);
+    // console.log(`[Ctext.drag] (${this.id}) this.container:${this.container?.id}`);
+    // console.log(`[Ctext.drag] (${this.id}) (x0:${x0.toFixed()} y0:${y0.toFixed()}) (xCt:${d.xCt.toFixed()} yCt:${d.yCt.toFixed()})`);
     if (zone == "M") {
       if (d.xCt + dx < m) dx = m - d.xCt;
       if (d.xCt + width + dx > container.geo.width - m) dx = container.geo.width - m - d.xCt - width;

@@ -206,7 +206,6 @@ export class Chsm extends CbaseElem {
     const dragCtx = hCtx.getDragCtx();
     if (!dragCtx) return;
     // console.log(`[Chsm.drag] dragCtx:${JSON.stringify(dragCtx)}`);
-    // if (dragCtx.id == this.id) return;
     if (dragCtx.id == this.id) hCtx.folio.drag(dxP, dyP);
     else {
       const elem = this.hElems.getElemById(dragCtx.id);

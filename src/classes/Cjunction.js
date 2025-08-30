@@ -46,7 +46,10 @@ export class Cjunction extends CbaseElem {
 
   makeStyles() {
     const j = hsm.settings.styles.junction;
+    const t = hsm.settings.styles.tr;
+
     let color = new Color(j.color);
+    const trLine = color.to("srgb") + "";
     color.lch.c = j.bgChroma;
     color.lch.l = j.bgLight;
     let bgColor = color.to("srgb") + "";
@@ -61,6 +64,12 @@ export class Cjunction extends CbaseElem {
       thicknessMm: j.thicknessMm,
       minLengthMm: j.minLengthMm,
 
+      trLine: trLine,
+      trLineWidth: t.line.lineWidth,
+      trLineSelectedWidth: t.lineSelected.lineWidth,
+      trLineError: t.lineError.color,
+      trLineErrorWidth: t.lineError.lineWidth,
+
       tagBorderWidth: "1",
       tagBorderColor: tagBorderColor,
       tagBorderSelectedWidth: "1",
@@ -72,6 +81,17 @@ export class Cjunction extends CbaseElem {
       tagBgOpacity: j.tagBgOpacity,
       // tagBg: `tcolor-mix(in srgb, ${tagBgColor} 95%, transparent 5%)`,
     };
+  }
+
+  setName(name) {
+    this.name = name;
+    this.makeTag();
+  }
+
+  setOrientation(orientation) {
+    this.orientation = orientation;
+    this.setGeometry();
+    hsm.adjustTrAnchors(this.id);
   }
 
   makeTag() {
@@ -122,6 +142,9 @@ export class Cjunction extends CbaseElem {
     if (val) this.raise();
     if (this.tag.isSelected != val) this.tag.setSelected(val);
     this.paint();
+    for (let tr of hCtx.folio.trs) {
+      if (tr.from.id == this.id) tr.setSelected(val);
+    }
   }
 
   paint() {
@@ -192,7 +215,7 @@ export class Cjunction extends CbaseElem {
     let length;
     const zone = idz.zone;
     const m = hsm.settings.minDistanceMm;
-    const ml = hsm.settings.junctionMinLengthMm;
+    const ml = hsm.settings.styles.junction.minLengthMm;
     const pg = this.parent.geo;
     if (zone == "M") {
       if (x0 + dx < m) dx = m - x0;
@@ -205,17 +228,19 @@ export class Cjunction extends CbaseElem {
     } else {
       const ww = d.width + dx;
       const hh = d.height + dy;
-      if (d.width + dx > d.height + + dy) this.orientation = "horizontal";
+      if (d.width + dx > d.height + dy) this.orientation = "horizontal";
       else this.orientation = "vertical";
 
       if (this.orientation == "horizontal") {
         if (d.width + dx < ml) dx = ml - d.width;
         if (x0 + d.width + dx > pg.width - m) dx = pg.width - m - d.width - x0;
+        if (d.width + dx < ml) dx = ml - d.width;
         this.length = d.width + dx;
       }
       else {
         if (d.height + dy < ml) dy = ml - d.height;
         if (y0 + d.height + dy > pg.height - m) dy = pg.height - m - d.height - y0;
+        if (d.height + dy < ml) dy = ml - d.height;
         this.length = d.height + dy;
       }
     }
@@ -297,7 +322,8 @@ export class Cjunction extends CbaseElem {
     this.checkOpenDialogAndEndDrag();
     return true;
   }
-  // Returns [x,y] of (side,pos) in state frame
+
+  // Returns [x,y] of (side,pos) in junction frame
   makeTrXY(side, pos) {
     const r = 1; // px TODO
     let len;
@@ -314,9 +340,42 @@ export class Cjunction extends CbaseElem {
       x = r + len * pos;
       if (side == "B") y += this.geo.height;
     }
-    // console.log(`[Cstate.makeTrXY] side:${ side; } pos:${ pos.toFixed(2); } (x: ${ x.toFixed(1);
+    // console.log(`[Cjunction.makeTrXY] side:${ side; } pos:${ pos.toFixed(2); } (x: ${ x.toFixed(1);
     // } y: ${ y.toFixed(1)})`);
     return [x, y];
+  }
+
+  makeTrPos(side, x, y, doClamp = false) {
+    const r = 1; // px TODO
+    let l0, l1, res;
+    if (side == "T" || side == "B") {
+      if (this.orientation == "vertical") return null;
+      l0 = r;
+      l1 = this.geo.width - r;
+      res = (x - l0) / (l1 - l0);
+    } else {
+      if (this.orientation == "horizontal") return null;
+      l0 = r;
+      l1 = this.geo.height - r;
+      res = (y - l0) / (l1 - l0);
+    }
+    if (!doClamp) return res;
+    res = Math.min(Math.max(0, res), 1);
+    return res;
+  }
+
+  isSubstate(superstateId) {
+    for (let state = this; state.parent; state = state.parent) {
+      if (state.parent.id == superstateId) return true;
+    }
+    return false;
+  }
+
+  isSuperstate(substateId) {
+    for (let state = U.getElemById(substateId); state.parent; state = state.parent) {
+      if (state.parent.id == this.id) return true;
+    }
+    return false;
   }
 
   makeIdz(x, y, idz) {

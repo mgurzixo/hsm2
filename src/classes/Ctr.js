@@ -365,8 +365,8 @@ export class Ctr extends CbaseElem {
     [this.from.prevX, this.from.prevY] = [x0, y0];
     [this.to.prevX, this.to.prevY] = [x1, y1];
     segments = T.createSegments(this);
-    // console.warn(`[Ctr.createSimpleSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
-    // console.log(`[Ctr.createSimpleSegments] Segments:${JSON.stringify(segments)}`);
+    console.warn(`[Ctr.createSimpleSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
+    console.log(`[Ctr.createSimpleSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
 
@@ -459,6 +459,7 @@ export class Ctr extends CbaseElem {
     const comesFromOutside = U.comesFromOutside(this.to.side, lastSeg.dir);
     const comesFromInside = U.comesFromInside(this.to.side, lastSeg.dir);
     if (this.from.id == this.to.id) {
+      if (U.isJunction(this.from.id)) return false;
       if (this.from.side != this.to.side) return false;
       if (this.from.pos == this.to.pos) return false;
       if (this.isInternal) {
@@ -479,9 +480,39 @@ export class Ctr extends CbaseElem {
     return true;
   }
 
+  patchAnchor(anchor) {
+    if (!U.isJunction(anchor.id)) return false;
+    const orientation = hElems.getElemById(anchor.id).orientation;
+    const side = anchor.side;
+    let newSide = null;
+    if (orientation == "horizontal") {
+      if (side == "L") newSide = "T";
+      else if (side == "R") newSide = "B";
+    } else {
+      if (side == "T") newSide = "L";
+      else if (side == "B") newSide = "R";
+    }
+    if (!newSide) return false;
+    anchor.side = newSide;
+    return true;
+  }
+
+  invertAnchorSide(anchor) {
+    switch (anchor.side) {
+      case "T": anchor.side = "B"; break;
+      case "R": anchor.side = "L"; break;
+      case "B": anchor.side = "T"; break;
+      case "L": anchor.side = "R"; break;
+    }
+  }
+
   // Adjusts existing segments to new From/To
   adjustSegments() {
     // console.log(`[Ctr.adjustSegments] prevX:${this.from.prevX} prevY:${this.from.prevY}`);
+    if (this.patchAnchor(this.from) || this.patchAnchor(this.to)) {
+      this.segments = this.createSimpleSegments();
+      return;
+    }
     if (this.segments.length == 0) this.segments = this.createSimpleSegments();
     if (this.from.prevX == undefined || this.from.prevY == undefined) {
       // first time, segments is supposed to be OK
@@ -511,43 +542,6 @@ export class Ctr extends CbaseElem {
     else[this.to.prevX, this.to.prevY] = [xTo, yTo];
     this.segments = segsNormalise(this.segments);;
   }
-
-  // draw(xx0, yy0) {
-  //   if (hCtx.getErrorId() == this.from.id || hCtx.getErrorId() == this.to.id) return;
-  //   const [x0, y0] = T.anchorToXYF(this.from);
-  //   [this.geo.x0, this.geo.y0] = [x0, y0];
-  //   this.geo.xx0 = xx0 + this.geo.x0;
-  //   this.geo.yy0 = yy0 + this.geo.y0;
-  //   const s = hElems.getElemById(this.from.id).styles;
-  //   // console.log(`[Ctr.draw] (${this.id}) startId:${this.from.id} baseColor:${baseColor} ${this.segments.length} segments (x0:${x0}, y0:${y0})`);
-  //   if (!this.isLegal()) {
-  //     cCtx.lineWidth = s.trLineErrorWidth;
-  //     cCtx.strokeStyle = s.trLineError;
-  //     if (this.tag) this.tag.color = s.trLineError;
-  //     // console.log(`[Ctr.draw] (${this.id}) tag.color:${this.tag.color}`);
-  //   }
-  //   else {
-  //     if (this.isSelected || this.id == hCtx.selectedId) cCtx.lineWidth = s.trLineSelectedWidth;
-  //     else cCtx.lineWidth = s.trLineWidth;
-  //     cCtx.strokeStyle = s.trLine;
-  //   }
-  //   XpathSegments(this.segments, x0, y0);
-  //   cCtx.stroke();
-  //   if (this.tag) {
-  //     this.tag.tagStyle = {
-  //       bg: s.tagBg,
-  //       borderColor: s.tagBorderColor,
-  //       borderWidth: s.tagBorderWidth,
-  //       borderSelectedColor: s.tagBorderSelectedColor,
-  //       borderSelectedWidth: s.tagBorderSelectedWidth,
-  //       textColor: s.tagTextColor,
-  //       textSelectedColor: s.tagTextSelectedColor,
-  //       textFont: s.tagTextFont,
-  //       cornerP: s.tagCornerP,
-  //     };
-  //     this.tag.draw(this.geo.xx0, this.geo.yy0);
-  //   }
-  // }
 
   adjustTrAnchors(changedId) {
     if (!changedId) this.adjustSegments();

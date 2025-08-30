@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <q-card class="my-card-junction text-black bg-color-junction">
     <q-bar class="text-grey-9 bg-amber-2">
@@ -70,8 +71,15 @@ const localElement = V.reactive({
 async function emitUpdate() {
   localElement.name = U.underscorize(localElement.name);
   await U.nextTick();
-  props.element.paint();
+  props.element.setName(localElement.name);
+  // eslint-disable-next-line vue/no-mutating-props
+  props.element.include = localElement.include;
+  // eslint-disable-next-line vue/no-mutating-props
+  props.element.comment = localElement.comment;
+
+  props.element.setOrientation(localElement.orientation);
   emit("update:element", { ...localElement });
+  props.element.paint();
 }
 
 // If the prop changes externally, update the local copy

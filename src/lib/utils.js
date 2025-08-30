@@ -74,6 +74,10 @@ export async function isIdle() {
   });
 }
 
+export function isState(id) { return id.startsWith("S"); }
+
+export function isJunction(id) { return id.startsWith("J"); }
+
 export function connectPoints(x0, y0, side0, x1, y1, side1, skipLast = false) {
   // console.log(`[utils.connectPoints] side0:${side0} side1:${side1}`);
   const r = hsm.settings.styles.tr.maxTransRadiusMm;
