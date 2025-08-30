@@ -16,12 +16,8 @@ export class Ctr extends CbaseElem {
     this.svgElem = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     this.svgElem.id = "svgElem_" + this.id;
     this.myElem.prepend(this.svgElem);
-
-
-
     this.lineWidth = 1;
     this.isBaseTr = true;
-    this.oldTagText = "";
     this.segments = [];
     this.from = options.from || {};
     this.to = options.to || {};
@@ -34,7 +30,6 @@ export class Ctr extends CbaseElem {
     this.include = options.include || "";
     this.comment = options.comment || "";
     this.lineWidth = 1.5;
-    this.oldTagText = "";
     this.segments = options.segments;
     this.from = options.from;
     this.to = options.to;
@@ -236,16 +231,6 @@ export class Ctr extends CbaseElem {
     this.tag.paint();
   }
 
-  updateNotes() {
-    // console.log(`[Ctr.updateNotes] (${this.id})}`);
-    if (this.tag) this.tag.deleteCanvas();
-  }
-
-  rePaint() {
-    this.paint();
-    if (this.tag) this.tag.rePaint();
-  }
-
   makeTag() {
     let text = "";
     if (this.trigger) text += `[${this.trigger}]`;
@@ -303,7 +288,7 @@ export class Ctr extends CbaseElem {
   }
 
 
-  async dragStart() {
+  async dragStart(xP, yP) {
     // console.log(`[Ctr.dragStart] (${this.id})`);
     const idz = this.idz();
     // if (modeRef.value == "") {

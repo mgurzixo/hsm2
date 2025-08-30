@@ -133,7 +133,7 @@ export class Cnote extends CbaseElem {
 
   async dragStart(xP, yP) {
     const idz = this.idz();
-    const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
+    const [x, y] = [idz.x, idz.y];
     hsm.setSelected(this.id);
     const dragCtx = {
       id: this.id,
@@ -306,6 +306,7 @@ export class Cnote extends CbaseElem {
       y > this.geo.height + m
     )
       return idz;
+    if (modeRef.value == "inserting-state" || modeRef.value == "inserting-note" || modeRef.value == "inserting-junction") return idz;
     // console.log(`[Cnote.makeIdz] (${this.id}) In note x:${x} y:${y} curId:${idz.id}`);
     let id = this.id;
     let zone = "M";

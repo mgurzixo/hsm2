@@ -13,18 +13,31 @@
     // stateRadiusMm: 0,
     stateTitleHeightMm: 5,
     // stateTitleHeightMm: 0,
-    stateMinWidth: 10,
-    stateMinHeight: 10,
+    stateMinWidthMm: 10,
+    stateMinHeightMm: 10,
     minDistanceMm: 1,
     dragResetSpeed: 15,
     // initialTransLengthMm: 2,
     initialTransLengthMm: 10,
     defaultSegmentLengthMm: 10,
+
     smallestSegMm: 1,
 
     styles: {
       silhouetteSelected: "black",
       folioBackground: "seaShell",
+      junction: {
+        color: "brown",
+        thicknessMm: 1.2,
+        minLengthMm: 7,
+        bgChroma: 50,
+        bgLight: 10,
+        tagBgChroma: 30,
+        tagBgLight: 98,
+        tagBorderChroma: 30,
+        tagBorderLight: 95,
+        tagTextSizeMm: 2.5,
+      },
       note: {
         marginP: 2,
         border: { color: "#DFDFDF", lineWidth: 1 },
@@ -49,15 +62,15 @@
       text: {
         sizeMm: 2.5,
         textFont: "sans-serif",
-        textChroma: 90,
-        textLight: 20,
+        textChroma: 50,
+        textLight: 10,
         borderWidth: 1,
         borderChroma: 30,
-        borderLight: 80,
+        borderLight: 95,
         // borderLight: 20,
         borderSelectedWidth: 1,
         borderSelectedChroma: 50,
-        borderSelectedLight: 90,
+        borderSelectedLight: 10,
       },
       tr: {
         line: { chroma: 100, light: 30, lineWidth: 1.5 },
@@ -143,6 +156,14 @@
           regions: [
             {
               name: "My region",
+              junctions: [
+                {
+                  id: "J28",
+                  name: "junction_28",
+                  color: "orange",
+                  geo: { x0: 60, y0: 35, width: 1.2, height: 7 },
+                },
+              ],
               notes: [
                 {
                   geo: { x0: 100, y0: 35, width: 45, height: 35 },

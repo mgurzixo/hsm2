@@ -13,7 +13,7 @@ export class Ctext extends CbaseElem {
     super(parent, textOptions, type);
     // console.log(`[Cnote] New note id:${this.id} parent:${this.parent.id} ${textOptions.container?.id}`);
     // console.log(`[Cnote] New note id:${this.id} textOptions:${JSON.stringify(textOptions)}`);
-    this.container = textOptions?.container ? textOptions.container : parent;
+    // this.container = textOptions?.container ? textOptions.container : parent;
     this.togetherSelected = textOptions?.togetherSelected;
     // console.log(`[Ctext.constructor] (${this.id}) text:${textOptions.text}`);
     // console.log(`[Ctext.constructor] textOptions:${textOptions}`);
@@ -26,6 +26,9 @@ export class Ctext extends CbaseElem {
     this.setFont(textOptions?.font || hsm.settings.styles.text.defaultFont);
     this.setScale(textOptions?.scale || 1);
     this.text = textOptions?.text || "";
+    this.widthAuto = textOptions?.widthAuto || true;
+    this.container = textOptions.container || this.parent;
+
     this.setGeometry();
     const s = this.myElem.style;
     s.textOverflow = "ellipsis";
@@ -33,10 +36,15 @@ export class Ctext extends CbaseElem {
     s.whiteSpace = "nowrap";
   }
 
-  async onLoaded() {
+  async onLoaded(options) {
     // console.log(`[Ctext.onLoaded] (${this.id}) text:${this.text}`);
     await this.setText(this.text);
     this.paint();
+  }
+
+  setContainer(container) {
+    console.log(`[Ctext.setContainer] (${this.id}) container:${container?.id}`);
+    this.container = container;
   }
 
   setGeometry() {
@@ -45,7 +53,8 @@ export class Ctext extends CbaseElem {
     const g = this.geo;
     s.top = "0px";
     s.left = "0px";
-    s.width = g.width + "mm";
+    if (this.widthAuto) s.width = "auto";
+    else s.width = g.width + "mm";
     s.height = g.height + "mm";
     this.paint();
   }
@@ -89,13 +98,15 @@ export class Ctext extends CbaseElem {
     const sz = this.scale * styles?.tagTextSize;
     s.font = `${sz}mm ${styles?.tagTextFont}`;
     s.color = `${styles?.tagTextColor}`;
-    s.width = g.width + "mm";
+    if (this.widthAuto) s.width = "auto";
+    else s.width = g.width + "mm";
     g.height = sz * 1.5;
     s.height = `${g.height}mm`;
     s.backgroundColor = styles?.tagBg;
     // console.log(`[Ctext.paint] (${this.id}) s.width:${s.width} s.height:${s.height} s.font:${s.font}`);
     s.paddingTop = `${sz * 0.1 + "mm"}`;
     s.paddingLeft = `${sz * 0.2 + "mm"}`;
+    s.paddingRight = `${sz * 0.2 + "mm"}`;
     this.myElem.innerHTML = this.text;
     if (hsm.isPrinting) {
       s.border = `solid ${lw + "px"} ${ss}`;
@@ -129,16 +140,27 @@ export class Ctext extends CbaseElem {
     const idz = this.idz();
     const [x, y] = [U.pxToMm(xP), U.pxToMm(yP)];
     hsm.setSelected(this.id);
+
+    const s0 = hCtx.folio.geo.mat.a;
+    const container = this.container ? this.container : this.parent;
+    const bb = this.myElem.getBoundingClientRect();
+    const bbCt = container.myElem.getBoundingClientRect();
+    let xCt, yCt; // Coord of my origin in mm in container frame
+    [xCt, yCt] = [bb.left - bbCt.left, bb.top - bbCt.top];
+    [xCt, yCt] = [xCt / U.pxPerMm / s0, yCt / U.pxPerMm / s0];
+
     const dragCtx = {
       id: this.id,
       x0: this.geo.x0,
       y0: this.geo.y0,
-      width: this.geo.width,
-      height: this.geo.height,
+      xCt: xCt,
+      yCt: yCt,
+      width: bb.width / U.pxPerMm / s0,
+      height: bb.height / U.pxPerMm / s0,
       mat: { ...this.geo.mat },
     };
     hCtx.setDragCtx(dragCtx);
-    // this.raise();
+    this.raise();
     return this;
   }
 
@@ -156,23 +178,25 @@ export class Ctext extends CbaseElem {
     let width = d.width;
     let height = d.height;
     const zone = idz.zone.toString(); // Can be numeric
-    const container = this.container ? this.container : this.parent;
-    // console.log(`[Ctext.drag] (${this.id}) container:${container?.id}`);
-    const ps = this.myElem.parentElement.style;
-    const xParent = parseFloat(ps.left) / U.pxPerMm;
-    const yParent = parseFloat(ps.top) / U.pxPerMm;
+    const container = this.container;
+    console.log(`[Ctext.drag] (${this.id}) this.container:${this.container?.id}`);
+    console.log(`[Ctext.drag] (${this.id}) (x0:${x0.toFixed()} y0:${y0.toFixed()}) (xCt:${d.xCt.toFixed()} yCt:${d.yCt.toFixed()})`);
     if (zone == "M") {
-      if (x0 + xParent + dx < m) dx = m - x0 - xParent;
-      if (x0 + xParent + dx + width > container.geo.width - m) dx = container.geo.width - m - x0 - xParent - width;
-      if (y0 + yParent + dy < m) dy = m - y0 - yParent;
-      if (y0 + yParent + dy + height > container.geo.height - m) dy = container.geo.height - m - y0 - yParent - height;
+      if (d.xCt + dx < m) dx = m - d.xCt;
+      if (d.xCt + width + dx > container.geo.width - m) dx = container.geo.width - m - d.xCt - width;
+      if (d.yCt + dy < m) dy = m - d.yCt;
+      if (d.yCt + height + dy > container.geo.height - m) dy = container.geo.height - m - d.yCt - height;
+
+      // if (x0 + xCt + dx + width > container.geo.width - m) dx = container.geo.width - m - x0 - xCt - width;
+      // if (y0 + yCt + dy < m) dy = m - y0 - yCt;
+      // if (y0 + yCt + dy + height > container.geo.height - m) dy = container.geo.height - m - y0 - yCt - height;
       x0 = d.x0 + dx;
       y0 = d.y0 + dy;
       [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
     } else if (zone == "R") {
       if (width + dx < n.noteMinWidth) dx = n.noteMinWidth - width;
-      if (x0 + xParent + width + dx > container.geo.width - m)
-        dx = container.geo.width - width - x0 - xParent - m;
+      if (x0 + d.xCt + width + dx > container.geo.width - m)
+        dx = container.geo.width - width - x0 - d.xCt - m;
       width += dx;
     }
     this.geo.x0 = x0;
@@ -210,7 +234,7 @@ export class Ctext extends CbaseElem {
     let id = this.id;
     let zone = "M";
     // console.log(`[Ctext.makeIdz] (${this.id}) id:${id} m:${m.toFixed(1)} zone:${zone} (x:${x.toFixed(1)} y:${y.toFixed(1)}) ${this.geo.height}`);
-    if (x >= this.geo.width - m) zone = "R";
+    if (!this.widthAuto) if (x >= this.geo.width - m) zone = "R";
     idz = { id: id, zone: zone, x: x, y: y, dist2: 0 };
     // console.log(`[Ctext.makeIdz] idz:${JSON.stringify(idz)}`);
     return idz;
@@ -218,13 +242,15 @@ export class Ctext extends CbaseElem {
 
   makeIdzInParentCoordinates(xp, yp, myIdz) {
     const ps = this.myElem.parentElement.style;
-    const xParentP = parseFloat(ps.left);
-    const yParentP = parseFloat(ps.top);
+    let xCtP = parseFloat(ps.left);
+    let yCtP = parseFloat(ps.top);
+    if (isNaN(xCtP)) xCtP = 0;
+    if (isNaN(yCtP)) yCtP = 0;
     [xp, yp] = [xp * U.pxPerMm, yp * U.pxPerMm];
-    [xp, yp] = [xp - xParentP, yp - yParentP];
+    [xp, yp] = [xp - xCtP, yp - yCtP];
     let [x, y] = applyToPoint(this.geo.matR, [xp, yp]);
     [x, y] = [x / U.pxPerMm, y / U.pxPerMm];
-    // if (this.id == "X15") console.log(`[Ctext.makeIdzInParentCoordinates](${this.id}(${this.parent.id})) xp:${xp.toFixed()} x:${x.toFixed()} f:${this.geo.mat.e.toFixed()} px:${this.myElem.parentElement.style.left}`);
+    // if (this.id == "X29") console.log(`[Ctext.makeIdzInParentCoordinates](${this.id}(${this.parent.id})) xp:${xp.toFixed()} x:${x.toFixed()} f:${this.geo.mat.e.toFixed()} px:${this.myElem.parentElement.style.left}`);
     const idz = this.makeIdz(x, y, myIdz);
     return idz;
   }

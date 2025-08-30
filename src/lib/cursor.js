@@ -8,7 +8,7 @@ function assets(icon, defVal) {
   // return `url(../assets/${icon}) 8 8, ${defVal}`;
   const assetsDir = new URL(/* @vite-ignore */ `../assets`, import.meta.url).href;
   const val = `url(${assetsDir}/cursors/${icon}) 8 8, ${defVal}`;
-  // console.log(`[CbaseElem.assets] val:${val}`);
+  // console.log(`[cursor.assets] val:${val}`);
   return val;
 }
 
@@ -37,6 +37,14 @@ export function defineCursor(idz) {
     // console.log(`[cursor.defineCursor] in IT (${idz.id}) id:${idz.id} zone:${idz.zone}`);
     if (idz.id.startsWith("F") || idz.id.startsWith("R")) {
       if (elem.canInsertNote(idz)) return assets("note16x16.png", "default");
+      else return assets("no-drop16x16.png", "no-drop");
+    }
+    return assets("no-drop16x16.png", "no-drop");
+  }
+  else if (modeRef.value == "inserting-junction") {
+    // console.log(`[cursor.defineCursor] in IT (${idz.id}) id:${idz.id} zone:${idz.zone}`);
+    if (idz.id.startsWith("F") || idz.id.startsWith("R")) {
+      if (elem.canInsertJunction(idz)) return assets("junction16x16.png", "default");
       else return assets("no-drop16x16.png", "no-drop");
     }
     return assets("no-drop16x16.png", "no-drop");

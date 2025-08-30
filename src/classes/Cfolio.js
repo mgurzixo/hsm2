@@ -20,7 +20,7 @@ export class Cfolio extends CregionWithStates {
     this.trElem = document.createElement("div");
     this.trElem.id = "trElem_" + this.id;
     this.myElem.append(this.trElem);
-    this.setGeometry();
+    // this.setGeometry();
     if (folioOptions.trs)
       for (let trOptions of folioOptions.trs) {
         this.addTr(trOptions);
@@ -86,7 +86,7 @@ export class Cfolio extends CregionWithStates {
   }
 
   rePaint() {
-    this.setGeometry();
+    // this.setGeometry();
     super.rePaint();
     this.paintTrs();
   }
@@ -138,33 +138,24 @@ export class Cfolio extends CregionWithStates {
     return myTr;
   }
 
-  updateNotes() {
-    // console.log(`[Cfolio.updateNotes]`);
-    for (let note of this.notes) {
-      note.deleteCanvas();
-    }
-    for (let child of this.children) {
-      child.updateNotes();
-    }
-    for (let tr of this.trs) {
-      tr.updateNotes();
-    }
-  }
-
   makeIdz(x, y, idz) {
     // [x,y] in mm in this.geo.[x0,y0] frame
-    // console.log(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
-    const g = this.geo;
-    if (x < 0 || y < 0) return idz;
-    if (x > g.width || y > g.height) return idz;
-    idz = { id: this.id, zone: "M", x: x, y: y };
     const m = U.pxToMm(hsm.settings.cursorMarginP);
-    for (let note of this.notes) {
-      idz = note.makeIdzInParentCoordinates(x, y, idz);
-    }
-    for (let child of this.children) {
-      idz = child.makeIdzInParentCoordinates(x, y, idz);
-    }
+    // console.log(`[Cfolio.makeIdz][x: ${x.toFixed()}, y: ${y.toFixed()}]`);
+    // const g = this.geo;
+    // if (x < 0 || y < 0) return idz;
+    // if (x > g.width || y > g.height) return idz;
+    // idz = { id: this.id, zone: "M", x: x, y: y };
+    // for (let note of this.notes) {
+    //   idz = note.makeIdzInParentCoordinates(x, y, idz);
+    // }
+    // for (let junction of this.junctions) {
+    //   idz = junction.makeIdzInParentCoordinates(x, y, idz);
+    // }
+    // for (let child of this.children) {
+    //   idz = child.makeIdzInParentCoordinates(x, y, idz);
+    // }
+    idz = super.makeIdz(x, y, idz);
     let bestTIdz = { dist2: Number.MAX_VALUE };
     for (let tr of this.trs) {
       const tIdz = tr.makeIdzInParentCoordinates(x, y, idz);

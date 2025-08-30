@@ -170,7 +170,6 @@ export class Chsm extends CbaseElem {
   }
 
   async dragStart(xP, yP) {
-    // console.log(`[Chsm.click]  (xDown:${xP}, yDown:${xP})`);
     let idz = this.makeIdzP(xP, yP);
     // console.log(`[Chsm.dragStart] idz:${JSON.stringify(idz)}`);
     hCtx.setIdz(idz);
@@ -192,6 +191,9 @@ export class Chsm extends CbaseElem {
         break;
       case "inserting-note":
         if (elem.canInsertNote(idz)) return await elem.dragStart(xP, yP);
+        break;
+      case "inserting-junction":
+        if (elem.canInsertJunction(idz)) return await elem.dragStart(xP, yP);
         break;
     }
     this.inhibitDrag = true;

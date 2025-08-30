@@ -150,7 +150,6 @@ export class Cstate extends CbaseState {
     for (let child of this.children) child.setGeometry();
   }
 
-
   rePaint() {
     this.paint();
     for (let child of this.children) {
@@ -307,6 +306,10 @@ export class Cstate extends CbaseState {
         console.error(`[Cstate.dragStart](${this.id}) Error: Cant insert note!`);
         return;
       }
+      case "inserting-junction": {
+        console.error(`[Cstate.dragStart](${this.id}) Error: Cant insert junction!`);
+        return;
+      }
       default:
         modeRef.value = "";
     }
@@ -318,18 +321,19 @@ export class Cstate extends CbaseState {
       y0: this.geo.y0,
       width: this.geo.width,
       height: this.geo.height,
-      segments0: {},
+      trsSegments: {},
       mat: this.geo.mat,
     };
     for (let tr of hCtx.folio.trs) {
       if ((tr.from.id == this.id) || (tr.to.id == this.id)) {
-        dragCtx.segments0[tr.id] = structuredClone(tr.segments);
-        // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.segments0[tr.id]; } `);
+        dragCtx.trsSegments[tr.id] = structuredClone(tr.segments);
+        // console.log(`[Cstate.dragStart] trId:${ tr.id; } segments:${ dragCtx.trs[tr.id]; } `);
       }
     }
     // console.log(`[Cstate.dragStart] dragCtx:${ JSON.stringify(dragCtx); } `);
     hCtx.setDragCtx(dragCtx);
     this.raise();
+    this.parent.raiseStates();
     hsm.adjustTrAnchors(this.id);
     return this;
   }
@@ -342,7 +346,6 @@ export class Cstate extends CbaseState {
     let [de, df] = [0, 0];
     const d = hCtx.getDragCtx();
     const m = hsm.settings.minDistanceMm;
-    const g = this.geo;
     const pg = this.parent.geo;
     let x0 = d.x0;
     let y0 = d.y0;
@@ -362,7 +365,7 @@ export class Cstate extends CbaseState {
       [de, df] = [dx * U.pxPerMm, dy * U.pxPerMm];
     } else {
       if (zone.includes("T")) {
-        if (height - dy < hsm.settings.stateMinHeight) dy = height - hsm.settings.stateMinHeight;
+        if (height - dy < hsm.settings.stateMinHeightMm) dy = height - hsm.settings.stateMinHeightMm;
         if (y0 + dy < hsm.settings.minDistanceMm) dy = hsm.settings.minDistanceMm - y0;
         // console.log(
         //   `[Cstate.drag] id:${ this.id; } y0:${ y0; } dy:${ dy; } BB.y0:${ this.grandchildrenBB.y0; } `,
@@ -374,7 +377,7 @@ export class Cstate extends CbaseState {
         df = dy * U.pxPerMm;
         this.children.forEach(child => child.patchRegionGeometry(null, dy));
       } else if (zone.includes("B")) {
-        if (height + dy < hsm.settings.stateMinHeight) dy = hsm.settings.stateMinHeight - height;
+        if (height + dy < hsm.settings.stateMinHeightMm) dy = hsm.settings.stateMinHeightMm - height;
         if (y0 + height + dy > pg.height - hsm.settings.minDistanceMm)
           dy = pg.height - height - y0 - hsm.settings.minDistanceMm;
         if (
@@ -387,7 +390,7 @@ export class Cstate extends CbaseState {
         this.children.forEach(child => child.setGeometry());
       }
       if (zone.includes("L")) {
-        if (width - dx < hsm.settings.stateMinWidth) dx = width - hsm.settings.stateMinWidth;
+        if (width - dx < hsm.settings.stateMinWidthMm) dx = width - hsm.settings.stateMinWidthMm;
         if (x0 + dx < hsm.settings.minDistanceMm) dx = hsm.settings.minDistanceMm - x0;
         if (this.grandchildrenBB.x0 && dx > this.grandchildrenBB.x0 - hsm.settings.minDistanceMm)
           dx = this.grandchildrenBB.x0 - hsm.settings.minDistanceMm;
@@ -396,7 +399,7 @@ export class Cstate extends CbaseState {
         de = dx * U.pxPerMm;
         this.children.forEach(child => child.patchRegionGeometry(dx, null));
       } else if (zone.includes("R")) {
-        if (width + dx < hsm.settings.stateMinWidth) dx = hsm.settings.stateMinWidth - width;
+        if (width + dx < hsm.settings.stateMinWidthMm) dx = hsm.settings.stateMinWidthMm - width;
         if (x0 + width + dx > pg.width - hsm.settings.minDistanceMm)
           dx = pg.width - width - x0 - hsm.settings.minDistanceMm;
         if (
@@ -443,7 +446,7 @@ export class Cstate extends CbaseState {
   checkOpenDialogAndEndDrag() {
     // console.log(`[Cstate.checkOpenDialogAndEndDrag](${ this.id }) justCreated:${ this.justCreated; } `);
     if (this.justCreated == true) {
-      hsm.openDialog(StateDialog, this);
+      this.openDialog();
       delete this.justCreated;
     }
     hCtx.dragEnd();
@@ -469,9 +472,9 @@ export class Cstate extends CbaseState {
       elem.drag(dx, dy);
       if (currentIteration > totalIterations) {
         elem.isRevertingDrag = false;
-        for (const trId of Object.keys(dragCtx.segments0)) {
+        for (const trId of Object.keys(dragCtx.trsSegments)) {
           const tr = U.getElemById(trId);
-          tr.segments = dragCtx.segments0[trId.toString()];
+          tr.segments = dragCtx.trsSegments[trId.toString()];
         }
         hCtx.setErrorId(null);
         elem.paintBorder();
@@ -492,7 +495,6 @@ export class Cstate extends CbaseState {
   dragEnd(dxP, dyP) {
     // console.log(`[Cstate.dragEnd] (${this.id})`);
     this.drag(dxP, dyP);
-    const dragCtx = hCtx.getDragCtx();
     if (hCtx.getErrorId() == this.id) {
       this.dragRevert(dxP, dyP);
       return false;

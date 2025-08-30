@@ -9,6 +9,8 @@
       @click.stop="modeRef = 'inserting-state'" />
     <q-btn id="inserting-trans" class="bg-amber-2 elem-button" outline round icon="mdi-arrow-right-top"
       @click.stop="modeRef = 'inserting-trans'" />
+    <q-btn id="inserting-junction" class="bg-amber-2 elem-button rotate-90" outline round icon="mdi-minus-thick"
+      @click.stop="modeRef = 'inserting-junction'" />
     <q-btn id="inserting-choice" class="bg-amber-2 elem-button" outline round icon="mdi-rhombus-outline"
       @click.stop="modeRef = 'inserting-choice'" />
     <q-btn id="inserting-note" class="bg-amber-2 elem-button" outline round icon="mdi-note-outline"
@@ -25,7 +27,7 @@
   <!-- </div> -->
 </template>
 
-<style lang="scss">
+<style lang="css">
 .left-container {
   margin: 1px;
 }
@@ -38,7 +40,13 @@
   border-left: solid 1px;
   border-right: solid 1px;
   /* border-bottom: solid 1px; */
+
   background-color: FloralWhite !important;
+}
+
+/* Rotate the junction icon by 90 degrees */
+.rotate-90 #i {
+  transform: rotate(90deg);
 }
 </style>
 
@@ -66,7 +74,7 @@ V.watch(modeRef, (newMode, oldMode) => {
     modeRef.value = "";
     return;
   }
-  for (let mode of ["inserting-state", "inserting-trans", "inserting-choice", "inserting-note"]) {
+  for (let mode of ["inserting-state", "inserting-junction", "inserting-trans", "inserting-choice", "inserting-note"]) {
     let elem = document.getElementById(mode);
     // console.log(`[LeftButtons.modeRef] elem:${elem} id:${elem?.id}`);
     if (elem.id == oldMode) {

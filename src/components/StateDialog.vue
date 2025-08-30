@@ -37,7 +37,7 @@
 
 </template>
 
-<style>
+<style scoped>
 .bg-color-state {
   background-color: v-bind(bgColor) !important;
 }
