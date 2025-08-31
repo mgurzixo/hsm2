@@ -228,7 +228,7 @@ export class Ctr extends CbaseElem {
     svg = svg.replace(/\n/g, " "); // Poses problem when printing to PDF
     // console.log(`[Ctr.paint] (${this.id}) svg:${svg}`);
     this.svgElem.innerHTML = svg;
-    this.tag.paint();
+    this.tag.setVisibility(U.isJunction(this.from.id) ? false : true);
   }
 
   makeTag() {
@@ -365,8 +365,8 @@ export class Ctr extends CbaseElem {
     [this.from.prevX, this.from.prevY] = [x0, y0];
     [this.to.prevX, this.to.prevY] = [x1, y1];
     segments = T.createSegments(this);
-    console.warn(`[Ctr.createSimpleSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
-    console.log(`[Ctr.createSimpleSegments] Segments:${JSON.stringify(segments)}`);
+    // console.warn(`[Ctr.createSimpleSegments] (${this.id}) prevX:${this.from.prevX} prevY:${this.from.prevY}`);
+    // console.log(`[Ctr.createSimpleSegments] Segments:${JSON.stringify(segments)}`);
     return segments;
   }
 
@@ -458,6 +458,8 @@ export class Ctr extends CbaseElem {
     const lastSeg = this.segments[this.segments.length - 1];
     const comesFromOutside = U.comesFromOutside(this.to.side, lastSeg.dir);
     const comesFromInside = U.comesFromInside(this.to.side, lastSeg.dir);
+    const fromJunction = U.isJunction(this.from.id);
+    const toJunction = U.isJunction(this.to.id);
     if (this.from.id == this.to.id) {
       if (U.isJunction(this.from.id)) return false;
       if (this.from.side != this.to.side) return false;
@@ -469,14 +471,17 @@ export class Ctr extends CbaseElem {
       return true;
     }
     if (fromState.isSuperstate(this.to.id)) {
-      if (!goesToInside || !comesFromOutside) return false;
+      if (!goesToInside) return false;
+      if (!toJunction && !comesFromOutside) return false;
       return true;
     }
     if (fromState.isSubstate(this.to.id)) {
-      if (!goesToOutside || !comesFromInside) return false;
+      if (!comesFromInside) return false;
+      if (!fromJunction && !goesToOutside) return false;
       return true;
     }
-    if (!goesToOutside || !comesFromOutside) return false;
+    if (!fromJunction && !goesToOutside) return false;
+    if (!toJunction && !comesFromOutside) return false;
     return true;
   }
 

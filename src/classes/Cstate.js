@@ -19,6 +19,8 @@ class CbaseState extends CbaseElem {
     this.titleElem = document.createElement("div");
     this.titleElem.id = "titleElem_" + this.id;
     this.myElem.append(this.titleElem);
+    this.infoElem = document.createElement("div");
+    this.myElem.prepend(this.infoElem);
     this.setGeometry();
   }
 
@@ -122,6 +124,11 @@ export class Cstate extends CbaseState {
     se.border = `solid ${borderWidth}px ${borderColor}`;
   }
 
+  paintInfo() {
+    const ie = this.titleElem;
+    ie.infoElem = "Hello world";
+  }
+
   paint() {
     const se = this.myElem.style;
     // const g = this.geo;
@@ -147,6 +154,7 @@ export class Cstate extends CbaseState {
     te.style.font = `${(s.titleTextSizePc / 100) * th + "mm"} ${s.titleTextFont}`;
     te.style.color = s.titleText;
     te.innerHTML = `<div style="height:100%; display:flex; align-items: center; justify-content:center; text-wrap: nowrap; ">${this.id}: ${this.name}</div></div>`;
+    this.paintInfo();
     for (let child of this.children) child.setGeometry();
   }
 

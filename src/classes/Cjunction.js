@@ -49,6 +49,8 @@ export class Cjunction extends CbaseElem {
     const t = hsm.settings.styles.tr;
 
     let color = new Color(j.color);
+    color.lch.c = j.trChroma;
+    color.lch.l = j.trLight;
     const trLine = color.to("srgb") + "";
     color.lch.c = j.bgChroma;
     color.lch.l = j.bgLight;
@@ -266,7 +268,8 @@ export class Cjunction extends CbaseElem {
   }
 
   checkOpenDialogAndEndDrag() {
-    // console.log(`Cjunction.checkOpenDialogAndEndDrag](${ this.id; }) justCreated:${ this.justCreated; } `);
+    console.log(`Cjunction.checkOpenDialogAndEndDrag](${this.id
+      }) justCreated: ${this.justCreated}`);
     if (this.justCreated == true) {
       this.openDialog();
       delete this.justCreated;

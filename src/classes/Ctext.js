@@ -28,6 +28,7 @@ export class Ctext extends CbaseElem {
     this.text = textOptions?.text || "";
     this.widthAuto = textOptions?.widthAuto || true;
     this.container = textOptions.container || this.parent;
+    this.visibility = textOptions.visibility || true;
 
     this.setGeometry();
     const s = this.myElem.style;
@@ -81,10 +82,14 @@ export class Ctext extends CbaseElem {
     this.font = font;
   }
 
+  setVisibility(visibility) {
+    this.visibility = visibility;
+    this.paint();
+  }
+
   paint() {
     function rgbToRgba(rgb, opacity) {
       if (!rgb) return rgb;
-      const transparencyPc = ((1 - opacity) * 100).toFixed();
       const rgba = rgb.replace(")", ` /${opacity})`);
       // console.log(`[Ctext.rgbToRgba] rgb:"${rgb}" rgba:"${rgba}"`);
       return rgba;
@@ -93,6 +98,8 @@ export class Ctext extends CbaseElem {
     const s = this.myElem.style;
     const g = this.geo;
     const styles = this.styles == "parentStyle" ? this.parent.styles : this.styles;
+    if (!this.visibility) s.visibility = "hidden";
+    else s.visibility = "visible";
     // console.log(`[Ctext.paint] (${this.id}) (${this.styles} parent:${this.parent.id})  styles:${JSON.stringify(styles)}`);
     // console.log(`[Ctext.paint] (${this.id}) (${this.styles} parent:${this.parent.id})  styles:${JSON.stringify(styles)}`);
     let lw = styles?.tagBorderWidth;

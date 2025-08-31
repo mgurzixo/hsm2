@@ -5,15 +5,18 @@
     <button-burger class=""></button-burger>
     <q-btn class="bg-amber-2 q-btn--active" outline round icon="mdi-open-in-app" @click="doLoadHsm" />
 
-    <q-btn id="inserting-state" class="bg-amber-2 elem-button" outline round icon="mdi-rectangle-outline"
-      @click.stop="modeRef = 'inserting-state'" />
+    <q-btn id="inserting-state" class="bg-amber-2 elem-button" outline round @click.stop="modeRef = 'inserting-state'">
+      <q-icon :size="'24'" class="q-mx-xs">
+        <HsmStateIcon />
+      </q-icon>
+    </q-btn>
     <q-btn id="inserting-trans" class="bg-amber-2 elem-button" outline round icon="mdi-arrow-right-top"
       @click.stop="modeRef = 'inserting-trans'" />
     <q-btn id="inserting-junction" class="bg-amber-2 elem-button rotate-90" outline round icon="mdi-minus-thick"
       @click.stop="modeRef = 'inserting-junction'" />
     <q-btn id="inserting-choice" class="bg-amber-2 elem-button" outline round icon="mdi-rhombus-outline"
       @click.stop="modeRef = 'inserting-choice'" />
-    <q-btn id="inserting-note" class="bg-amber-2 elem-button" outline round icon="mdi-note-outline"
+    <q-btn id="inserting-note" class="bg-amber-2 elem-button flip-v" outline round icon="mdi-note-outline"
       @click.stop="modeRef = 'inserting-note'" />
     <div></div>
     <!-- <q-btn class="bg-amber-1" outline round icon="mdi-magnify-plus" @click="doZoom(1)" />
@@ -27,7 +30,7 @@
   <!-- </div> -->
 </template>
 
-<style lang="css">
+<style lang="css" scoped>
 .left-container {
   margin: 1px;
 }
@@ -48,6 +51,10 @@
 .rotate-90 #i {
   transform: rotate(90deg);
 }
+
+.flip-v {
+  transform: scale(1, -1);
+}
 </style>
 
 <script setup>
@@ -59,9 +66,9 @@ import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/rootElemListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
-// import mdCss from "src/css/markdown.css?raw";
-// import katexCss from "src/css/katex.min.css?raw";
+
 import { doPdf } from "src/lib/doPdf";
+import HsmStateIcon from "components/icons/HsmStateIcon.vue";
 
 async function doLoadHsm() {
   await loadHsm();
