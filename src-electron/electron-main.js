@@ -145,7 +145,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('doPrint', async (event, data) => {
     // console.log(`[Electron-main.doPrint] mdCss:${JSON.stringify(data.mdCss)}`);
-    await printWindow.loadURL(data.html);
+    // Ensure special characters in HTML are percent-encoded for data URL
+    const encodedHtml = encodeURIComponent(data.html);
+    const dataUrl = `data:text/html;charset=utf-8,${encodedHtml}`;
+    await printWindow.loadURL(dataUrl);
     if (data.css) for (let css of data.css) await printWindow.webContents.insertCSS(css, { cssOrigin: 'author' });
     const pdfContent = await printWindow.webContents.printToPDF(data.options);
     return pdfContent;
