@@ -65,15 +65,15 @@ async function createWindow() {
     await mainWindow.loadFile("index.html");
   }
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools();
   } else {
     // we're on production; no access to devtools pls
-    // mainWindow.webContents.on("devtools-opened", () => {
-    //   mainWindow.webContents.closeDevTools();
-    // });
+    mainWindow.webContents.on("devtools-opened", () => {
+      mainWindow.webContents.closeDevTools();
+    });
   }
 
   mainWindow.on("closed", () => {
