@@ -8,6 +8,8 @@ import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { stateStyles } from "src/lib/styles";
 import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
 import StateDialog from "src/components/StateDialog.vue";
+import he from "he";
+
 
 class CbaseState extends CbaseElem {
   constructor(parent, options, type) {
@@ -20,7 +22,10 @@ class CbaseState extends CbaseElem {
     this.titleElem.id = "titleElem_" + this.id;
     this.myElem.append(this.titleElem);
     this.infoElem = document.createElement("div");
-    this.myElem.prepend(this.infoElem);
+    this.myElem.append(this.infoElem);
+    this.entry = options.entry || "";
+    this.exit = options.exit || "";
+    this.include = options.include || "";
     this.setGeometry();
   }
 
@@ -125,8 +130,27 @@ export class Cstate extends CbaseState {
   }
 
   paintInfo() {
-    const ie = this.titleElem;
-    ie.infoElem = "Hello world";
+    const ie = this.infoElem;
+    const ies = this.infoElem.style;
+    const iev = hsm.settings.styles.state.info;
+    ies.fontSize = iev.sizeMm + "mm";
+    ies.display = "block";
+    ies.textOverflow = "ellipsis";
+    ies.margin = iev.marginMm + "mm";
+    ies.overflow = "hidden";
+    ies.whiteSpace = "nowrap";
+    ies.color = iev.textColor;
+    ies.background = iev.backgroundColor;
+    ies.fontFamily = iev.font;
+    ie.innerHTML = "";
+    if (this.entry) ie.innerHTML += `<strong style="display:inline-block; width:1.5em;">E/ </strong>${this.entry}<br/>`;
+    if (this.exit) ie.innerHTML += `<strong style="display:inline-block; width:1.5em;">X/</strong>${this.exit}<br/>`;
+    if (this.include) {
+      const inc = this.include.replace(/\n/g, '<br/><div style="display:inline-block; width:1.5em;"></div>');
+      ie.innerHTML += `<strong  style="display:inline-block; width:1.5em;">I/</strong>${inc}`;
+    }
+    // ie.innerHTML = `<strong style="display:inline-block; width:1.5em;">E/ </strong>${this.entry}<br/><strong style="display:inline-block; width:1.5em;">X/</strong>${this.exit}<br/><strong  style="display:inline-block; width:1.5em;">I/</strong>${inc}`;
+    // ie.padding = "4px";
   }
 
   paint() {

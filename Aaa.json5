@@ -61,6 +61,13 @@
         bg: { chroma: 30, light: 98 },
         titleBg: { chroma: 50, lights: [80, 95] },
         titleText: { chroma: 100, light: 5, font: "sans-serif", sizePc: 70 },
+        info: {
+          sizeMm: "2.5",
+          font: "sans-serif",
+          textColor: "black",
+          backgroundColor: "transparent",
+          marginMm: "2",
+        },
       },
       text: {
         sizeMm: 2.5,
@@ -193,6 +200,9 @@
                   id: "S9",
                   name: "9th state",
                   color: "green",
+                  entry: "doEntry()",
+                  exit: "doExit(), secondExit()",
+                  include: "#include1\n#include2",
                   geo: { x0: 20, y0: 50, width: 60, height: 60 },
                   regions: [
                     {
