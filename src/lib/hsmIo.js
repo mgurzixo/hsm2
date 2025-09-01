@@ -49,7 +49,7 @@ function writeHsm(filePath, hsm) {
 
 export async function loadHsm() {
   // let filePath = "/home/mgouget/dev/hsm2/Aaa.json5";
-  let filePath = "Aaa.json5";
+  let filePath = "./Aaa.json5";
   const hsmObj = readHsm(filePath);
   if (hsm) {
     await hsm.load(hsmObj);

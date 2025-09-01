@@ -8,7 +8,6 @@ import { hsm, cCtx, hCtx, modeRef, hElems } from "src/classes/Chsm";
 import { stateStyles } from "src/lib/styles";
 import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
 import StateDialog from "src/components/StateDialog.vue";
-import he from "he";
 
 
 class CbaseState extends CbaseElem {
