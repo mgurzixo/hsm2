@@ -195,7 +195,7 @@ export class Cjunction extends CbaseElem {
         dragCtx.trsSegments[tr.id] = structuredClone(tr.segments);
       }
     }
-    console.log(`[Cjunction.dragStart](${this.id})(width: ${dragCtx.width.toFixed()}, height: ${dragCtx.height.toFixed()})(x: ${x.toFixed()}, y: ${y.toFixed()}), (x0: ${dragCtx.x0.toFixed()}, y0:${dragCtx.y0.toFixed()}) (dx0: ${dragCtx.dx0.toFixed()}, dy0:${dragCtx.dy0.toFixed()})`);
+    // console.log(`[Cjunction.dragStart](${this.id})(width: ${dragCtx.width.toFixed()}, height: ${dragCtx.height.toFixed()})(x: ${x.toFixed()}, y: ${y.toFixed()}), (x0: ${dragCtx.x0.toFixed()}, y0:${dragCtx.y0.toFixed()}) (dx0: ${dragCtx.dx0.toFixed()}, dy0:${dragCtx.dy0.toFixed()})`);
     hCtx.setDragCtx(dragCtx);
     this.raise();
     this.parent.raiseJunctions();
@@ -268,8 +268,7 @@ export class Cjunction extends CbaseElem {
   }
 
   checkOpenDialogAndEndDrag() {
-    console.log(`Cjunction.checkOpenDialogAndEndDrag](${this.id
-      }) justCreated: ${this.justCreated}`);
+    // console.log(`Cjunction.checkOpenDialogAndEndDrag](${this.id}) justCreated: ${this.justCreated}`);
     if (this.justCreated == true) {
       this.openDialog();
       delete this.justCreated;

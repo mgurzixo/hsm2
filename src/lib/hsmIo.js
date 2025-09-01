@@ -21,8 +21,8 @@ function readHsm(filePath) {
     return hsm;
   } catch (error) {
     let str = `[io.loadHsm] error:${error}`;
-    console.error(str);
-    notifyError(str);
+    console.warn(str);
+    notifyWarning(str);
     return null;
   }
 }
@@ -50,7 +50,7 @@ function writeHsm(filePath, hsm) {
 export async function loadHsm(filePath = "./Aaa.json5") {
   // console.log(`[hsmio.loadHsm] filePath:${filePath}`);
   const hsmObj = readHsm(filePath);
-  if (hsm) {
+  if (hsm && hsmObj) {
     await hsm.load(hsmObj);
     notifyOk(`"${filePath}" loaded.`);
   }

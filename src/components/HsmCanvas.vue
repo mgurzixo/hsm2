@@ -48,6 +48,7 @@ import { loadHsm } from "src/lib/hsmIo";
 import { setCursor } from "src/lib/cursor";
 // import doc from "pdfkit";
 import { applyToPoint } from 'transformation-matrix';
+import { defaultHsm } from "src/lib/defaultSettings";
 
 let resizeObserver;
 let rootElem;
@@ -122,7 +123,10 @@ V.onMounted(async () => {
   resizeObserver = new ResizeObserver(adjustSizes);
   resizeObserver.observe(rootElem.parentElement);
   const canvas = canvasRef.value;
+  defaultHsm.myElem = rootElem;
+  defaultHsm.canvas = canvas;
   new Chsm(null, { name: "Hsm", myElem: rootElem, canvas: canvas });
+  await hsm.load(defaultHsm);
   await loadHsm(); // For devpt
   setRootElemListeners(rootElem);
   hsm.handleRightClick = handleRightClick;

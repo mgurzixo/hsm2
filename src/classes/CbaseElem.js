@@ -46,7 +46,7 @@ export class CbaseElem {
     // console.log(`[CbaseElem.constructor] myElemId:${this.myElem?.id} [x0:${g.x0.toFixed(2)}, y0:${g.y0.toFixed(2)}] [xx0:${g.xx0.toFixed(2)}, yy0:${g.yy0.toFixed(2)}]`);
     if (options.color) this.color = options.color;
     else if (options.settings?.styles?.defaultColor) this.color = options.settings.styles.defaultColor;
-    else if (hsm) this.color = hsm.settings.styles.defaultColor;
+    else if (hsm) this.color = hsm.settings?.styles?.defaultColor;
     else this.color = "grey";
     this.isSelected = false;
     if (options.justCreated) this.justCreated = options.justCreated;

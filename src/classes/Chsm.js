@@ -24,6 +24,7 @@ export class Chsm extends CbaseElem {
   constructor(parent, options) {
     super(null, options, "M");
     this.canvas = options.canvas; // TODO
+    this.status = options.status || { serNum: 2 };
     this.setCanvas(this.canvas);
     this.initialise();
     // console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
@@ -32,7 +33,6 @@ export class Chsm extends CbaseElem {
   initialise() {
     this.settings = {};
     this.children = [];
-    this.status = { serNum: 2 };
     this.hElems = new ChElems();
     hElems = this.hElems;
     this.hCtx = new ChCtx();
@@ -40,6 +40,8 @@ export class Chsm extends CbaseElem {
     hsm = this;
     this.inhibitDrag = false;
     this.isPrinting = false;
+    hCtx.folio = hElems.getElemById(this.status.activeFolio);
+    // console.log(`[Chsm.initialise] activeFolio:${this.status.activeFolio} hCtx.folio:${hCtx.folio}`);
   }
 
   destroy() {

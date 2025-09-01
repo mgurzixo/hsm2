@@ -12,15 +12,13 @@ export class Cfolio extends CregionWithStates {
   constructor(parent, folioOptions) {
     super(parent, folioOptions, "F");
     this.trs = [];
-    // this.myElem.innerHTML = "<h1>HelloWorldHelloWorldHelloWorld</h1>";
     this.myElem.style.overflow = `hidden`;
-    // console.log(`[Cfolio.constructor] myElem:${this.myElem}`);
+    // console.log(`[Cfolio.constructor] (${this.id}) myElem:${this.myElem}`);
     this.setFolioDisplay(false);
     // Set initial values
     this.trElem = document.createElement("div");
     this.trElem.id = "trElem_" + this.id;
     this.myElem.append(this.trElem);
-    // this.setGeometry();
     if (folioOptions.trs)
       for (let trOptions of folioOptions.trs) {
         this.addTr(trOptions);
