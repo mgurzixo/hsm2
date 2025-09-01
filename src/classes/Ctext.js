@@ -43,7 +43,7 @@ export class Ctext extends CbaseElem {
   }
 
   setContainer(container) {
-    console.log(`[Ctext.setContainer] (${this.id}) container:${container?.id}`);
+    // console.log(`[Ctext.setContainer] (${this.id}) container:${container?.id}`);
     this.container = container;
   }
 

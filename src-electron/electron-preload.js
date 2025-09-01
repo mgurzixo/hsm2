@@ -76,9 +76,10 @@ contextBridge.exposeInMainWorld("hsm2Api", {
     let res = await ipcRenderer.invoke("doPrint", data);
     return res;
   },
-  // toPrintWindow: async (data) => {
-  //   console.log(`[electron-preload.toPrintWindow] data:${data}`);
-  //   let res = ipcRenderer.invoke("doPrint", data);
-  //   return res;
-  // },
+
+  dialogOpen: async (data) => {
+    // console.log(`[electron-preload.printToPDF] data:${data}`);
+    let filePath = await ipcRenderer.invoke("dialogOpen", data);
+    return filePath;
+  },
 });

@@ -1,12 +1,10 @@
 <template>
   <q-menu :anchor="myMenu.anchor" :self="myMenu.self" :class="myMenu.class">
-    <div
-      v-for="item in myMenu.items"
-      :key="item.label"
-      class="q-list q-list--dense"
-      :style="`min-width:${myMenu.minWidth}`"
-    >
-      <q-item v-if="item.label != '-'" clickable>
+    <div v-for="item in myMenu.items" :key="item.label" class="q-list q-list--dense"
+      :style="`min-width:${myMenu.minWidth}`">
+      <q-separator v-if="item.label == '-'"></q-separator>
+
+      <q-item v-else-if="item.menu" clickable>
         <q-item-section avatar>
           <q-icon :name="item.icon" />
         </q-item-section>
@@ -15,18 +13,9 @@
           <q-icon name="keyboard_arrow_right" />
         </q-item-section>
 
-        <q-menu
-          v-if="item.menu"
-          :anchor="item.menu.anchor"
-          :self="item.menu.self"
-          :class="item.menu.class"
-        >
-          <div
-            v-for="item2 in item.menu.items"
-            :key="item2.label"
-            class="q-list q-list--dense"
-            :style="`min-width:${item.menu.minWidth}`"
-          >
+        <q-menu v-if="item.menu" :anchor="item.menu.anchor" :self="item.menu.self" :class="item.menu.class">
+          <div v-for="item2 in item.menu.items" :key="item2.label" class="q-list q-list--dense"
+            :style="`min-width:${item.menu.minWidth}`">
             <q-item v-if="item2.label != '-'" clickable v-close-popup @click="item2.click">
               <q-item-section avatar>
                 <q-icon :name="item2.icon" />
@@ -38,7 +27,13 @@
         </q-menu>
       </q-item>
 
-      <q-separator v-else></q-separator>
+      <q-item v-else clickable v-close-popup @click="item.click">
+        <q-item-section avatar>
+          <q-icon :name="item.icon" />
+        </q-item-section>
+        <q-item-section>{{ item.label }}</q-item-section>
+      </q-item>
+
     </div>
   </q-menu>
 </template>
@@ -47,7 +42,8 @@
 .width100 {
   width: 100%;
 }
-.q-list--dense > .q-item {
+
+.q-list--dense>.q-item {
   padding: 4px 4px 4px 4px;
 }
 
@@ -73,5 +69,5 @@ const props = defineProps({
 
 const myMenu = V.ref(props.menu);
 
-V.onMounted(() => {});
+V.onMounted(() => { });
 </script>

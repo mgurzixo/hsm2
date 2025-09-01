@@ -38,9 +38,15 @@ export async function doPdf() {
     page.css = [mdCss, katexCss];
     first = false;
   }
-  // console.log(`[doPdf.doPdf]`);
+  // console.log(`[toNative.doPdf]`);
   let pdfString = await window.hsm2Api.printToPDF(page);
   const blob = new Blob([pdfString], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   myWin = window.open(url, '_blank');
+}
+
+export async function dialogOpen(options) {
+  let filePath = await window.hsm2Api.dialogOpen(options);
+  // console.log(`[toNative.dialogOpen] filePath:${filePath}`);
+  return filePath;
 }

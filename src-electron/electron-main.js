@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, WebContentsView } from "electron";
+import { app, BrowserWindow, Menu, ipcMain, WebContentsView, dialog } from "electron";
 import { initialize, enable } from "@electron/remote/main/index.js";
 import path from "node:path";
 import os from "node:os";
@@ -79,24 +79,8 @@ async function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
-  console.log(`Hello PDF`);
+  // console.log(`Hello PDF`);
 }
-
-ipcMain.handle('doPdf', async (event, data) => {
-  const pdfContent = await mainWindow.webContents.printToPDF({});
-  const pdfPath = path.join(os.homedir(), 'Desktop', 'temp.pdf');
-  try {
-    // console.log(`[electron-main.writePdf] pdfPath:${pdfPath} `);
-    // fs.writeFile(pdfPath, data, (error) => {
-    //   if (error) throw error;
-    //   console.log(`Wrote PDF successfully to ${pdfPath}`);
-    return pdfContent;
-  }
-  catch (error) {
-    console.log(`Error creating PDF:${error}`);
-  };
-  return null;
-});
 
 app.on("window-all-closed", () => {
   if (platform !== "darwin") {
@@ -125,22 +109,9 @@ app.whenReady().then(() => {
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
     },
   });
-
-  // mainWindow.webContents.openDevTools();
   printWindow.webContents.openDevTools();
 
-  const data0 = `
-        data:text/html;charset=utf-8,<head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <meta name="viewport" content="width=400mm, initial-scale=1.0" />
-        <title>My Title</title>
-        <style type="text/css">page-break-before: always; @page{margin: 0;} </style>
-        </head>
-        <body style="margin: 0; padding: 0;">
-        HELLO!!!
-        </body>`;
-  // printWindow.webContents.loadUrl(myData);
-  // const blob = new Blob([myData], { type: 'text/html' });
-  // const url = URL.createObjectURL(blob);
+  const data0 = `data:text/html;charset=utf-8,<body style="margin: 0; padding: 0;"> HELLO! </body>`;
   printWindow.loadURL(data0);
 
   ipcMain.handle('doPrint', async (event, data) => {
@@ -153,6 +124,21 @@ app.whenReady().then(() => {
     const pdfContent = await printWindow.webContents.printToPDF(data.options);
     return pdfContent;
   });
+
+  ipcMain.handle('dialogOpen', async (event, data) => {
+    // console.log(`[Electron-main.dialogOpen]`);
+    const filePaths = await dialog.showOpenDialog(mainWindow,
+      {
+        properties: ['openFile'], filters: [
+          { name: 'Hsm2', extensions: ['hsm2', 'json', 'json5'] },
+        ]
+      }
+    );
+    // console.log(`[Electron-main.dialogOpen] filePaths:${JSON.stringify(filePaths)}`);
+    if (filePaths.canceled) return null;
+    return filePaths.filePaths[0];
+  });
+
 })
 
 

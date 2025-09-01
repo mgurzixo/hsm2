@@ -1,15 +1,16 @@
 "use strict";
 
 import { loadHsm, saveHsm } from "src/lib/hsmIo";
-import { hsm } from "src/classes/Chsm";
+import { doPdf, dialogOpen } from "src/lib/toNative";
 
 function doExit() {
   window.close();
 }
 
 async function doLoadHsm() {
-  await loadHsm();
-  hsm.draw();
+  const filePath = await dialogOpen();
+  // console.log(`[burgerMenu.doLoadHsm] filePath:${filePath}`);
+  if (filePath) await loadHsm(filePath);
 }
 
 const burgerMenu = {

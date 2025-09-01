@@ -61,14 +61,14 @@
 import * as V from "vue";
 import * as U from "src/lib/utils";
 import ButtonBurger from "components/ButtonBurger.vue";
-import { loadHsm, saveHsm } from "src/lib/hsmIo";
 import { hsm, hCtx, hElems, cCtx, modeRef } from "src/classes/Chsm";
 import { mousePos } from "src/lib/rootElemListeners";
 import { R, RR } from "src/lib/utils";
 import { Ctr } from "src/classes/Ctr";
-
-import { doPdf } from "src/lib/doPdf";
 import HsmStateIcon from "components/icons/HsmStateIcon.vue";
+
+import { doPdf, dialogOpen } from "src/lib/toNative";
+import { loadHsm, saveHsm } from "src/lib/hsmIo";
 
 async function doLoadHsm() {
   await loadHsm();
@@ -96,6 +96,9 @@ V.watch(modeRef, (newMode, oldMode) => {
 });
 
 async function doTest() {
+  // const filePath = await dialogOpen();
+  // console.log(`[LeftButtons.doTest] filePath:${filePath}`);
+  // if (filePath) await loadHsm(filePath);
 }
 
 V.onMounted(async () => {
