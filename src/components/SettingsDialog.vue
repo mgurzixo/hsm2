@@ -4,6 +4,16 @@
       <q-card-section :style="dialogSectionStyle">
         <div class="text-h6">HSM Settings</div>
       </q-card-section>
+
+      <q-card-section :style="dialogSectionStyle">
+        <div v-if="isSubDialog && breadcrumb.length" class="q-mb-sm Xtext-caption text-body1">
+          <span v-for="(crumb, idx) in breadcrumb" :key="idx">
+            <span>{{ crumb }}</span>
+            <span v-if="idx < breadcrumb.length - 1"> &gt; </span>
+          </span>
+        </div>
+      </q-card-section>
+
       <q-separator />
       <q-card-section :style="dialogSectionStyle">
         <div v-for="(value, key) in settings" :key="key" class="q-mb-md">
@@ -26,7 +36,8 @@
         <q-btn flat label="OK" color="primary" @click="closeSubDialog" :style="inputStyle" />
       </q-card-actions>
     </q-card>
-    <SettingsDialog v-if="subDialog.show" v-model="subDialog.show" :element="subDialog.value" :is-sub-dialog="true" />
+    <SettingsDialog v-if="subDialog.show" v-model="subDialog.show" :element="subDialog.value" :is-sub-dialog="true"
+      :breadcrumb="subDialog.breadcrumb" />
   </q-dialog>
 </template>
 
@@ -39,9 +50,15 @@ import SettingsDialog from './SettingsDialog.vue';
 const props = defineProps({
   modelValue: Boolean,
   element: Object,
-  isSubDialog: Boolean
+  isSubDialog: Boolean,
+  breadcrumb: {
+    type: Array,
+    default: () => []
+  }
 });
 const emit = defineEmits(['update:modelValue', 'apply']);
+
+const breadcrumb = props.breadcrumb || [];
 
 const show = ref(props.modelValue);
 watch(() => props.modelValue, v => show.value = v);
@@ -61,10 +78,11 @@ function isNumber(val) { return typeof val === 'number'; }
 function isBoolean(val) { return typeof val === 'boolean'; }
 function isObjectOrArray(val) { return val && typeof val === 'object'; }
 
-const subDialog = reactive({ show: false, value: null });
+const subDialog = reactive({ show: false, value: null, breadcrumb: [] });
 function openSubDialog(key, value) {
   subDialog.value = value;
   subDialog.show = true;
+  subDialog.breadcrumb = [...breadcrumb, key];
 }
 function closeSubDialog() {
   subDialog.show = false;
