@@ -93,7 +93,10 @@ export const defaultHsm = {
         arrowLengthMm: 3,
         arrowWidthMm: 0.75,
       },
-      defaultColor: "darkorange",
+    },
+    dialogs: {
+      background: "#fae8cbff", // match $secondary
+      textColor: "#322101ff", // match $secondary
     },
   },
   status: {

@@ -13,6 +13,7 @@
         {{ fText }}&nbsp;
       </div>
     </div>
+    <SettingsDialog v-model="showSettingsDialog" />
   </div>
 </template>
 
@@ -67,12 +68,21 @@
 import * as V from "vue";
 import * as U from "src/lib/utils";
 import { fText } from "src/lib/utils";
+
 import LeftButtons from "components/LeftButtons.vue";
 import HsmCanvas from "components/HsmCanvas.vue";
+import SettingsDialog from "components/SettingsDialog.vue";
+
 
 const activefolio = V.ref("F1");
 const canvasElem = V.ref(null);
 let resizeObserver;
+
+// Settings dialog state
+const showSettingsDialog = V.ref(false);
+
+// Expose a global function for the burger menu to open the dialog
+window.openSettingsDialog = () => { showSettingsDialog.value = true; };
 
 
 function adjustSizes() {

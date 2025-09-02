@@ -41,6 +41,7 @@ import * as U from "src/lib/utils";
 import * as V from "vue";
 import PopupMenu from "src/components/PopupMenu.vue";
 import StateDialog from "src/components/StateDialog.vue";
+import SettingsDialog from "src/components/SettingsDialog.vue";
 import contextMenu from "src/menus/contextMenu";
 import { setRootElemListeners, removeRootElemListeners } from "src/lib/rootElemListeners";
 import { Chsm, hsm, hCtx } from "src/classes/Chsm";
@@ -55,9 +56,9 @@ let rootElem;
 // let vpElem;
 const canvasRef = V.ref(null);
 const contextAnchor = V.ref(null);
+const dialogStack = V.reactive([]); // Stack for nested dialogs
 const dialogToggle = V.ref(false);
 const dialogComponent = V.shallowRef(null);
-const trDialogToggle = V.ref(false);
 const element = V.ref(null);
 const elementId = V.ref(null);
 
@@ -76,16 +77,41 @@ function handleRightClick(xP, yP) {
 
 V.watch(dialogToggle, (newToggle) => {
   // console.log(`[HsmCanvas.watch.element] newToggle:${newToggle}`);
-  if (newToggle == false) hsm.makeIdzP();
+  if (newToggle == false) {
+    hsm.makeIdzP();
+    // If a settings dialog was closed, pop stack
+    if (dialogStack.length > 0) closeSettingsDialog();
+  }
 });
 
 function openElementDialog(myDialog, myElement) {
-  // console.log(`[HsmCanvas.openElementDialog]`);
+  // For SettingsDialog, support stacking for nested objects
+  if (myDialog === SettingsDialog && typeof myElement === 'object' && !Array.isArray(myElement)) {
+    dialogStack.push({ dialog: myDialog, element: myElement });
+    dialogComponent.value = myDialog;
+    element.value = myElement;
+    elementId.value = undefined;
+    dialogToggle.value = true;
+    return;
+  }
+  // For other dialogs (state, note, etc.)
   dialogComponent.value = myDialog;
   if (dialogComponent.value) {
     element.value = myElement;
     elementId.value = myElement.id;
     dialogToggle.value = true;
+  }
+}
+
+function closeSettingsDialog() {
+  dialogStack.pop();
+  if (dialogStack.length > 0) {
+    const top = dialogStack[dialogStack.length - 1];
+    dialogComponent.value = top.dialog;
+    element.value = top.element;
+    dialogToggle.value = true;
+  } else {
+    dialogToggle.value = false;
   }
 }
 
