@@ -38,9 +38,20 @@ export class CregionWithStates extends CbaseElem {
       }
     }
     if (regionOptions.states) {
-      for (let stateOptions of regionOptions.states) {
-        this.addState(stateOptions);
+
+      if (regionOptions.states.isArray)
+        for (let regionOptions of regionOptions.states) {
+          // console.log(`[Cstate.constructor] RegionId:${ id; } `);
+          this.addRegion(regionOptions);
+        }
+      else for (let stateId of Object.keys(regionOptions.states)) {
+        // console.log(`[Cstate.constructor] stateId:${ id; } `);
+        this.addState(regionOptions.states[stateId]);
       }
+
+      // for (let stateOptions of regionOptions.states) {
+      //   this.addState(stateOptions);
+      // }
     }
   }
 

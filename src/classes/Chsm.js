@@ -8,6 +8,7 @@ import { ChElems } from "src/classes/ChElems";
 import { ChCtx } from "src/classes/ChCtx";
 import { Cfolio } from "src/classes/Cfolio";
 import { setDoubleClickTimeout, mousePos } from "src/lib/rootElemListeners";
+import { defaultHsm } from "src/lib/defaultSettings";
 import { applyToPoint } from 'transformation-matrix';
 import { setCursor } from "src/lib/cursor";
 
@@ -60,12 +61,37 @@ export class Chsm extends CbaseElem {
     this.destroy();
     this.initialise();
 
-    this.settings = hsmOptions.settings;
-    this.status = hsmOptions.status;
+    // Merge default settings with loaded settings (deep merge for nested objects)
+    function deepMerge(defaults, loaded) {
+      if (typeof defaults !== 'object' || defaults === null) return loaded;
+      let result = Array.isArray(defaults) ? [...defaults] : { ...defaults };
+      for (const key in defaults) {
+        if (Object.prototype.hasOwnProperty.call(loaded || {}, key)) {
+          if (typeof defaults[key] === 'object' && defaults[key] !== null && typeof loaded[key] === 'object' && loaded[key] !== null) {
+            result[key] = deepMerge(defaults[key], loaded[key]);
+          } else {
+            result[key] = loaded[key];
+          }
+        } else {
+          result[key] = defaults[key];
+        }
+      }
+      // Add any extra keys from loaded that aren't in defaults
+      // Can be useful for code generation
+      for (const key in loaded || {}) {
+        if (!Object.prototype.hasOwnProperty.call(defaults, key)) {
+          result[key] = loaded[key];
+        }
+      }
+      return result;
+    }
+
+    this.settings = deepMerge(defaultHsm.settings, hsmOptions.settings || {});
+    this.status = hsmOptions.status || { sernum: 2 };
     this.status.serNum = hsmOptions.status?.serNum || 2;
     // console.log(`[Chsm.load] (${this.id}) serNum:${this.status.serNum}`);
 
-    setDoubleClickTimeout(hsmOptions.settings.doubleClickTimeoutMs);
+    setDoubleClickTimeout(this.settings.doubleClickTimeoutMs);
     if (hsmOptions.folios)
       for (let folioOptions of hsmOptions.folios) {
         await this.addFolio(folioOptions);

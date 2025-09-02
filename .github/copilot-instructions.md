@@ -2,16 +2,16 @@
 
 ## Project Overview
 
-- **hsm2** is a Hierarchical State Machine (HSM) editor and visualizer, built with Vue and Quasar, supporting interactive editing and visualization of state machines.
+- **hsm2** is a Hierarchical State Machine (HSM) editor and visualizer, built with Vue and Quasar in Electron mode, supporting interactive editing and visualization of state machines.
 - The main UI logic and state management are in `src/`, with core classes in `src/classes/` and UI components in `src/components/`.
-- The app is started and built using Quasar CLI (`quasar dev`, `quasar build`).
+- The app is started and built using Quasar CLI (`quasar dev -m electron`, `quasar build -m electron`).
 
 ## Key Architectural Patterns
 
-- **Class-based Model:** Core logic is organized into ES6 classes (e.g., `Cfolio`, `Cstate`, `Ctr`, `Cnote`) in `src/classes/`. Each class represents a domain concept (folio, state, transition, note) and manages its own DOM element and geometry.
+- **Class-based Model:** Core logic is organized into ES6 classes (e.g., `Cfolio`, `Cstate`, `Ctr`, `Cnote`) in `src/classes/`. Each class represents a domain concept (folio, state, transition, note) and manages its own DOM element and geometry. All classes are subclasses of CbaseElem .
 - **Direct DOM Manipulation:** Classes often manipulate their own DOM elements directly (e.g., `this.myElem.style.transform`).
 - **Hierarchical Composition:** Objects (folios, states, notes) are composed hierarchically, reflecting the HSM structure. Children are managed via arrays like `this.children`, `this.notes`, `this.trs`.
-- **Event Handling:** User interactions (wheel, drag, insert) are handled by methods on these classes, often updating geometry and triggering redraws (`hsm.draw()`).
+- **Event Handling:** User interactions (wheel, drag, insert) are handled by methods on these classes, often updating geometry and triggering redefinition their own DOM using the paint() method.
 - **Global Contexts:** Shared state and utilities are imported from `src/classes/Chsm.js` (e.g., `hsm`, `hCtx`, `modeRef`).
 
 The project is being switched from using a canvas to using DOM elements for display.

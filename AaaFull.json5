@@ -31,8 +31,8 @@
             width: 80,
             height: 40,
           },
-          regions: {
-            R4: {
+          regions: [
+            {
               id: "R4",
               name: "My region",
               geo: {
@@ -54,7 +54,7 @@
                 },
               },
             },
-          },
+          ],
         },
         {
           id: "S3",

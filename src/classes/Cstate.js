@@ -84,9 +84,14 @@ export class Cstate extends CbaseState {
     this.setStyles();
     this.paint();
     if (stateOptions.regions) {
-      for (let regionOptions of stateOptions.regions) {
+      if (stateOptions.regions.isArray)
+        for (let regionOptions of stateOptions.regions) {
+          // console.log(`[Cstate.constructor] RegionId:${ id; } `);
+          this.addRegion(regionOptions);
+        }
+      else for (let regionId of Object.keys(stateOptions.regions)) {
         // console.log(`[Cstate.constructor] RegionId:${ id; } `);
-        this.addRegion(regionOptions);
+        this.addRegion(stateOptions.regions[regionId]);
       }
     }
     if (this.children.length == 0) this.addRegion();
