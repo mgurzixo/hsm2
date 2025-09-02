@@ -24,6 +24,19 @@ const processor = unified()
   .use(rehypeStringify);
 
 export class Cnote extends CbaseElem {
+  serialise() {
+    const obj = super.serialise();
+    // Always include geo.width and geo.height (see canonical notes[] in Aaa.json5)
+    obj.geo = obj.geo || {};
+    obj.geo.width = this.geo.width;
+    obj.geo.height = this.geo.height;
+    obj.text = this.text;
+    obj.togetherSelected = this.togetherSelected;
+    obj.font = this.font;
+    obj.scale = this.scale;
+    obj.visibility = this.visibility;
+    return obj;
+  }
   constructor(parent, noteOptions, type = "N") {
     super(parent, noteOptions, type);
     // console.log(`[Cnote] New note id:${this.id} parent:${this.parent.id} ${noteOptions.container?.id}`);

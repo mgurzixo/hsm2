@@ -202,4 +202,14 @@ export class CbaseElem {
     }
   }
 
+  // Serialise all relevant properties for full UI restoration
+  serialise() {
+    // Only include properties that are needed for reload, not type/mat/matR
+    const { id, name, geo, color, isSelected, justCreated } = this;
+    const g = this.geo;
+    const geoOut = { x0: g.x0, y0: g.y0, scale: g.scale };
+
+    const obj = { id, name, geo: geoOut, color, isSelected, justCreated };
+    return obj;
+  }
 }

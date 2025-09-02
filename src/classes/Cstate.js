@@ -79,6 +79,28 @@ export class CexitSstate extends CbaseState {
 }
 
 export class Cstate extends CbaseState {
+  serialise() {
+    // Start with base serialization (id, name, color, etc.)
+    const obj = super.serialise();
+    // Serialize geometry (width, height only)
+    obj.geo = obj.geo || {};
+    obj.geo.width = this.geo.width;
+    obj.geo.height = this.geo.height;
+    // Do NOT serialize scale (always 1 for states)
+    if (obj.geo.scale !== undefined) delete obj.geo.scale;
+    // Serialize regions (as object keyed by region id)
+    if (this.children && this.children.length > 0) {
+      obj.regions = {};
+      for (const region of this.children) {
+        obj.regions[region.id] = region.serialise();
+      }
+    }
+    // Serialize entry, exit, include if present (even if empty string, to match canonical)
+    obj.entry = this.entry;
+    obj.exit = this.exit;
+    obj.include = this.include;
+    return obj;
+  }
   constructor(parent, stateOptions) {
     super(parent, stateOptions, "S");
     this.setStyles();

@@ -125,18 +125,23 @@ app.whenReady().then(() => {
     return pdfContent;
   });
 
-  ipcMain.handle('dialogOpen', async (event, data) => {
-    // console.log(`[Electron-main.dialogOpen]`);
-    const filePaths = await dialog.showOpenDialog(mainWindow,
-      {
-        properties: ['openFile'], filters: [
-          { name: 'Hsm2', extensions: ['hsm2', 'json', 'json5'] },
-        ]
-      }
-    );
-    // console.log(`[Electron-main.dialogOpen] filePaths:${JSON.stringify(filePaths)}`);
-    if (filePaths.canceled) return null;
-    return filePaths.filePaths[0];
+  ipcMain.handle('dialogOpen', async (event, options) => {
+    // Use options from renderer, fallback to openFile if not set
+    let dialogOptions = options || {};
+    if (!dialogOptions.properties) dialogOptions.properties = ['openFile'];
+    if (!dialogOptions.filters) dialogOptions.filters = [
+      { name: 'HSM', extensions: ['hsm2', 'json', 'json5'] }
+    ];
+    // If promptToCreate is set, use showSaveDialog instead
+    if (dialogOptions.promptToCreate) {
+      const result = await dialog.showSaveDialog(mainWindow, dialogOptions);
+      if (result.canceled) return null;
+      return result.filePath;
+    } else {
+      const result = await dialog.showOpenDialog(mainWindow, dialogOptions);
+      if (result.canceled) return null;
+      return result.filePaths[0];
+    }
   });
 
 })

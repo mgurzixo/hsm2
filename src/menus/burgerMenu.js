@@ -1,14 +1,20 @@
 "use strict";
 
-import { loadHsm, saveHsm } from "src/lib/hsmIo";
+import { loadHsm } from "src/lib/hsmIo";
 import { doPdf, dialogOpen } from "src/lib/toNative";
+import { doSaveHsm, doSaveAsHsm } from "src/lib/doSaveHsm";
 
 function doExit() {
   window.close();
 }
 
 async function doLoadHsm() {
-  const filePath = await dialogOpen();
+  const filePath = await dialogOpen({
+    properties: ['openFile'],
+    filters: [
+      { name: 'HSM', extensions: ['hsm2', 'json', 'json5', 'json5'] }
+    ]
+  });
   // console.log(`[burgerMenu.doLoadHsm] filePath:${filePath}`);
   if (filePath) await loadHsm(filePath);
 }
@@ -20,7 +26,8 @@ const burgerMenu = {
   minWidth: "120px",
   items: [
     { label: "Open...", icon: "mdi-open-in-app", click: doLoadHsm },
-    { label: "Save...", icon: "mdi-content-save-outline" },
+    { label: "Save...", icon: "mdi-content-save-outline", click: doSaveHsm },
+    { label: "Save as...", icon: "mdi-content-save-move-outline", click: doSaveAsHsm },
     { label: "-" },
     {
       label: "New",

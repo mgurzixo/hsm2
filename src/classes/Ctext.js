@@ -9,6 +9,17 @@ import NoteDialog from "src/components/NoteDialog.vue";
 import { fromString, inverse, toCSS, compose, transform, applyToPoint } from 'transformation-matrix';
 
 export class Ctext extends CbaseElem {
+  serialise() {
+    const obj = super.serialise();
+    obj.text = this.text;
+    obj.togetherSelected = this.togetherSelected;
+    obj.styles = this.styles;
+    obj.font = this.font;
+    obj.scale = this.scale;
+    obj.widthAuto = this.widthAuto;
+    obj.visibility = this.visibility;
+    return obj;
+  }
   constructor(parent, textOptions, type = "X") {
     super(parent, textOptions, type);
     // console.log(`[Cnote] New note id:${this.id} parent:${this.parent.id} ${textOptions.container?.id}`);

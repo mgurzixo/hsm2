@@ -22,6 +22,14 @@ export let modeRef = V.ref(""); // "inserting-state", "inserting-trans"...
 export let ctxMenu = V.ref(null);
 
 export class Chsm extends CbaseElem {
+  serialise() {
+    // Only output the top-level structure: settings, status, folios
+    return {
+      settings: this.settings,
+      status: this.status,
+      folios: this.children ? this.children.map(folio => folio.serialise()) : []
+    };
+  }
   constructor(parent, options) {
     super(null, options, "M");
     this.canvas = options.canvas; // TODO

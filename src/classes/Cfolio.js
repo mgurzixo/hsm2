@@ -33,6 +33,14 @@ export class Cfolio extends CregionWithStates {
     }
   }
 
+  serialise() {
+    const obj = super.serialise();
+    if (this.trs && this.trs.length > 0) {
+      obj.trs = this.trs.map(tr => tr.serialise());
+    }
+    return obj;
+  }
+
   destroy() {
     super.destroy();
     // console.log(`[Cfolio.destroy]`);

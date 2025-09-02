@@ -27,9 +27,9 @@ function readHsm(filePath) {
   }
 }
 
-function writeHsm(filePath, hsm) {
+export function writeHsm(filePath, hsm, pretty = true) {
   try {
-    const json = JSON.stringify(hsm);
+    const json = pretty ? JSON.stringify(hsm, null, 2) : JSON.stringify(hsm);
     let res;
     if (filePath.endsWith(".hsm2")) {
       const gzip = pako.gzip(json);

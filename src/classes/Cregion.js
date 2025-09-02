@@ -10,6 +10,25 @@ import { setDragOffset } from "src/lib/rootElemListeners";
 import { Cjunction } from "src/classes/Cjunction";
 
 export class CregionWithStates extends CbaseElem {
+  serialise() {
+    const obj = super.serialise();
+    obj.geo.width = this.geo.width;
+    obj.geo.height = this.geo.height;
+    if (this.children && this.children.length > 0) {
+      // Serialize states as an object keyed by state id, matching canonical structure
+      obj.states = [];
+      for (const state of this.children) {
+        obj.states.push(state.serialise());
+      }
+    }
+    if (this.notes && this.notes.length > 0) {
+      obj.notes = this.notes.map(note => note.serialise());
+    }
+    if (this.junctions && this.junctions.length > 0) {
+      obj.junctions = this.junctions.map(j => j.serialise());
+    }
+    return obj;
+  }
   constructor(parent, regionOptions, type) {
     super(parent, regionOptions, type);
     const g = this.geo;

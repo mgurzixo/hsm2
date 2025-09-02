@@ -71,6 +71,25 @@ export class Ctr extends CbaseElem {
     this.paint();
   }
 
+  serialise() {
+    function anchorObj(anchor) {
+      return { id: anchor.id, side: anchor.side, pos: anchor.pos };
+    }
+    // Only save the properties needed for reload and matching Aaa.json5
+    const { isInternal, trigger, guard, effect } = this;
+    const from = anchorObj(this.from);
+    const to = anchorObj(this.to);
+    const segments = [];
+    for (let segment of this.segments) {
+      segments.push({ dir: segment.dir, len: segment.len });
+    }
+    const obj = { from, to, isInternal, segments };
+    if (trigger) obj.trigger = trigger;
+    if (guard) obj.guard = guard;
+    if (effect) obj.effect = effect;
+    return obj;
+  }
+
   paint() {
     const g = hCtx.folio.geo;
     const u = U.pxPerMm;
@@ -151,7 +170,7 @@ export class Ctr extends CbaseElem {
     let [x0, y0] = T.anchorToXYF(this.from);
     this.childElem.style.top = y0 * U.pxPerMm + "px";
     this.childElem.style.left = x0 * U.pxPerMm + "px";
-    // console.log(`[Ctr.paint] (${this.id}) x0:${x0.toFixed()} y0:${y0.toFixed()}`);
+    console.log(`[Ctr.paint] (${this.id}) from:${this.from.id} x0:${x0.toFixed()} y0:${y0.toFixed()}`);
     if (!segments.length || (segments.length == 1 && segments[0].len == 0)) {
       console.log(`[Ctr.paint] (${this.id}) Degenerate`);
       svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
@@ -613,7 +632,6 @@ export class Ctr extends CbaseElem {
         bestType = type;
         bestZone = zone;
         bestD2 = d2;
-
       }
     }
     newIdz = { id: this.id, zone: bestZone, type: bestType, dist2: bestD2, x: x, y: y };

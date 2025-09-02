@@ -157,6 +157,14 @@
           guard: "Guard2",
           effect: "effect2()",
         },
+        {
+          from: { id: "S6", side: "R", pos: 0.8 },
+          to: { id: "J28", side: "L", pos: 0.3 },
+          isInternal: false,
+          trigger: "TRIG28",
+          guard: "Guard28",
+          effect: "effect28()",
+        },
       ],
       states: [
         {
@@ -172,7 +180,7 @@
                   id: "J28",
                   name: "junction_28",
                   color: "orange",
-                  geo: { x0: 60, y0: 35, width: 1.2, height: 7 },
+                  geo: { x0: 80, y0: 35, width: 1.2, height: 7 },
                 },
               ],
               notes: [
