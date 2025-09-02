@@ -7,6 +7,21 @@ import Color from "colorjs.io";
 import { Ctext } from "src/classes/Ctext";
 
 export class Cjunction extends CbaseElem {
+  serialise() {
+    const obj = super.serialise();
+    // Always include geo.width and geo.height
+    obj.geo = obj.geo || {};
+    obj.geo.width = this.geo.width;
+    obj.geo.height = this.geo.height;
+    // Serialize Cjunction-specific properties
+    obj.orientation = this.orientation;
+    obj.thickness = this.thickness;
+    obj.length = this.length;
+    obj.include = this.include;
+    obj.comment = this.comment;
+    obj.name = this.name;
+    return obj;
+  }
   constructor(parent, options = {}, type = "J") {
     super(parent, options, type);
     const g = this.geo;

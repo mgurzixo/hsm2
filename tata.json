@@ -140,7 +140,7 @@
   },
   "status": {
     "serNum": 68,
-    "filePath": "/home/mgouget/dev/hsm2/Aaa.json5",
+    "filePath": "/home/mgouget/dev/hsm2/tata.json",
     "activeFolio": "F1"
   },
   "folios": [
@@ -217,9 +217,9 @@
                   "name": "9th state",
                   "geo": {
                     "x0": 20,
-                    "y0": 50,
+                    "y0": 56.349206349206355,
                     "width": 60,
-                    "height": 60
+                    "height": 53.65079365079365
                   },
                   "color": "green",
                   "isSelected": null,
@@ -232,7 +232,7 @@
                         "y0": 5,
                         "scale": 1,
                         "width": 60,
-                        "height": 55
+                        "height": 48.65079365079365
                       },
                       "color": "darkorange",
                       "isSelected": null,
@@ -241,13 +241,13 @@
                           "id": "S7",
                           "name": "7th state",
                           "geo": {
-                            "x0": 33.492063492063494,
-                            "y0": 14.497354497354497,
+                            "x0": 20,
+                            "y0": 3.6507936507936503,
                             "width": 20,
                             "height": 30
                           },
                           "color": "orange",
-                          "isSelected": true,
+                          "isSelected": null,
                           "regions": {
                             "R32": {
                               "id": "R32",
@@ -260,7 +260,7 @@
                                 "height": 25
                               },
                               "color": "darkorange",
-                              "isSelected": true
+                              "isSelected": null
                             }
                           },
                           "entry": "",
@@ -344,12 +344,19 @@
                   "id": "J28",
                   "name": "junction_28",
                   "geo": {
-                    "x0": 80,
-                    "y0": 35,
-                    "scale": 1
+                    "x0": 158.57142857142858,
+                    "y0": 17.275132275132272,
+                    "scale": 1,
+                    "width": 13.104761904761904,
+                    "height": 1.2
                   },
                   "color": "orange",
-                  "isSelected": null
+                  "isSelected": true,
+                  "orientation": "horizontal",
+                  "thickness": 1.2,
+                  "length": 13.104761904761904,
+                  "include": "IncludeJ28",
+                  "comment": "CommentJ28"
                 }
               ]
             }
@@ -545,31 +552,23 @@
         {
           "from": {
             "id": "S6",
-            "side": "B",
-            "pos": 0.7325636518293986
+            "side": "R",
+            "pos": 0.5
           },
           "to": {
             "id": "S7",
-            "side": "R",
-            "pos": 0.43674846610637597
+            "side": "T",
+            "pos": 0.3
           },
           "isInternal": false,
           "segments": [
             {
-              "dir": "S",
-              "len": 6.029981179212129
-            },
-            {
               "dir": "E",
-              "len": 57.93650793650794
+              "len": 8.05150110961268
             },
             {
               "dir": "S",
-              "len": 37.301587301587304
-            },
-            {
-              "dir": "W",
-              "len": 14.33509301886987
+              "len": 40.451497072896
             }
           ]
         },
@@ -607,22 +606,18 @@
           },
           "to": {
             "id": "J28",
-            "side": "L",
+            "side": "T",
             "pos": 0.3
           },
           "isInternal": false,
           "segments": [
             {
               "dir": "E",
-              "len": 5
+              "len": 122.90285472082712
             },
             {
-              "dir": "S",
-              "len": 5.900000000000006
-            },
-            {
-              "dir": "E",
-              "len": 34.99999757797
+              "dir": "N",
+              "len": 14.324867724867723
             }
           ],
           "trigger": "TRIG28",

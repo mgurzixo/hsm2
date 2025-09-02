@@ -170,9 +170,9 @@ export class Ctr extends CbaseElem {
     let [x0, y0] = T.anchorToXYF(this.from);
     this.childElem.style.top = y0 * U.pxPerMm + "px";
     this.childElem.style.left = x0 * U.pxPerMm + "px";
-    console.log(`[Ctr.paint] (${this.id}) from:${this.from.id} x0:${x0.toFixed()} y0:${y0.toFixed()}`);
+    // console.log(`[Ctr.paint] (${this.id}) from:${this.from.id} x0:${x0.toFixed()} y0:${y0.toFixed()}`);
     if (!segments.length || (segments.length == 1 && segments[0].len == 0)) {
-      console.log(`[Ctr.paint] (${this.id}) Degenerate`);
+      // console.log(`[Ctr.paint] (${this.id}) Degenerate`);
       svg = `<svg version="1.1" viewBox="0 0 ${fx[0] * U.pxPerMm} ${fx[1] * U.pxPerMm}"
   xmlns="http://www.w3.org/2000/svg">
   <circle stroke="transparent"  fill="${strokeStyle}" cx="${x0}mm" cy="${y0}mm" r="${t.errorDotRadiusMm}mm" />

@@ -34,6 +34,12 @@ export class Chsm extends CbaseElem {
     super(null, options, "M");
     this.canvas = options.canvas; // TODO
     this.status = options.status || { serNum: 2 };
+    // Add a non-serialized property to remember last used directory for dialogs
+    Object.defineProperty(this.status, 'currentDirectory', {
+      value: undefined,
+      writable: true,
+      enumerable: false // Do not serialize
+    });
     this.setCanvas(this.canvas);
     this.initialise();
     // console.log(`[Chsm.constructor]  myElem:${this.myElem} [xx0:${this.geo.xx0.toFixed(2)}, yy0:${this.geo.yy0.toFixed(2)}]`);
@@ -65,7 +71,12 @@ export class Chsm extends CbaseElem {
     this.hElems.insertElem(this);
   }
 
-  async load(hsmOptions) {
+  /**
+   * Load an HSM from options, updating status and filePath.
+   * @param {object} hsmOptions - The HSM data to load.
+   * @param {string} [filePath] - The file path the HSM was loaded from (if any).
+   */
+  async load(hsmOptions, filePath) {
     this.destroy();
     this.initialise();
 
@@ -95,8 +106,11 @@ export class Chsm extends CbaseElem {
     }
 
     this.settings = deepMerge(defaultHsm.settings, hsmOptions.settings || {});
-    this.status = hsmOptions.status || { sernum: 2 };
+    this.status = hsmOptions.status || { serNum: 2 };
     this.status.serNum = hsmOptions.status?.serNum || 2;
+    if (filePath) {
+      this.status.filePath = filePath;
+    }
     // console.log(`[Chsm.load] (${this.id}) serNum:${this.status.serNum}`);
 
     setDoubleClickTimeout(this.settings.doubleClickTimeoutMs);

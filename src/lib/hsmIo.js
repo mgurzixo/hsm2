@@ -51,12 +51,22 @@ export async function loadHsm(filePath = "./Aaa.json5") {
   // console.log(`[hsmio.loadHsm] filePath:${filePath}`);
   const hsmObj = readHsm(filePath);
   if (hsm && hsmObj) {
-    await hsm.load(hsmObj);
+    // Update currentDirectory for dialog prepositioning
+    if (filePath) {
+      const dir = filePath.substring(0, filePath.lastIndexOf("/"));
+      if (dir) hsm.status.currentDirectory = dir;
+    }
+    await hsm.load(hsmObj, filePath);
     notifyOk(`"${filePath}" loaded.`);
   }
 }
 
 export function saveHsm() {
   const filePath = hsm.state.filePath;
+  // Update currentDirectory for dialog prepositioning
+  if (filePath) {
+    const dir = filePath.substring(0, filePath.lastIndexOf("/"));
+    if (dir) hsm.status.currentDirectory = dir;
+  }
   writeHsm(filePath, hsm);
 }

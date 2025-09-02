@@ -5,12 +5,15 @@ import { notifyOk, notifyError } from "src/lib/notify";
 
 // Save As: prompt for file, check overwrite, then save
 export async function doSaveAsHsm() {
+  let defaultPath = hsm.status.currentDirectory ? hsm.status.currentDirectory + '/' : undefined;
   let filePath = await dialogOpen({
-    promptToCreate: true, filters: [
+    promptToCreate: true,
+    filters: [
       { name: 'json', extensions: ['json'] },
       { name: 'hsm2', extensions: ['hsm2'] },
       { name: 'json5', extensions: ['json5'] }
-    ]
+    ],
+    defaultPath
   });
   if (!filePath) return;
   // Check if file exists (simple check, can be improved)
