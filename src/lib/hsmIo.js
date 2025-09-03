@@ -20,7 +20,7 @@ function readHsm(filePath) {
     const hsm = JSON5.parse(json);
     return hsm;
   } catch (error) {
-    let str = `[io.loadHsm] error:${error}`;
+    let str = `[io.readHsm] error:${error}`;
     console.warn(str);
     notifyWarning(str);
     return null;

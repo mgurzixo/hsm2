@@ -80,6 +80,10 @@ export class Chsm extends CbaseElem {
     this.destroy();
     this.initialise();
 
+    if (!hsmOptions) {
+      this.status.filePath = "";
+      return; // New hsm
+    }
     // Merge default settings with loaded settings (deep merge for nested objects)
     function deepMerge(defaults, loaded) {
       if (typeof defaults !== 'object' || defaults === null) return loaded;

@@ -1,72 +1,326 @@
 {
-  settings: {
-    screenDpi: 94,
-    stateRadiusMm: 5,
-    deltaMouseWheel: 120,
-    deltaScale: 0.1,
-  },
-  state: {
-    serNum: 4,
-    filePath: "/home/mgouget/dev/hsm2/Aaa.json5",
-    activeFolio: "F1",
-  },
-  folios: [
-    {
-      id: "F1",
-      name: "Main Folio",
-      geo: {
-        x0: 10,
-        y0: 20,
-        width: 210,
-        height: 297,
-        scale: 1,
+  "settings": {
+    "screenDpi": 94,
+    "epsilonMm": 0.1,
+    "magnetAttractionMm": 2,
+    "doubleClickTimeoutMs": 300,
+    "deltaMouseWheel": 120,
+    "deltaScale": 0.1,
+    "deltaScale2": 0.2,
+    "cursorMarginP": 8,
+    "stateRadiusMm": 5,
+    "stateTitleHeightMm": 5,
+    "stateMinWidthMm": 10,
+    "stateMinHeightMm": 10,
+    "minDistanceMm": 1,
+    "dragResetSpeed": 15,
+    "initialTransLengthMm": 10,
+    "defaultSegmentLengthMm": 10,
+    "smallestSegMm": 1,
+    "styles": {
+      "defaultColor": "grey",
+      "silhouetteSelected": "black",
+      "folioBackground": "seaShell",
+      "junction": {
+        "color": "brown",
+        "thicknessMm": 1.2,
+        "minLengthMm": 7,
+        "bgChroma": 50,
+        "trLight": 10,
+        "trChroma": 50,
+        "bgLight": 10,
+        "tagBorderChroma": 30,
+        "tagBorderLight": 95,
+        "tagTextSizeMm": 3,
+        "tagBgChroma": 10,
+        "tagBgLight": 95,
+        "tagBgOpacity": 0.5
       },
-      states: [
-        {
-          id: "S2",
-          name: "First state",
-          geo: {
-            x0: 10,
-            y0: 10,
-            width: 80,
-            height: 40,
-          },
-          regions: [
-            {
-              id: "R4",
-              name: "My region",
-              geo: {
-                x0: 0,
-                y0: 10,
-                width: 80,
-                height: 30,
-              },
-              states: {
-                S5: {
-                  id: "S5",
-                  name: "Third state",
-                  geo: {
-                    x0: 10,
-                    y0: 10,
-                    width: 30,
-                    height: 10,
-                  },
-                },
-              },
-            },
-          ],
+      "note": {
+        "marginP": 2,
+        "border": {
+          "color": "#DFDFDF",
+          "lineWidth": 1
         },
-        {
-          id: "S3",
-          name: "Second state",
-          geo: {
-            x0: 20,
-            y0: 40,
-            width: 40,
-            height: 20,
-          },
+        "borderSelected": {
+          "color": "grey",
+          "lineWidth": 2
         },
-      ],
+        "bg": {
+          "color": "transparent"
+        },
+        "bgSelected": {
+          "color": "white"
+        },
+        "text": {
+          "heightMm": 3,
+          "color": "black",
+          "font": "sans-serif"
+        },
+        "defaultFont": "Noto Sans",
+        "noteMinHeight": 3,
+        "noteMinWidth": 3,
+        "noteCornerP": 10
+      },
+      "state": {
+        "border": {
+          "chroma": 50,
+          "light": 30,
+          "lineWidth": 1
+        },
+        "borderError": {
+          "color": "red",
+          "lineWidth": 2
+        },
+        "borderSelected": {
+          "lineWidth": 2
+        },
+        "titleLine": {
+          "chroma": 50,
+          "light": 30,
+          "lineWidth": 1
+        },
+        "bg": {
+          "chroma": 30,
+          "light": 98
+        },
+        "titleBg": {
+          "chroma": 50,
+          "lights": [
+            80,
+            95
+          ]
+        },
+        "titleText": {
+          "chroma": 100,
+          "light": 5,
+          "font": "sans-serif",
+          "sizePc": 70
+        },
+        "info": {
+          "sizeMm": "2.5",
+          "font": "sans-serif",
+          "textColor": "black",
+          "backgroundColor": "transparent",
+          "marginMm": "2"
+        }
+      },
+      "text": {
+        "sizeMm": 2.5,
+        "textFont": "sans-serif",
+        "textChroma": 50,
+        "textLight": 10,
+        "borderWidth": 1,
+        "borderChroma": 30,
+        "borderLight": 95,
+        "borderSelectedWidth": 1,
+        "borderSelectedChroma": 50,
+        "borderSelectedLight": 10,
+        "bgOpacity": 0.5
+      },
+      "tr": {
+        "line": {
+          "chroma": 100,
+          "light": 30,
+          "lineWidth": 1.5
+        },
+        "lineError": {
+          "color": "red",
+          "lineWidth": 2
+        },
+        "lineSelected": {
+          "lineWidth": 2.5
+        },
+        "errorDotRadiusMm": 3,
+        "maxTransRadiusMm": 4,
+        "arrowLengthMm": 3,
+        "arrowWidthMm": 0.75
+      }
     },
-  ],
+    "dialogs": {
+      "background": "#fae8cbff",
+      "textColor": "#322101ff"
+    }
+  },
+  "status": {
+    "serNum": 14,
+    "filePath": "/home/mgouget/dev/hsm2/AaaFull.json5"
+  },
+  "folios": [
+    {
+      "id": "F1",
+      "name": "Main Folio",
+      "geo": {
+        "x0": 10,
+        "y0": 20,
+        "scale": 1,
+        "width": 210,
+        "height": 297
+      },
+      "color": "grey",
+      "isSelected": null,
+      "states": [
+        {
+          "id": "S2",
+          "name": "First state",
+          "geo": {
+            "x0": 10,
+            "y0": 10,
+            "width": 80,
+            "height": 40
+          },
+          "color": "grey",
+          "isSelected": null,
+          "regions": {
+            "R4": {
+              "id": "R4",
+              "name": "My region",
+              "geo": {
+                "x0": 0,
+                "y0": 5,
+                "scale": 1,
+                "width": 80,
+                "height": 35
+              },
+              "color": "grey",
+              "isSelected": null,
+              "states": [
+                {
+                  "id": "S5",
+                  "name": "Third state",
+                  "geo": {
+                    "x0": 33.544973544973544,
+                    "y0": 8.941798941798941,
+                    "width": 38.730158730158735,
+                    "height": 20.052910052910054
+                  },
+                  "color": "#00ff55",
+                  "isSelected": true,
+                  "regions": {
+                    "R6": {
+                      "id": "R6",
+                      "name": "SR6",
+                      "geo": {
+                        "x0": 0,
+                        "y0": 5,
+                        "scale": 1,
+                        "width": 38.730158730158735,
+                        "height": 15.052910052910054
+                      },
+                      "color": "grey",
+                      "isSelected": true
+                    }
+                  },
+                  "entry": "",
+                  "exit": "",
+                  "include": ""
+                }
+              ]
+            }
+          },
+          "entry": "",
+          "exit": "",
+          "include": ""
+        },
+        {
+          "id": "S3",
+          "name": "Second state",
+          "geo": {
+            "x0": 105.14539930555557,
+            "y0": 90.21753058862434,
+            "width": 40,
+            "height": 20
+          },
+          "color": "grey",
+          "isSelected": null,
+          "regions": {
+            "R7": {
+              "id": "R7",
+              "name": "SR7",
+              "geo": {
+                "x0": 0,
+                "y0": 5,
+                "scale": 1,
+                "width": 40,
+                "height": 15
+              },
+              "color": "grey",
+              "isSelected": null
+            }
+          },
+          "entry": "",
+          "exit": "",
+          "include": ""
+        }
+      ],
+      "junctions": [
+        {
+          "id": "J10",
+          "name": "Junction J10",
+          "geo": {
+            "x0": 149.0723098270477,
+            "y0": 27.128748010706023,
+            "scale": 1,
+            "width": 1,
+            "height": 18.783068783068785
+          },
+          "color": "grey",
+          "isSelected": null,
+          "orientation": "vertical",
+          "thickness": 1,
+          "length": 18.783068783068785,
+          "include": "",
+          "comment": ""
+        }
+      ],
+      "trs": [
+        {
+          "from": {
+            "id": "S2",
+            "side": "B",
+            "pos": 0.16626353418836065
+          },
+          "to": {
+            "id": "S3",
+            "side": "T",
+            "pos": 0.45100294513466893
+          },
+          "isInternal": false,
+          "segments": [
+            {
+              "dir": "S",
+              "len": 5
+            },
+            {
+              "dir": "E",
+              "len": 97.03703703703704
+            },
+            {
+              "dir": "S",
+              "len": 35.21754108408771
+            }
+          ]
+        },
+        {
+          "from": {
+            "id": "S5",
+            "side": "R",
+            "pos": 0.5038596705386519
+          },
+          "to": {
+            "id": "J10",
+            "side": "L",
+            "pos": 0.3637033200354178
+          },
+          "isInternal": false,
+          "segments": [
+            {
+              "dir": "E",
+              "len": 66.57143083198991
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
